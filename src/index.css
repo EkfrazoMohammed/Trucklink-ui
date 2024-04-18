@@ -1,0 +1,20 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+@font-face {
+    font-family: "LightFont";
+    src: url("/font/Montserrat-Thin.ttf");
+  }
+  
+@font-face {
+    font-family: "RegularFont";
+    src: url("/font/Montserrat-Regular.ttf");
+  }
+
+@font-face {
+    font-family: "BoldFont";
+    src: url("/font/Montserrat-Bold.ttf");
+  }
+  

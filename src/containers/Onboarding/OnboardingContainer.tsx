@@ -121,7 +121,7 @@ const OwnerTable = () => {
       key: 'action',
       
       width: 80,
-      render: (_, record) => (
+      render: () => (
         <Space size="middle">
           <a onClick={handleAddOwnerClick}><EyeOutlined /></a>
           <a><FormOutlined /></a>

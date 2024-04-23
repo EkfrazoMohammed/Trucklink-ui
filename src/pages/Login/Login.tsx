@@ -1,16 +1,50 @@
-import  { useState } from 'react'
+import { useState } from 'react'
 import FooterContainer from '../../containers/FooterContainer';
 import logo from "./../../assets/newlogo.png";
 import { Button, Input, Space } from 'antd';
-// import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import axios from "axios";
+
 import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  const handleClick = () => {
+  const [user, setUser] = useState({
+    email: "",
+    password: ""
+  })
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  }
+
+  const handleClick = async () => {
     console.log("Sign in button clicked");
-    navigate("/dashboard");
+    await axios.post("http://localhost:3006/auth/login", user)
+      .then((res) => {
+        console.log(res)
+        if (res.status == 200) {
+          localStorage.setItem("token", res.data.access_token)
+          navigate("/dashboard");
+        }
+        else {
+          if (res.status == 401) {
+            setError("Invalid credentials");
+            // alert("invalid credentials")
+          }
+        }
+      }).catch((err) => {
+        console.log(err)
+        setError("Invalid credentials");
+        // alert("invalid credentials")
+      })
+    // navigate("/dashboard");
+
   }
 
   return (
@@ -33,10 +67,12 @@ const Login = () => {
               </div>
               <div className="w-full max-w-[400px] h-full bg-white/60 backdrop-blur rounded-md custom-shadow p-8">
                 <h1 className='mb-2 font-semibold text-lg'>Log in to your account</h1>
-
+                {error && <p className="text-red-500 mb-2">{error}</p>}
                 <Space direction="vertical" className='w-full mb-2'>
-                  <Input size="large" placeholder="User Name" className='mb-2 p-2' />
+                  <Input size="large" placeholder="User Name" className='mb-2 p-2' name="email" onChange={handleChange} />
                   <Input.Password
+                    name="password"
+                    onChange={handleChange}
                     className='mb-2 p-2'
                     size="large"
                     placeholder="Password"

@@ -209,6 +209,8 @@ const handleUpdateHub = async () => {
     setModalVisible(false);
   };
 
+  const myLocationHub=localStorage.getItem("selectedHubName")
+
   return (
     <>
       <div className="flex h-10 justify-between items-center">
@@ -217,7 +219,7 @@ const handleUpdateHub = async () => {
 
         <div className='flex gap-4 justify-center items-center'>
 
-          <div onClick={showModal} className="flex flex-col border-black"> <span> Select Hub </span>{selectedHub}</div>
+          <div onClick={showModal} className="flex flex-col border-black"> <span> Select Hub </span>{myLocationHub}</div>
           <Modal
             title="Hub Location"
             open={modalVisible}
@@ -345,7 +347,7 @@ const handleUpdateHub = async () => {
     </Space>
   </div>
 </Modal>
-          <Badge size="small" count={4}>
+          <Badge size="small" count={1}>
             <Dropdown overlay={menu} trigger={["click"]}>
               <a
                 href="#pablo"

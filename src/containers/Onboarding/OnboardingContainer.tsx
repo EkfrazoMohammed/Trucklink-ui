@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col,  List, Row, Switch } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -18,7 +18,7 @@ import { AppDispatch } from '../../redux/store'; // Import RootState and AppDisp
 import { fetchOwnerData, addOwnerDataAccount } from "./../../redux/reducers/onboardingReducer";
 interface RootState {
   onboarding: {
-    ownerData: []; 
+    ownerData: [];
   };
 }
 const OnboardingContainer = () => {
@@ -32,7 +32,7 @@ const OnboardingContainer = () => {
   useEffect(() => {
     dispatch(fetchOwnerData());
   }, [dispatch]);
-   // Usage in useSelector
+  // Usage in useSelector
   const ownerData = useSelector((state: RootState) => state.onboarding.ownerData);
 
 
@@ -91,10 +91,10 @@ const OnboardingContainer = () => {
     });
     setFilteredOwnerData(filteredData);
   }, [searchQuery, ownerData]);
-  
+
 
   const handleSearch = (value) => {
-    setSearchQuery(value); 
+    setSearchQuery(value);
   };
   const OwnerMaster = () => {
     return (
@@ -162,7 +162,7 @@ const OnboardingContainer = () => {
         }
       ]
     });
-console.log(formData)
+    console.log(formData)
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
       const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
@@ -264,7 +264,7 @@ console.log(formData)
         setStyle({ display: 'none' });
         return;
       }
-    
+
       fetch(`https://ifsc.razorpay.com/${ifscCodevalue}`)
         .then(response => response.json())
         .then(data => {
@@ -294,7 +294,7 @@ console.log(formData)
           setStyle({ display: 'none' });
         });
     };
-    
+
     const [selectedState, setSelectedState] = useState('');
     const [districts, setDistricts] = useState([]);
 
@@ -457,7 +457,7 @@ console.log(formData)
                       size="large"
                       value={ifscCodevalue}
                       onChange={handleChangeBank}
-                      onSearch={()=>fetchBankDetails(index)}
+                      onSearch={() => fetchBankDetails(index)}
                     />
                     {/* <Input placeholder="IFSC  Code*" size="large" name="ifscCode" value={bankAccount.ifscCode} onChange={(e) => handleBankAccountChange(index, e)} /> */}
                   </Col>
@@ -672,7 +672,7 @@ console.log(formData)
       };
 
       axios
-        .post('https://trucklinkuatnew.thestorywallcafe.com/api/owner/owner-vehicle', payload)
+        .post('https://trucklinkuatnew.thestorywallcafe.com/owner/owner-vehicle', payload)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           window.location.reload(); // Reload the page or perform any necessary action
@@ -834,7 +834,7 @@ console.log(formData)
     // Function to fetch materials from the API
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/material-type');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/material-type');
         console.log(response.data)
         const filteredMaterials = response.data.filter(value => value.hubId === selectedHubId);
 
@@ -847,7 +847,7 @@ console.log(formData)
     const handleAddMaterial = async () => {
       try {
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/material-type', { "materialType": materialType, "hubId": selectedHubId });
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/material-type', { "materialType": materialType, "hubId": selectedHubId });
         // Fetch updated materials
         fetchMaterials();
         // Clear the input field
@@ -860,10 +860,10 @@ console.log(formData)
     // Function to fetch materials from the API
     const fetchLoadLocations = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/load-location');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/load-location');
         const filterLocations = response.data.filter((value) => value.type === "LOAD" && value.hubId === selectedHubId);
         setloadLocations(filterLocations);
-      
+
       } catch (error) {
         console.error('Error fetching materials:', error);
       }
@@ -881,7 +881,7 @@ console.log(formData)
 
         }
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/load-location', payload);
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/load-location', payload);
         fetchLoadLocations()
         // Clear the input field
         setLoadLocationName('');
@@ -893,7 +893,7 @@ console.log(formData)
     // Function to fetch materials from the API
     const fetchDeliveryLocations = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/load-location');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/load-location');
         const filterDelivery = response.data.filter((value) => value.type === "DELIVERY" && value.hubId === selectedHubId);
         setDeliveryLocations(filterDelivery);
       } catch (error) {
@@ -913,7 +913,7 @@ console.log(formData)
 
         }
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/load-location', payload);
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/load-location', payload);
         fetchDeliveryLocations()
         // Clear the input field
         setDeliveryLocationName('');

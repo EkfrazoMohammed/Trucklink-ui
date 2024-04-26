@@ -8,7 +8,7 @@ export const setSelectedHub = (hub) => ({
 export const fetchOnboardingData = () => {
   return (dispatch) => {
     axios
-      .get("http://localhost:3006/api/owner")
+      .get("https://trucklinkuatnew.thestorywallcafe.com/api/owner")
       .then((res) => {
         console.log(res);
         if (res.status === 200) {

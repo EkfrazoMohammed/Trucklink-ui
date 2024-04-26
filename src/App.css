@@ -94,7 +94,7 @@ margin: 0 auto;
   min-width: 260px;
   margin: .6rem;
   border: 2px solid #eee;
-  border-top: 4px solid #065AA8;
+  border-top: 4px solid #065AA8 !important;
   padding: 0.4rem;
   border-radius: 4px;
   background-color: #fff;

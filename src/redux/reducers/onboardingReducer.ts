@@ -20,7 +20,7 @@ export const fetchOwnerData = createAsyncThunk(
   "onboarding/fetchOwnerData",
   async () => {
     const response = await axios.get(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/api/owner"
+      "https://trucklinkuatnew.thestorywallcafe.com/api/owner"
     );
     console.log(response);
     return response.data;
@@ -32,7 +32,7 @@ export const addOwnerDataAccount = createAsyncThunk(
   "onboarding/addOwnerDataAccount",
   async (formData) => {
     const response = await axios.post(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/api/owner/owner-account",
+      "https://trucklinkuatnew.thestorywallcafe.com/api/owner/owner-account",
       formData
     );
     return response.data;
@@ -44,7 +44,7 @@ export const fetchTruckMasterData = createAsyncThunk(
   "onboarding/fetchTruckMasterData",
   async () => {
     const response = await axios.get(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/api/truckmaster"
+      "https://trucklinkuatnew.thestorywallcafe.com/api/truckmaster"
     );
     return response.data;
   }

@@ -24,7 +24,7 @@ const Login = () => {
   }
 
   const handleClick = async () => {
-    await axios.post("https://trucklinkuatnew.thestorywallcafe.com/api/api/auth/login", user)
+    await axios.post("https://trucklinkuatnew.thestorywallcafe.com/api/auth/login", user)
       .then((res) => {
         console.log(res)
         if (res.status == 200) {

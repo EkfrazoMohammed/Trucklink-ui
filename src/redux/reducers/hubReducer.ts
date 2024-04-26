@@ -27,7 +27,7 @@ interface UpdateHubDataPayload {
 // Async thunk action for fetching hub data
 export const fetchHubData = createAsyncThunk("hub/fetchHubData", async () => {
   const response = await axios.get(
-    "https://trucklinkuatnew.thestorywallcafe.com/api/api/hubs"
+    "https://trucklinkuatnew.thestorywallcafe.com/api/hubs"
   );
   return (response as FetchHubDataResponse).data;
 });
@@ -37,7 +37,7 @@ export const postHubData = createAsyncThunk(
   "hub/postHubData",
   async (hubData: HubData) => {
     const response = await axios.post<PostHubResponse>(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/api/hubs",
+      "https://trucklinkuatnew.thestorywallcafe.com/api/hubs",
       hubData
     );
     return response.data;
@@ -49,7 +49,7 @@ export const updateHubData = createAsyncThunk(
   "hub/updateHubData",
   async (hubData: UpdateHubDataPayload) => {
     const response = await axios.put(
-      `https://trucklinkuatnew.thestorywallcafe.com/api/hubs/${hubData.id}`,
+      `https://trucklinkuatnew.thestorywallcafe.com/hubs/${hubData.id}`,
       hubData
     );
     return (response.data as HubData);

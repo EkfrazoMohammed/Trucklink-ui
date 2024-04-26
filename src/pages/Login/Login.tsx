@@ -15,7 +15,7 @@ const Login = () => {
   })
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUser(prevState => ({
       ...prevState,
@@ -24,8 +24,7 @@ const Login = () => {
   }
 
   const handleClick = async () => {
-    console.log("Sign in button clicked");
-    await axios.post("http://localhost:3006/auth/login", user)
+    await axios.post("http://localhost:3006/api/auth/login", user)
       .then((res) => {
         console.log(res)
         if (res.status == 200) {
@@ -35,15 +34,12 @@ const Login = () => {
         else {
           if (res.status == 401) {
             setError("Invalid credentials");
-            // alert("invalid credentials")
           }
         }
       }).catch((err) => {
         console.log(err)
         setError("Invalid credentials");
-        // alert("invalid credentials")
       })
-    // navigate("/dashboard");
 
   }
 

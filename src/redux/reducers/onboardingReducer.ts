@@ -1,62 +1,88 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+interface OnboardingState {
+  ownerData: [];
+  truckMasterData: [];
+  loading: {
+    owner: boolean;
+    updateOwner: boolean; // Assuming you want to track loading for updating owner data
+    truckMaster: boolean;
+  };
+  error: {
+    owner: string | undefined;
+    updateOwner: string | null; // Assuming you want to track error for updating owner data
+    truckMaster: string | null;
+  };
+}
 
 // Async thunk action for fetching owner data
 export const fetchOwnerData = createAsyncThunk(
-  'onboarding/fetchOwnerData',
+  "onboarding/fetchOwnerData",
   async () => {
-
-      const response = await axios.get('http://localhost:3006/owner');
-      return response.data;
+    const response = await axios.get(
+      "http://localhost:3006/api/owner"
+    );
+    console.log(response);
+    return response.data;
   }
 );
 
 // Async thunk action for updating owner data
 export const addOwnerDataAccount = createAsyncThunk(
-  'onboarding/addOwnerDataAccount',
+  "onboarding/addOwnerDataAccount",
   async (formData) => {
-    const response = await axios.post('http://localhost:3006/owner/owner-account', formData);
+    const response = await axios.post(
+      "http://localhost:3006/api/owner/owner-account",
+      formData
+    );
     return response.data;
   }
 );
 
 // Async thunk action for fetching truck master data
 export const fetchTruckMasterData = createAsyncThunk(
-  'onboarding/fetchTruckMasterData',
+  "onboarding/fetchTruckMasterData",
   async () => {
-      const response = await axios.get('http://localhost:3006/truckmaster');
-      return response.data;
-   }
+    const response = await axios.get(
+      "http://localhost:3006/api/truckmaster"
+    );
+    return response.data;
+  }
 );
-
-const onboardingSlice = createSlice({
-  name: 'onboarding',
-  initialState: {
-    ownerData: [],
-    truckMasterData: [],
-    loading: {
-      owner: false,
-      truckMaster: false,
-    },
-    error: {
-      owner: null,
-      truckMaster: null,
-    },
+const initialState: OnboardingState = {
+  ownerData: [],
+  truckMasterData: [],
+  loading: {
+    owner: false,
+    updateOwner: false,
+    truckMaster: false,
   },
+  error: {
+    owner: "",
+    updateOwner: "",
+    truckMaster: "",
+  },
+};
+const onboardingSlice = createSlice({
+  name: "onboarding",
+  initialState:initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       // Reducers for owner data
       .addCase(fetchOwnerData.pending, (state) => {
+        console.log(state)
         state.loading.owner = true;
-        state.error.owner = null;
+        state.error.owner = "";
       })
       .addCase(fetchOwnerData.fulfilled, (state, action) => {
+        console.log(action)
         state.ownerData = action.payload;
         state.loading.owner = false;
-        state.error.owner = null;
+        state.error.owner = "";
       })
       .addCase(fetchOwnerData.rejected, (state, action) => {
+        console.log(action)
         state.loading.owner = false;
         state.error.owner = action.error.message;
       })
@@ -71,10 +97,7 @@ const onboardingSlice = createSlice({
         // Optionally, you can update the state after successful update
         state.ownerData = action.payload; // Update owner data with the response from the server
       })
-      .addCase(addOwnerDataAccount.rejected, (state, action) => {
-        state.loading.updateOwner = false;
-        state.error.updateOwner = action.error.message;
-      })
+      
 
       // Reducers for truck master data
       .addCase(fetchTruckMasterData.pending, (state) => {
@@ -85,10 +108,6 @@ const onboardingSlice = createSlice({
         state.truckMasterData = action.payload;
         state.loading.truckMaster = false;
         state.error.truckMaster = null;
-      })
-      .addCase(fetchTruckMasterData.rejected, (state, action) => {
-        state.loading.truckMaster = false;
-        state.error.truckMaster = action.error.message;
       })
   },
 });

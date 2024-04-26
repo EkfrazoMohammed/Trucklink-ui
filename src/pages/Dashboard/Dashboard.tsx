@@ -10,11 +10,9 @@ import accounting_logo from "../../assets/Accounting.png"
 import reports_logo from "../../assets/Reports.png"
 import settings_logo from "../../assets/Settings.png"
 import logout_logo from "../../assets/Logout.png"
-import { Button, Layout, Menu,Modal } from 'antd';
-import {
-  MenuUnfoldOutlined,
-  MenuFoldOutlined
-} from '@ant-design/icons';
+import menu_logo from "../../assets/Menu.png"
+import {  Layout, Menu,Modal } from 'antd';
+
 import HeaderContainer from '../../containers/HeaderContainer';
 import DashboardContainer from '../../containers/Dashboard/DashboardContainer';
 import OnboardingContainer from '../../containers/Onboarding/OnboardingContainer';
@@ -27,14 +25,23 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const { Content, Footer, Sider } = Layout;
+interface RootState {
+  hub: {
+    selectedHub: string; // Assuming selectedHub is of type string
+    // Other properties of the hub slice
+  };
+  // Other slices of the Redux store
+}
+
+
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('1');
   const [title, setTitle] = useState('Dashboard');
-  // Access selectedHub state from Redux store
-  const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub);
+  // Usage in useSelector
+const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
   useEffect(() => {
@@ -77,7 +84,7 @@ const Dashboard: React.FC = () => {
     <Layout style={{ minHeight: '90vh' }}>
       <Sider trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
-        <Button
+        {/* <Button
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           onClick={() => setCollapsed(!collapsed)}
@@ -88,7 +95,19 @@ const Dashboard: React.FC = () => {
             color: "#fff",
             margin: "1rem 0"
           }}
-        />
+        /> */}
+        <div
+        className='flex justify-end items-center py-2 px-4 cursor-pointer'
+          onClick={() => setCollapsed(!collapsed)}>
+        <img src={menu_logo} alt={menu_logo} 
+        style={{
+            fontSize: '16px',
+            width: "40px",
+            height: "40px",
+            color: "#fff",
+            margin: ".5rem 0"
+          }}/>
+          </div>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]}>
           {items.map(item => (
             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)}>

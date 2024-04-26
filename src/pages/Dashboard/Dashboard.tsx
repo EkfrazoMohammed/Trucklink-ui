@@ -82,20 +82,8 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
   };
   return (
     <Layout style={{ minHeight: '90vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
+      <Sider style={{background:"radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%) !important"}} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
-        {/* <Button
-          type="text"
-          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            fontSize: '16px',
-            width: "100%",
-            height: "auto",
-            color: "#fff",
-            margin: "1rem 0"
-          }}
-        /> */}
         <div
         className='flex justify-end items-center py-2 px-4 cursor-pointer'
           onClick={() => setCollapsed(!collapsed)}>

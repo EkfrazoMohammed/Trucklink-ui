@@ -71,6 +71,7 @@ const OnboardingContainer = () => {
   console.log(ownerData)
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery2, setSearchQuery2] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState(filterOwnerTableData);
   // Update filteredOwnerData when selectedHubId changes
   useEffect(() => {
@@ -152,15 +153,13 @@ const OnboardingContainer = () => {
 
       vehicleIds: [],
       hubId: selectedHubId,
-      bankAccounts: [
-        {
-          accountNumber: '',
-          accountHolderName: '',
-          ifscCode: '',
-          bankName: '',
-          branchName: ''
-        }
-      ]
+      bankAccounts: Array.from({ length: 1 }, () => ({
+        accountNumber: '',
+        accountHolderName: '',
+        ifscCode: '',
+        bankName: '',
+        branchName: ''
+      }))
     });
     console.log(formData)
     const handleOwnerFormChange = (e) => {
@@ -210,90 +209,56 @@ const OnboardingContainer = () => {
         bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
       }));
     };
-    const [ifscCodevalue, setIfscCodeValue] = useState('');
-    const [bankDetail, setBankDetail] = useState({});
-    const [style, setStyle] = useState({ display: 'none' });
     const [message, setMessage] = useState('');
 
-    const handleChangeBank = (e) => {
-      setIfscCodeValue(e.target.value);
-      setBankDetail({});
-      setMessage('');
-    };
-
-    // const fetchBankDetails = () => {
-    //   if (!ifscCodevalue) {
-    //     setMessage('Please fill IFSC code');
-    //     setStyle({ display: 'none' });
-    //     return;
-    //   }
-
-    //   fetch(`https://ifsc.razorpay.com/${ifscCodevalue}`)
-    //     .then(response => response.json())
-    //     .then(data => {
-    //       setBankDetail(data);
-    //       setStyle({ display: 'block' });
-    //       setMessage('');
-    //       // Update formData state with bank details
-    //       setFormData(prevFormData => ({
-    //         ...prevFormData,
-    //         bankAccounts: prevFormData.bankAccounts.map((bankAccount, index) => {
-    //           if (index === 0) { // Assuming the first bank account is being updated
-    //             return {
-    //               ...bankAccount,
-    //               ifscCode: ifscCodevalue,
-    //               bankName: data.BANK,
-    //               branchName: data.BRANCH
-    //               // You can add more fields as needed
-    //             };
-    //           }
-    //           return bankAccount;
-    //         })
-    //       }));
-    //     })
-    //     .catch(error => {
-    //       setMessage('Invalid IFSC code');
-    //       setBankDetail({});
-    //       setStyle({ display: 'none' });
-    //     });
+    // const handleChangeBank = (e) => {
+    //   setIfscCodeValue(e.target.value);
+    //   setBankDetail({});
+    //   setMessage('');
     // };
 
+    const handleChangeBank = (index, e) => {
+      const { value } = e.target;
+      const updatedBankAccounts = [...formData.bankAccounts];
+      updatedBankAccounts[index].ifscCode = value; // Update the IFSC code value for the specific bank form
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        bankAccounts: updatedBankAccounts
+      }));
+    };
+
     const fetchBankDetails = (index) => {
-      if (!ifscCodevalue) {
+      const bankAccount = formData.bankAccounts[index];
+      const { ifscCode } = bankAccount;   
+      if (!ifscCode) {
         setMessage('Please fill IFSC code');
-        setStyle({ display: 'none' });
         return;
       }
 
-      fetch(`https://ifsc.razorpay.com/${ifscCodevalue}`)
+      fetch(`https://ifsc.razorpay.com/${ifscCode}`)
         .then(response => response.json())
         .then(data => {
-          setBankDetail(data);
-          setStyle({ display: 'block' });
-          setMessage('');
           // Update formData state with bank details for the specified bank account
           setFormData(prevFormData => ({
             ...prevFormData,
-            bankAccounts: prevFormData.bankAccounts.map((bankAccount, i) => {
+            bankAccounts: prevFormData.bankAccounts.map((account, i) => {
               if (i === index) {
                 return {
-                  ...bankAccount,
-                  ifscCode: ifscCodevalue,
+                  ...account,
                   bankName: data.BANK,
                   branchName: data.BRANCH
                   // You can add more fields as needed
                 };
               }
-              return bankAccount;
+              return account;
             })
           }));
         })
         .catch(error => {
           setMessage('Invalid IFSC code');
-          setBankDetail({});
-          setStyle({ display: 'none' });
         });
     };
+
 
     const [selectedState, setSelectedState] = useState('');
     const [districts, setDistricts] = useState([]);
@@ -399,7 +364,7 @@ const OnboardingContainer = () => {
                       placeholder="Select a state"
                       value={selectedState}
                       onChange={handleStateChange}
-                      style={{ width: 200 }}
+                      style={{ width: 360 }}
                       size='large'
                     >
                       {states.map((state) => (
@@ -418,7 +383,7 @@ const OnboardingContainer = () => {
                       placeholder="Districts"
                       value={districts.length > 0 ? districts[0] : ''} // Ensure that districts represents a single selected district
                       onChange={(value) => setDistricts([value])} // Wrap the value in an array to represent a single selected district
-                      style={{ width: 200 }}
+                      style={{ width: 360 }}
                     >
                       {districts.map((district) => (
                         <Option key={district} value={district}>
@@ -444,7 +409,7 @@ const OnboardingContainer = () => {
               <Button type="link" onClick={handleAddBankAccount} style={{ color: "#000" }}>+ Add Bank</Button>
             </div>
 
-            {formData.bankAccounts.map((bankAccount, index) => (
+            {/* {formData.bankAccounts.map((bankAccount, index) => (
               <div className="flex flex-col gap-1 bg-[#f6f6f6] p-4" key={index}>
                 <h1>Bank {index + 1}</h1>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -459,7 +424,7 @@ const OnboardingContainer = () => {
                       onChange={handleChangeBank}
                       onSearch={() => fetchBankDetails(index)}
                     />
-                    {/* <Input placeholder="IFSC  Code*" size="large" name="ifscCode" value={bankAccount.ifscCode} onChange={(e) => handleBankAccountChange(index, e)} /> */}
+                    {/* <Input placeholder="IFSC  Code*" size="large" name="ifscCode" value={bankAccount.ifscCode} onChange={(e) => handleBankAccountChange(index, e)} /> 
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
                     <Input placeholder="Bank Name*" size="large" name="bankName" value={bankDetail.BANK} onChange={(e) => handleBankAccountChange(index, e)} />
@@ -478,7 +443,43 @@ const OnboardingContainer = () => {
                   <Button onClick={() => handleRemoveBankAccount(index)} style={{ width: 200 }}>Remove Bank Account</Button>
                 )}
               </div>
-            ))}
+            ))} */}
+
+            {formData.bankAccounts.map((bankAccount, index) => (
+              <div className="flex flex-col gap-1 bg-[#f6f6f6] p-4" key={index}>
+                <h1>Bank {index + 1}</h1>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                  <Col className="gutter-row mt-2" span={8}>
+                    
+                    <Search
+                      name="ifscCode"
+                      placeholder="Enter IFSC Code"
+                      allowClear
+                      enterButton="Search"
+                      size="large"
+                      value={bankAccount.ifscCode}
+                      onChange={(e) => handleChangeBank(index, e)} // Pass index to handleChangeBank
+                      onSearch={() => fetchBankDetails(index)} // Pass index to fetchBankDetails
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={8}>
+                    <Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={8}>
+                    <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={8}>
+                    <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={8}>
+                    <Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} />
+                  </Col>
+                </Row>
+                {formData.bankAccounts.length > 1 && (
+                  <Button onClick={() => handleRemoveBankAccount(index)} style={{ width: 200 }}>Remove Bank Account</Button>
+                )}
+              </div>
+            ))}          
           </div>
           <div className="flex gap-4">
 
@@ -572,7 +573,7 @@ const OnboardingContainer = () => {
       <div className='flex gap-2 justify-between p-2'>
 
         <Search
-          placeholder="Search by Owner Name / Truck no"
+          placeholder="Search by Vehicle Number"
           size='large'
           onSearch={handleSearch}
           style={{ width: 320 }}
@@ -672,7 +673,7 @@ const OnboardingContainer = () => {
       };
 
       axios
-        .post('https://trucklinkuatnew.thestorywallcafe.com/owner/owner-vehicle', payload)
+        .post('https://trucklinkuatnew.thestorywallcafe.com/api/owner/owner-vehicle', payload)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           window.location.reload(); // Reload the page or perform any necessary action
@@ -834,7 +835,7 @@ const OnboardingContainer = () => {
     // Function to fetch materials from the API
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/material-type');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/material-type');
         console.log(response.data)
         const filteredMaterials = response.data.filter(value => value.hubId === selectedHubId);
 
@@ -847,7 +848,10 @@ const OnboardingContainer = () => {
     const handleAddMaterial = async () => {
       try {
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/material-type', { "materialType": materialType, "hubId": selectedHubId });
+        const payload={"materialType":materialType,
+        "hubId":selectedHubId
+        }
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/material-type', payload);
         // Fetch updated materials
         fetchMaterials();
         // Clear the input field
@@ -860,7 +864,7 @@ const OnboardingContainer = () => {
     // Function to fetch materials from the API
     const fetchLoadLocations = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/load-location');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/load-location');
         const filterLocations = response.data.filter((value) => value.type === "LOAD" && value.hubId === selectedHubId);
         setloadLocations(filterLocations);
 
@@ -881,7 +885,7 @@ const OnboardingContainer = () => {
 
         }
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/load-location', payload);
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/load-location', payload);
         fetchLoadLocations()
         // Clear the input field
         setLoadLocationName('');
@@ -893,7 +897,7 @@ const OnboardingContainer = () => {
     // Function to fetch materials from the API
     const fetchDeliveryLocations = async () => {
       try {
-        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/load-location');
+        const response = await axios.get('https://trucklinkuatnew.thestorywallcafe.com/api/load-location');
         const filterDelivery = response.data.filter((value) => value.type === "DELIVERY" && value.hubId === selectedHubId);
         setDeliveryLocations(filterDelivery);
       } catch (error) {
@@ -913,7 +917,7 @@ const OnboardingContainer = () => {
 
         }
         // Post the new material type to the API
-        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/load-location', payload);
+        await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/load-location', payload);
         fetchDeliveryLocations()
         // Clear the input field
         setDeliveryLocationName('');

@@ -27,8 +27,8 @@ interface UpdateHubDataPayload {
 // Async thunk action for fetching hub data
 export const fetchHubData = createAsyncThunk("hub/fetchHubData", async () => {
   const response = await axios.get(
-      "http://localhost:3006/api/hubs"
-    );
+    "https://trucklinkuatnew.thestorywallcafe.com/api/api/hubs"
+  );
   return (response as FetchHubDataResponse).data;
 });
 
@@ -37,7 +37,7 @@ export const postHubData = createAsyncThunk(
   "hub/postHubData",
   async (hubData: HubData) => {
     const response = await axios.post<PostHubResponse>(
-      "http://localhost:3006/api/hubs",
+      "https://trucklinkuatnew.thestorywallcafe.com/api/api/hubs",
       hubData
     );
     return response.data;
@@ -98,12 +98,12 @@ const hubSlice = createSlice({
           district: action.payload.newHub.district,
           state: action.payload.newHub.state,
         };
-      
+
         state.hubData.push(newHubData);// Assuming the response is the newly added hub data
         state.loading = false;
         state.error = null;
       })
-      
+
       .addCase(postHubData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error ? action.error.message ?? null : null;
@@ -127,7 +127,7 @@ const hubSlice = createSlice({
         state.loading = false;
         state.error = action.error ? action.error.message ?? null : null;
       });
-      
+
   },
 });
 

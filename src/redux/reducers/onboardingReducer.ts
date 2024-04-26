@@ -20,7 +20,7 @@ export const fetchOwnerData = createAsyncThunk(
   "onboarding/fetchOwnerData",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/owner"
+      "https://trucklinkuatnew.thestorywallcafe.com/api/api/owner"
     );
     console.log(response);
     return response.data;
@@ -32,7 +32,7 @@ export const addOwnerDataAccount = createAsyncThunk(
   "onboarding/addOwnerDataAccount",
   async (formData) => {
     const response = await axios.post(
-      "http://localhost:3006/api/owner/owner-account",
+      "https://trucklinkuatnew.thestorywallcafe.com/api/api/owner/owner-account",
       formData
     );
     return response.data;
@@ -44,7 +44,7 @@ export const fetchTruckMasterData = createAsyncThunk(
   "onboarding/fetchTruckMasterData",
   async () => {
     const response = await axios.get(
-      "http://localhost:3006/api/truckmaster"
+      "https://trucklinkuatnew.thestorywallcafe.com/api/api/truckmaster"
     );
     return response.data;
   }
@@ -65,7 +65,7 @@ const initialState: OnboardingState = {
 };
 const onboardingSlice = createSlice({
   name: "onboarding",
-  initialState:initialState,
+  initialState: initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -97,7 +97,7 @@ const onboardingSlice = createSlice({
         // Optionally, you can update the state after successful update
         state.ownerData = action.payload; // Update owner data with the response from the server
       })
-      
+
 
       // Reducers for truck master data
       .addCase(fetchTruckMasterData.pending, (state) => {

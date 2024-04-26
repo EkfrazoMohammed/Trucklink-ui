@@ -118,7 +118,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
       // const response: any = action.payload; // Using 'any' type
       // console.log(response)
 
-      const response = await axios.post("http://localhost:3006/api/hubs", hubFormData)
+      const response = await axios.post("https://trucklinkuatnew.thestorywallcafe.com/api/api/hubs", hubFormData)
       if (response && response.data.message == "Hub has been created successfully") {
         setSecondModalVisible(false);
         showConfirmModal();

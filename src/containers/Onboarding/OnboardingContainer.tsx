@@ -66,7 +66,7 @@ const OnboardingContainer = () => {
     setShowTruckTable(false);
   };
   const filterOwnerTableData = ownerData.filter(value => value.hubId === selectedHubId);
- 
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState(filterOwnerTableData);
   // Update filteredOwnerData when selectedHubId changes
@@ -225,7 +225,7 @@ const OnboardingContainer = () => {
 
     const fetchBankDetails = (index) => {
       const bankAccount = formData.bankAccounts[index];
-      const { ifscCode } = bankAccount;   
+      const { ifscCode } = bankAccount;
       if (!ifscCode) {
         setMessage('Please fill IFSC code');
         return;
@@ -446,7 +446,7 @@ const OnboardingContainer = () => {
                 <h1>Bank {index + 1}</h1>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                   <Col className="gutter-row mt-2" span={8}>
-                    
+
                     <Search
                       name="ifscCode"
                       placeholder="Enter IFSC Code"
@@ -475,7 +475,7 @@ const OnboardingContainer = () => {
                   <Button onClick={() => handleRemoveBankAccount(index)} style={{ width: 200 }}>Remove Bank Account</Button>
                 )}
               </div>
-            ))}          
+            ))}
           </div>
           <div className="flex gap-4">
 
@@ -563,7 +563,7 @@ const OnboardingContainer = () => {
       </div>
     );
   };
- // Truck master
+  // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
       <div className='flex gap-2 justify-between p-2'>
@@ -589,7 +589,7 @@ const OnboardingContainer = () => {
 
     );
   };
- 
+
   const TruckMaster = () => {
     return (
       <>
@@ -840,8 +840,9 @@ const OnboardingContainer = () => {
     const handleAddMaterial = async () => {
       try {
         // Post the new material type to the API
-        const payload={"materialType":materialType,
-        "hubId":selectedHubId
+        const payload = {
+          "materialType": materialType,
+          "hubId": selectedHubId
         }
         await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/material-type', payload);
         // Fetch updated materials
@@ -1045,7 +1046,7 @@ const OnboardingContainer = () => {
 
     );
   };
- 
+
   const ViewTransferLogDataRow = ({ filterTruckTableData }) => {
     return (
       <div className="owner-details">
@@ -1064,36 +1065,33 @@ const OnboardingContainer = () => {
       </div>
     );
   };
-  const OwnerTransferLog=()=>{
-    const [transferData,setTransferData] = useState([])
-    const getTransferDetails=async ()=>{
-     let response=await axios.get("https://trucklinkuatnew.thestorywallcafe.com/api/vehicle")
-                        .then((res)=>{
-                          const filter = res.data.filter((value) => value.ownerTransferId);
-                         console.log(filter)
-                          setTransferData(filter);
-                          
-                        }).catch((err)=>{
-                          console.log(err)
-                        })
-                     
+  const OwnerTransferLog = () => {
+    const [transferData, setTransferData] = useState([])
+    const getTransferDetails = async () => {
+      let response = await axios.get("https://trucklinkuatnew.thestorywallcafe.com/api/vehicle")
+        .then((res) => {
+          const filter = res.data.filter((value) => value.ownerTransferId);
+          setTransferData(filter);
+        }).catch((err) => {
+          console.log(err)
+        })
+
 
     }
-    useEffect(()=>{
-
+    useEffect(() => {
       getTransferDetails()
-    },[])
-    return(
+    }, [])
+    return (
       <>
-      
-            <TransferLogHeader />
-            <TransferLogTable transferData={transferData} />
-          
-    </>
+
+        <TransferLogHeader />
+        <TransferLogTable transferData={transferData} />
+
+      </>
     )
-    }
-  
-    
+  }
+
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -1293,14 +1291,17 @@ const OnboardingContainer = () => {
     };
 
     // Extracting transferOwnerId values from transferData
-    const transferOwnerIds = transferData.map(data => data.transferOwnerId);
+    // const transferOwnerIds = transferData.map(data => data.transferOwnerId);
+    // Extracting ownerTransferId values from transferData
+    const ownerTransferIds = transferData.map(data => data.ownerTransferId);
+
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index: any) => index + 1,
-        width: 80,
+        width: 50,
       },
       {
         title: 'Vehicle Number',
@@ -1309,28 +1310,58 @@ const OnboardingContainer = () => {
         width: 80,
       },
       {
-        title: 'Transfer From',
-        dataIndex: 'vehicleType',
-        key: 'vehicleType',
-        width: 80,
+        title: 'Transfer From (owner)',
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.ownerTransferId?.oldOwnerId?.name || 'N/A',
+        width: 100,
       },
+
       {
         title: 'Transfer To (owner)',
-        dataIndex: 'phoneNumber',
-        key: 'phoneNumber',
-        width: 80,
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.ownerTransferId?.newOwnerId?.name,
+        width: 100,
       },
+
       {
         title: 'Transfer From Date',
-        dataIndex: 'truckLinkCommission',
-        key: 'truckLinkCommission',
-        width: 80,
+        dataIndex: 'ownerTransferFromDate',
+        key: 'ownerTransferFromDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferFromDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 100,
       },
       {
         title: 'Transfer To Date',
-        dataIndex: 'truckLinkCommission',
-        key: 'truckLinkCommission',
-        width: 80,
+        dataIndex: 'ownerTransferToDate',
+        key: 'ownerTransferToDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferToDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 100,
       },
     ];
     return (
@@ -1339,7 +1370,7 @@ const OnboardingContainer = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={transferOwnerIds}
+          dataSource={ownerTransferIds}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
         />

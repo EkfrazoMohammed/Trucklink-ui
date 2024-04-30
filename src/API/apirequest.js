@@ -1,7 +1,7 @@
 import axios from "axios";
-const baseURL=`http://localhost:3006`;
+const baseURL = `https://trucklinkuatnew.thestorywallcafe.com`;
 const API = axios.create({
   baseURL,
 });
 
-export {API,baseURL};
+export { API, baseURL };

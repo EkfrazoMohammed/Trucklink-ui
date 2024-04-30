@@ -39,6 +39,12 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     district: '',
     state: ''
   });
+  // background: rgba(255, 182, 40, 1);
+
+  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255','255, 182, 40','255,79,40','11,205,181','40,255,178','70,255,40']; 
+
+  const getHubColor=localStorage.getItem("selectedHubColor")
+
 
   const hubData = useSelector((state: RootState) => state.hub.hubData);
 
@@ -86,10 +92,11 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     setSecondModalVisible(false);
   }
 
-  const selectHubHandler = (value: string, id: string) => {
+  const selectHubHandler = (value: string, id: string,color:string) => {
     dispatch(setSelectedHub(value));
     localStorage.setItem("selectedHubID", id);
     localStorage.setItem("selectedHubName", value);
+    localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
   };
 
@@ -139,29 +146,34 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   //   setEditFormData(prevState => ({ ...prevState, [name]: value }));
   // };
 
+  
+
   return (
     <>
       <div className="flex h-10 justify-between items-center">
         <div className='flex gap-2 justify-center items-center font-semibold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex flex-col w-48" style={{ border: "1px solid #eee", padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
+          <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`,backgroundColor:`rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
           {/* Select Hub Modal */}
-          <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null}>
+          <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
             <div className="flex flex-col">
-              <div className="flex flex-wrap">
-                {hubData && hubData.map((option: Hub, index: number) => (
-                  <Space direction="vertical" key={index}>
-                    <div style={{ width: "100px", height: "100px", margin: "5px", border: "1px solid #eee", display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", borderRadius: "50%" }}>
-                      <div onClick={() => selectHubHandler(option.name, option._id)} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center" }}>
-                        <p>{option.cityCode}</p>
-                        <p>{option.name}</p>
-                      </div>
-                      {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div> */}
-                      <div style={{ cursor: "pointer" }}><EditOutlined /></div>
-                    </div>
-                  </Space>
-                ))}
+         
+               <div className="flex flex-wrap">
+      {hubData && hubData.map((option: Hub, index: number) => (
+        <Space direction="vertical" key={index}>
+          <div className={`card-hub `} >
+            <div onClick={() => selectHubHandler(option.name, option._id,borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center",borderColor: `rgb(${borderColors[index]})`,borderLeft:"3px solid #fff" }} className="progress-hub" >
+              <div className="text-hub">
+                <p>{option.cityCode}</p>
+                <p>{option.name}</p>
+                {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div> */}
+                <div style={{ cursor: "pointer" }}><EditOutlined /></div>
               </div>
+            </div>
+          </div>
+        </Space>
+      ))}
+    </div>
               <Button type="primary" onClick={showSecondModal}>Create New Hub</Button>
             </div>
           </Modal>

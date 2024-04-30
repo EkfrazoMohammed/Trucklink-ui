@@ -22,7 +22,6 @@ export const fetchOwnerData = createAsyncThunk(
     const response = await axios.get(
       "https://trucklinkuatnew.thestorywallcafe.com/api/owner"
     );
-    console.log(response);
     return response.data;
   }
 );
@@ -71,13 +70,11 @@ const onboardingSlice = createSlice({
     builder
       // Reducers for owner data
       .addCase(fetchOwnerData.pending, (state) => {
-        console.log(state)
         state.loading.owner = true;
         state.error.owner = "";
       })
       .addCase(fetchOwnerData.fulfilled, (state, action) => {
-        console.log(action)
-        state.ownerData = action.payload;
+       state.ownerData = action.payload;
         state.loading.owner = false;
         state.error.owner = "";
       })

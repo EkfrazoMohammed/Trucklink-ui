@@ -56,8 +56,6 @@ const OnboardingContainer = () => {
     setShowOwnerTable(false);
   };
   const [showTruckTable, setShowTruckTable] = useState(true);
-
-
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
   const handleEditTruckClick = (rowData) => {
     setRowDataForTruckEdit(rowData);
@@ -68,10 +66,8 @@ const OnboardingContainer = () => {
     setShowTruckTable(false);
   };
   const filterOwnerTableData = ownerData.filter(value => value.hubId === selectedHubId);
-  console.log(ownerData)
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchQuery2, setSearchQuery2] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState(filterOwnerTableData);
   // Update filteredOwnerData when selectedHubId changes
   useEffect(() => {
@@ -229,7 +225,7 @@ const OnboardingContainer = () => {
 
     const fetchBankDetails = (index) => {
       const bankAccount = formData.bankAccounts[index];
-      const { ifscCode } = bankAccount;   
+      const { ifscCode } = bankAccount;
       if (!ifscCode) {
         setMessage('Please fill IFSC code');
         return;
@@ -450,7 +446,7 @@ const OnboardingContainer = () => {
                 <h1>Bank {index + 1}</h1>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                   <Col className="gutter-row mt-2" span={8}>
-                    
+
                     <Search
                       name="ifscCode"
                       placeholder="Enter IFSC Code"
@@ -479,7 +475,7 @@ const OnboardingContainer = () => {
                   <Button onClick={() => handleRemoveBankAccount(index)} style={{ width: 200 }}>Remove Bank Account</Button>
                 )}
               </div>
-            ))}          
+            ))}
           </div>
           <div className="flex gap-4">
 
@@ -567,7 +563,7 @@ const OnboardingContainer = () => {
       </div>
     );
   };
-
+  // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
       <div className='flex gap-2 justify-between p-2'>
@@ -593,7 +589,7 @@ const OnboardingContainer = () => {
 
     );
   };
-  // Truck master
+
   const TruckMaster = () => {
     return (
       <>
@@ -614,9 +610,6 @@ const OnboardingContainer = () => {
       </>
     )
   }
-
-
-
   const TruckMasterForm = () => {
 
     const ownerIdSelect = filterOwnerTableData
@@ -800,8 +793,6 @@ const OnboardingContainer = () => {
     );
   };
 
-
-
   const ViewTruckDataRow = ({ filterTruckTableData }) => {
     return (
       <div className="owner-details">
@@ -821,6 +812,7 @@ const OnboardingContainer = () => {
     );
   };
 
+  // Master data
 
   const MasterData = () => {
     // State to store the list of materials
@@ -848,8 +840,9 @@ const OnboardingContainer = () => {
     const handleAddMaterial = async () => {
       try {
         // Post the new material type to the API
-        const payload={"materialType":materialType,
-        "hubId":selectedHubId
+        const payload = {
+          "materialType": materialType,
+          "hubId": selectedHubId
         }
         await axios.post('https://trucklinkuatnew.thestorywallcafe.com/api/material-type', payload);
         // Fetch updated materials
@@ -1037,7 +1030,66 @@ const OnboardingContainer = () => {
       </>
     );
   };
+  const [showTransferLogTable, setShowTransferLogTable] = useState(true);
+  const [rowDataForTransferLogEdit, setRowDataForTransferLogEdit] = useState(null);
+  const TransferLogHeader = () => {
+    return (
+      <div className='flex gap-2 justify-between p-2'>
 
+        <Search
+          placeholder="Search by Vehicle Number"
+          size='large'
+          onSearch={handleSearch}
+          style={{ width: 320 }}
+        />
+      </div>
+
+    );
+  };
+
+  const ViewTransferLogDataRow = ({ filterTruckTableData }) => {
+    return (
+      <div className="owner-details">
+
+        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowTruckTable(true) }} />
+        <div className="section mx-2 my-4">
+          <h2 className='font-semibold text-md'>Vehicle Information</h2>
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col className="gutter-row m-1" span={8}>
+              <p className='flex flex-col font-normal'><span className="label text-sm">Enter Truck details </span> </p>
+            </Col>
+
+          </Row>
+        </div>
+
+      </div>
+    );
+  };
+  const OwnerTransferLog = () => {
+    const [transferData, setTransferData] = useState([])
+    const getTransferDetails = async () => {
+      let response = await axios.get("https://trucklinkuatnew.thestorywallcafe.com/api/vehicle")
+        .then((res) => {
+          const filter = res.data.filter((value) => value.ownerTransferId);
+          setTransferData(filter);
+        }).catch((err) => {
+          console.log(err)
+        })
+
+
+    }
+    useEffect(() => {
+      getTransferDetails()
+    }, [])
+    return (
+      <>
+
+        <TransferLogHeader />
+        <TransferLogTable transferData={transferData} />
+
+      </>
+    )
+  }
 
 
   const items: TabsProps['items'] = [
@@ -1056,11 +1108,19 @@ const OnboardingContainer = () => {
       label: 'Master Data',
       children: <MasterData />,
     },
-
+    {
+      key: '4',
+      label: 'Owner Transfer log',
+      children: <OwnerTransferLog />,
+    },
+    {
+      key: '5',
+      label: 'Activity log',
+      children: <MasterData />,
+    },
   ];
 
   const OwnerTable = ({ filteredOwnerData, onEditClick }) => {
-    console.log(filteredOwnerData)
     useEffect(() => {
     }, [filteredOwnerData]);
 
@@ -1216,7 +1276,107 @@ const OnboardingContainer = () => {
     );
   };
 
+  const TransferLogTable = ({ transferData }) => {
+    console.log(transferData)
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    };
+
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+
+    // Extracting transferOwnerId values from transferData
+    // const transferOwnerIds = transferData.map(data => data.transferOwnerId);
+    // Extracting ownerTransferId values from transferData
+    const ownerTransferIds = transferData.map(data => data.ownerTransferId);
+
+    const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index: any) => index + 1,
+        width: 50,
+      },
+      {
+        title: 'Vehicle Number',
+        dataIndex: 'vehicleNumber',
+        key: 'vehicleNumber',
+        width: 80,
+      },
+      {
+        title: 'Transfer From (owner)',
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.ownerTransferId?.oldOwnerId?.name || 'N/A',
+        width: 100,
+      },
+
+      {
+        title: 'Transfer To (owner)',
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.ownerTransferId?.newOwnerId?.name,
+        width: 100,
+      },
+
+      {
+        title: 'Transfer From Date',
+        dataIndex: 'ownerTransferFromDate',
+        key: 'ownerTransferFromDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferFromDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 100,
+      },
+      {
+        title: 'Transfer To Date',
+        dataIndex: 'ownerTransferToDate',
+        key: 'ownerTransferToDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferToDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 100,
+      },
+    ];
+    return (
+      <>
+
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={ownerTransferIds}
+          scroll={{ x: 800, y: 320 }}
+          rowKey="_id"
+        />
+      </>
+    );
+  };
 
   return (
     <>

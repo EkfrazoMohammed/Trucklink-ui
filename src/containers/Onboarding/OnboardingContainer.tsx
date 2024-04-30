@@ -1091,7 +1091,11 @@ const OnboardingContainer = () => {
     )
   }
 
-
+  const ActivityContainer = () => {
+    return (
+      <div>ActivityContainer</div>
+    )
+  }
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -1116,10 +1120,13 @@ const OnboardingContainer = () => {
     {
       key: '5',
       label: 'Activity log',
-      children: <MasterData />,
+      children: <ActivityContainer />,
     },
   ];
 
+  
+ 
+  
   const OwnerTable = ({ filteredOwnerData, onEditClick }) => {
     useEffect(() => {
     }, [filteredOwnerData]);

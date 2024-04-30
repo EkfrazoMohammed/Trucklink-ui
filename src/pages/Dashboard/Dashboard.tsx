@@ -82,7 +82,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
   };
   return (
     <Layout style={{ minHeight: '90vh' }}>
-      <Sider style={{background:"radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%) !important"}} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
+      <Sider style={{background:"radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)"}} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
         className='flex justify-end items-center py-2 px-4 cursor-pointer'
@@ -96,7 +96,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
             margin: ".5rem 0"
           }}/>
           </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]}>
+        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]} >
           {items.map(item => (
             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)}>
               {item.label}

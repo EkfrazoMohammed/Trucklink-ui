@@ -346,3 +346,22 @@ margin: 0 auto;
 .card-hub:hover .text-hub {
   transform: translate(-50%, -50%) rotate(-160deg);
 }
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu {
+  color: rgba(255, 255, 255, 0.65) !important;
+  background: transparent !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-tabs .ant-tabs-tab:hover {
+  color: #000;
+}
+
+.ant-tabs-ink-bar {
+  height: 10px;
+  background: #FCD884 !important;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active {
+  border-bottom: 2px solid #FCD884 !important;
+  z-index: 2;
+}

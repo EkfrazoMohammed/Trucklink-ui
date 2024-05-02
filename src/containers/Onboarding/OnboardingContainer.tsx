@@ -47,6 +47,7 @@ const OnboardingContainer = () => {
   const handleAddOwnerClick = () => {
     setRowDataForEdit(null);
     setShowOwnerTable(false);
+    localStorage.setItem("displayHeader","none");
   };
 
 
@@ -311,6 +312,11 @@ const OnboardingContainer = () => {
         });
 
     };
+
+    const goBack=()=>{
+      setShowOwnerTable(true)
+      localStorage.setItem("displayHeader", "flex");
+    }
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -329,7 +335,7 @@ const OnboardingContainer = () => {
                 },
               ]}
             />
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowOwnerTable(true) }} />
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
@@ -409,7 +415,7 @@ const OnboardingContainer = () => {
               <div className="flex flex-col gap-1 bg-[#f6f6f6] p-4" key={index}>
                 <h1>Bank {index + 1}</h1>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Search
                       name="ifscCode"
                       placeholder="Enter IFSC Code"
@@ -422,16 +428,16 @@ const OnboardingContainer = () => {
                     />
                     {/* <Input placeholder="IFSC  Code*" size="large" name="ifscCode" value={bankAccount.ifscCode} onChange={(e) => handleBankAccountChange(index, e)} /> 
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Name*" size="large" name="bankName" value={bankDetail.BANK} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankDetail.BRANCH} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                 </Row>
@@ -445,7 +451,7 @@ const OnboardingContainer = () => {
               <div className="flex flex-col gap-1 bg-[#f6f6f6] p-4" key={index}>
                 <h1>Bank {index + 1}</h1>
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
 
                     <Search
                       name="ifscCode"
@@ -458,16 +464,16 @@ const OnboardingContainer = () => {
                       onSearch={() => fetchBankDetails(index)} // Pass index to fetchBankDetails
                     />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}>
+                  <Col className="gutter-row mt-2" span={5}>
                     <Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                 </Row>
@@ -498,26 +504,26 @@ const OnboardingContainer = () => {
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Owner Name</span> {rowData.name}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Email ID</span> {rowData.email}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowData.email}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">PAN CARD No</span> {rowData.name}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowData.name}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">District</span>  {rowData.district}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowData.district}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">State</span> {rowData.state}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowData.state}</p>
             </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Address</span> {rowData.address}</p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Address</span> {rowData.address}</p>
             </Col>
 
           </Row>
@@ -528,22 +534,24 @@ const OnboardingContainer = () => {
             <div key={index}>
               <h3>Bank Account {index + 1}</h3>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row m-1" span={5}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code:</span> {account.ifscCode}</p>
+                </Col>
+                <Col className="gutter-row m-1" span={5}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name:</span> {account.bankName}</p>
+                </Col>
+                <Col className="gutter-row m-1" span={5}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name:</span> {account.branchName}</p>
+                </Col>
+                <Col className="gutter-row m-1" span={5}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number:</span> {account.accountNumber}</p>
+                </Col>
+                <Col className="gutter-row m-1" span={8}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name:</span> {account.accountHolderName}</p>
+                </Col>
+              
+              
 
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Account Number:</span> {account.accountNumber}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Account Holder Name:</span> {account.accountHolderName}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Branch Name:</span> {account.branchName}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">IFSC Code:</span> {account.ifscCode}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Bank Name:</span> {account.bankName}</p>
-                </Col>
               </Row>
             </div>
           ))}
@@ -553,8 +561,8 @@ const OnboardingContainer = () => {
           {rowData.vehicleIds.map((vehicle, index) => (
             <div key={index}>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Vehicle No:</span> {vehicle.registrationNumber}</p>
+                <Col className="gutter-row m-1" span={5}>
+                  <p className='flex flex-col font-normal m-2'><span className="label text-sm">Vehicle No:</span> {vehicle.registrationNumber}</p>
                 </Col>
               </Row>
             </div>
@@ -747,7 +755,7 @@ const OnboardingContainer = () => {
                 </Col>
                 {formData.isCommission ? (
                   <>
-                    <Col className="gutter-row mt-6" span={8}>
+                    <Col className="gutter-row mt-6" span={5}>
                       <Input
                         placeholder="Enter Commission %*"
                         size="large"
@@ -759,7 +767,7 @@ const OnboardingContainer = () => {
                 ) : (
                   <></>
                   // <>
-                  //   <Col className="gutter-row mt-6" span={8}>
+                  //   <Col className="gutter-row mt-6" span={5}>
                   //     <Input
                   //       placeholder="Enter Market rate Commission %*"
                   //       size="large"
@@ -770,7 +778,7 @@ const OnboardingContainer = () => {
                   // </>
                 )}
 
-                <Col className="gutter-row mt-6" span={8}>
+                <Col className="gutter-row mt-6" span={5}>
                   <div>
                     RC Book*: {' '}
                     <Upload name="truckLinkCommission">
@@ -801,8 +809,8 @@ const OnboardingContainer = () => {
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Information</h2>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Enter Truck details </span> </p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Enter Truck details </span> </p>
             </Col>
 
           </Row>
@@ -1055,8 +1063,8 @@ const OnboardingContainer = () => {
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Information</h2>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Enter Truck details </span> </p>
+            <Col className="gutter-row m-1" span={5}>
+              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Enter Truck details </span> </p>
             </Col>
 
           </Row>

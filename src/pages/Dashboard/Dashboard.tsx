@@ -78,7 +78,8 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
     console.log("Logout clicked");
     
     setLogoutModalVisible(false);
-    navigate("/")
+    // navigate("/")
+    window.location.replace("/");
   };
   return (
     <Layout style={{ minHeight: '90vh' }}>

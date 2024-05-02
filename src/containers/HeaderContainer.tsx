@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store'; // Import RootState and AppDispatch from your Redux store
 import axios from "axios"
@@ -146,11 +146,12 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   //   setEditFormData(prevState => ({ ...prevState, [name]: value }));
   // };
 
-  
+  const localDisplay = localStorage.getItem("displayHeader");
+  console.log(localDisplay)
 
   return (
     <>
-      <div className="flex h-10 justify-between items-center">
+      <div className="flex h-10 justify-between items-center border-b-2" style={{display:`${localDisplay}`}}>
         <div className='flex gap-2 justify-center items-center font-semibold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
           <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`,backgroundColor:`rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
@@ -229,7 +230,6 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
           </div>
         </div>
       </div>
-      <hr />
     </>
   );
 }

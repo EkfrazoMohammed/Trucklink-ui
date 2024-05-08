@@ -1,8 +1,27 @@
+import { Tabs } from 'antd';
+import type { TabsProps } from 'antd';
+import Acknowledgement from './Acknowledgement';
+import ReceiveRegister from './ReceiveRegister';
 
-const ReceiveContainer = () => {
+const ReceiveContainer = () => {  
+  const items: TabsProps['items'] = [
+    {
+      key: '1',
+      label: 'Acknowledgement',
+      children: <Acknowledgement />,
+    },
+    {
+      key: '2',
+      label: 'ReceiveRegister',
+      children: <ReceiveRegister />,
+    }
+  ];
+
   return (
-    <div>ReceiveContainer</div>
-  )
-}
+    <>
+      <Tabs defaultActiveKey="1" items={items} />
+    </>
+  );
+};
 
-export default ReceiveContainer
+export default ReceiveContainer;

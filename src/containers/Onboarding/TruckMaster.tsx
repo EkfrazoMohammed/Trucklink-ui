@@ -1,33 +1,20 @@
 import { useState, useEffect } from 'react';
-import {API} from "../../API/apirequest"
-import {  DatePicker, Table, Input, Select, Space, Button, Upload,  Tooltip, Breadcrumb, Col,  Row,Switch } from 'antd';
-import axios from "axios"
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,PrinterOutlined,SwapOutlined   } from '@ant-design/icons';
-
+import type { DatePickerProps } from 'antd';
+import { DatePicker,Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row,Switch } from 'antd';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,SwapOutlined  } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
+import { API } from "../../API/apirequest"
+import debounce from 'lodash/debounce';
+import axios from 'axios';
 
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch } from '../../redux/store'; // Import RootState and AppDispatch from your Redux store
-import type { DatePickerProps } from 'antd';
-
-const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-  console.log(date, dateString);
-};
-import { fetchOwnerData, addOwnerDataAccount } from "./../../redux/reducers/onboardingReducer";
-interface RootState {
-  onboarding: {
-    ownerData: [];
-  };
-}
-
-const DispatchContainer = () => {
+  const TruckMaster = () => {
     
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
-  const [challanData, setchallanData] = useState([]);
+  const [filteredTruckData, setFilteredTruckData] = useState([]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -59,33 +46,66 @@ const DispatchContainer = () => {
    const [currentPage, setCurrentPage] = useState(1);
    const [currentPageSize, setCurrentPageSize] = useState(50);
     const [totalTruckData, setTotalTruckData] = useState(100)
-    
-    const getTableData = async () => {
+    const getOwnerData = async (searchQuery, page, limit,selectedHubID) => {
+      try {
+  
+        const pages = page;
+        // const limitData = limit ? limit : null;
+        
+        const limitData = 600;
+  
+        const searchData = searchQuery ? searchQuery : null;
+  
+        // this.setState({loading: true});
+        const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+          : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+        // const response = await axios.get(`${BASE_URL}get-owner-bank-details?page=${pages}&limit=50`) 
+        let ownerDetails;
+        if(response.data.ownerDetails.length == 0){
+          ownerDetails = response.data.ownerDetails
+          setFilteredOwnerData(ownerDetails);
+        }else{
+        
+        ownerDetails = response.data.ownerDetails[0].data || "";
+        if (ownerDetails && ownerDetails.length > 0) {
+          const arrRes = ownerDetails.sort(function (a, b) {
+            a = a.name.toLowerCase();
+            b = b.name.toLowerCase();
+  
+            return a < b ? -1 : a > b ? 1 : 0;
+          });
+          setFilteredOwnerData(arrRes);
+        }
+      }
+      } catch (err) {
+        console.log(err)
+  
+      }
+    };
+
+    const getTableData = async (searchQuery, page, limit,selectedHubID) => {
         try {
     
-        
+          const pages = page;
+          const limitData = limit ? limit : null;
     
           const searchData = searchQuery ? searchQuery : null;
     
        
-          const response = searchData ?  await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`)
-          : await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`);  
-          // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
-          // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
+          const response = searchData ?  await API.get(`get-vehicle-details?searchVehicleNumber=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+          : await API.get(`get-vehicle-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`);  
     
-          let allChallans;
-          console.log(response)
-      if(response.data.disptachData == 0){
-        allChallans = response.data.disptachData
-        setchallanData(allChallans);
+          let truckDetails;
+      if(response.data.truck == 0){
+        truckDetails = response.data.truck
+        setFilteredTruckData(truckDetails);
       }else{
       
-      allChallans = response.data.disptachData[0].data || "";
-      
-          setTotalTruckData(allChallans);
+      truckDetails = response.data.truck[0].data || "";
+          setTotalTruckData(response.data.truck[0].count);
     
-          if (allChallans && allChallans.length > 0) {
-            const arrRes = allChallans.sort(function (a, b) {
+          if (truckDetails && truckDetails.length > 0) {
+            const arrRes = truckDetails.sort(function (a, b) {
               a = a.
               registrationNumber.toLowerCase();
               b = b.
@@ -94,7 +114,7 @@ const DispatchContainer = () => {
               return a < b ? -1 : a > b ? 1 : 0;
             });
     
-            setchallanData(arrRes);
+            setFilteredTruckData(arrRes);
     
             return arrRes;
           }
@@ -107,59 +127,23 @@ const DispatchContainer = () => {
       };
   //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
-    getTableData();
+    getOwnerData(searchQuery, currentPage, currentPageSize,selectedHubId);
+    getTableData(searchQuery, currentPage, currentPageSize,selectedHubId);
   }, [searchQuery, currentPage, currentPageSize,selectedHubId]);
   
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
-      <div className='flex gap-2 flex-col justify-between p-2'>
+      <div className='flex gap-2 justify-between p-2'>
 
-<div className='flex gap-2'>
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
           onSearch={handleSearch}
           style={{ width: 320 }}
         />
-         <DatePicker onChange={onChange} placeholder='From date' /> -
-         <DatePicker onChange={onChange}  placeholder='To date'/>
-         <Select
-                    name="materialType"
-                    placeholder="Material Type*"
-                    size="large"
-                    style={{width:"20%"}}
-                    options={[
-                      { value: 'cement', label: 'cement' },
-                      { value: 'flyash', label: 'flyash' },
-                    ]}
-                    onChange={(value) => handleChange('materialType', value)}
-                  />
-                  <Select
-                    name="truckType"
-                    placeholder="Truck Type*"
-                    size="large"
-                    style={{width:"20%"}}
-                    options={[
-                      { value: 'open', label: 'Open' },
-                      { value: 'bulk', label: 'Bulk' },
-                    ]}
-                    onChange={(value) => handleChange('vehicleType', value)}
-                  />
-
-                  </div>
-        <div className='flex gap-2 justify-end'>
-        <Upload>
-            <Button icon={<UploadOutlined />}></Button>
-          </Upload>
-          
-          <Upload>
-            <Button icon={<DownloadOutlined />}></Button>
-          </Upload>
-          <Upload>
-            <Button icon={<PrinterOutlined />}></Button>
-          </Upload>
-          <Button  onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
+        <div className='flex gap-2'>
+          <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> ADD TRUCK</Button>
         </div>
       </div>
 
@@ -245,204 +229,137 @@ const DispatchContainer = () => {
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Create Challan</h1>
+            <h1 className="text-xl font-bold">Create Truck</h1>
             {/* Breadcrumb component */}
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
 
           </div>
           <div className="flex flex-col gap-1">
-            <div className="flex gap-1 justify-between">
-              <div>
-
-              <div className="text-md font-semibold">Challan Details</div>
-              <div className="text-md font-normal">Enter Challan Details</div>
-              </div>
-              <div className='flex gap-2'>
-              Market Rate
-              <Switch
-                      defaultChecked={formData.isCommission}
-                      name="isCommission"
-                      onChange={(checked) => handleChange('isCommission', checked)}
-                      />
-                      </div>
+            <div className="flex flex-col gap-1">
+              <div className="text-md font-semibold">Vehicle Information</div>
+              <div className="text-md font-normal">Enter Truck Details</div>
             </div>
 
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
-                <Select
-                    name="materialType"
-                    placeholder="Material Type*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'cement', label: 'Cement' },
-                      { value: 'others', label: 'Others' },
-                    ]}
-                    onChange={(value) => handleChange('materialType', value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
+                <Col className="gutter-row mt-6" span={8}>
                   <Input
-                  type="text"
-                    name="grNumber"
-                    placeholder="grNumber*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    
-                    onChange={(value) => handleChange('vehicleType', value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-
-                  <DatePicker placeholder='GR Date' size="large" style={{width:"100%"}} />
-
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-
-                <Select
-                    name="loadedFrom"
-                    placeholder="Loaded From*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'bengaluru', label: 'bengaluru' },
-                      { value: 'pune', label: 'pune' },
-                    ]}
-                    onChange={(value) => handleChange('loadedFrom', value)}
-                  />
-
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
-                <Select
-                    name="deliverTo"
-                    placeholder="Deliver To*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'chennai', label: 'chennai' },
-                      { value: 'nashik', label: 'nashik' },
-                    ]}
-                    onChange={(value) => handleChange('deliverTo', value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <Select
-                    name="vehicleNumber"
                     placeholder="Vehicle Number*"
                     size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'KA01AB1234', label: 'KA01AB1234' },
-                      { value: 'KA01AB1234', label: 'KA01AB1234' },
-                    ]}
-                    onChange={(value) => handleChange('vehicleNumber', value)}
+                    name="registrationNumber"
+                    onChange={(e) => handleChange('registrationNumber', e.target.value)}
                   />
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
-
-                <Select
+                <Col className="gutter-row mt-6" span={8}>
+                  <Select
                     name="vehicleType"
                     placeholder="Vehicle Type*"
                     size="large"
                     style={{ width: '100%' }}
-                    value="open"
-                    disabled
-                    onChange={(value) => handleChange('vehicleNumber', value)}
+                    options={[
+                      { value: 'open', label: 'Open' },
+                      { value: 'bulk', label: 'Bulk' },
+                    ]}
+                    onChange={(value) => handleChange('vehicleType', value)}
                   />
-                  
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+
+                  <Select
+                    size='large'
+                    placeholder="Owner Mobile Number"
+                    style={{ width: '100%' }}
+                    name="ownerId"
+                    onChange={(value) => handleChange('ownerId', value)}
+                  >
+                    {filteredOwnerData.map((owner, index) => (
+                      <Option key={index} value={owner._id}>
+                        {`${owner.name} - ${owner.phoneNumber}`}
+                      </Option>
+                    ))}
+                  </Select> 
 
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
+                <Col className="gutter-row mt-6" span={8}>
 
-                <Input
-                    placeholder="DeliveryNumber*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
-                <Input
-                    placeholder="Quantity (M/T)*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                <Input
-                    placeholder="Company Rate*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-                </Col>
-                
-                <Col className="gutter-row mt-6" span={6}>
-{formData.isCommission ? <>
-  <Input
-                    placeholder="Market Rate Rs*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-</>:<></>}
+                  {/* <Select
+    size='large'
+    placeholder="Select bank account"
+    style={{ width: '100%' }}
+    name="accountId"
+    onChange={(value) => handleChange('accountId', value.target.value)}
+>
+    {filteredOwnerData.map((acc, index) => (
+        acc['accountIds'].map((v, i) => (
+            <Option key={v._id} value={v._id}> 
+                {`${v.bankName} - ${v.accountNumber}`}
+            </Option>
+        ))
+    ))}
+</Select> */}
+
+<Select
+  size='large'
+  placeholder="Select bank account"
+  style={{ width: '100%' }}
+  name="accountId"
+  onChange={(value) => handleChange('accountId', value)}
+>
+  {filteredOwnerData.map((acc, index) => (
+    acc['accountIds'].map((v, i) => (
+      <Option key={v._id} value={v._id}> 
+        {`${v.bankName} - ${v.accountNumber}`}
+      </Option>
+    ))
+  ))}
+</Select>
 
                 </Col>
-              </Row>
+                <Col className="gutter-row mt-6" span={8}>
+                  <div>
+                    RC Book*: {' '}
+                    <Upload name="rcBook">
+                      <Button icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                  </div>
+                </Col>
 
+                <Col className="gutter-row mt-6 flex gap-2" span={8}>
+                  <div>
+                  {formData.isCommission ? <>Commission %*</>:<>Market Rate (Rs)*</>} 
+                    <Switch
+                      defaultChecked={formData.isCommission}
+                      name="isCommission"
+                      onChange={(checked) => handleChange('isCommission', checked)}
+                    />
+                  </div>
               
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div className="flex gap-1 justify-between">
-              <div>
-
-              <div className="text-md font-semibold">Load Trip Expense Details</div>
-              <div className="text-md font-normal">Enter Trip Details</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-2" span={6}>
-                <Input
-                    placeholder="Diesel*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-2" span={6}>
+                {formData.isCommission ? (
+                  <>
+                      <Input
+                        placeholder="Enter Commission %*"
+                        size="large"
+                        name="commission"
+                        onChange={(e) => handleChange('commission', e.target.value)}
+                      />
+                  </>
+                ) : (
+                  <>
                   <Input
-                    placeholder="Cash*"
-                    size="large"
-                    name="cash"
-                    onChange={(e) => handleChange('cash', e.target.value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-2" span={6}>
-                <Input
-                    placeholder="Bank Transfer*"
-                    size="large"
-                    name="bankTransfer"
-                    onChange={(e) => handleChange('bankTransfer', e.target.value)}
-                  />
-
-                </Col>
+                        placeholder="Enter Market Rate"
+                        size="large"
+                        name="commission"
+                        onChange={(e) => handleChange('commission', e.target.value)}
+                      />
+                  </>         
+                )}
+</Col>
               </Row>
-
-              
             </div>
           </div>
+
           <div className="flex gap-4">
-            <Button>Reset</Button>
+            <Button onClick={() => setShowOwnerTable(true)}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>
@@ -531,7 +448,7 @@ const DispatchContainer = () => {
     <>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold">Edit Challan</h1>
+          <h1 className="text-xl font-bold">Edit Truck</h1>
           {/* Breadcrumb component */}
           <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
 
@@ -627,7 +544,7 @@ const DispatchContainer = () => {
   const [showTransferForm, setShowTransferForm] = useState(false);
  
   const TruckTable = ({  onEditTruckClick,onTransferTruckClick }) => {
-    console.log(challanData)
+    console.log(filteredTruckData)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -647,88 +564,39 @@ const DispatchContainer = () => {
         key: 'serialNumber',
         render: (text, record, index: any) => index + 1,
         width: 80,
-        
-        fixed: 'left',
       },
       {
-        title: 'materialType',
-        dataIndex: 'materialType',
-        key: 'materialType',
-        width: 180,
+        title: 'Vehicle Number',
+        dataIndex: 'registrationNumber',
+        key: 'registrationNumber',
+        width: 80,
       },
       {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
+        title: 'Vehicle Type',
+        dataIndex: 'truckType',
+        key: 'truckType',
+        width: 80,
       },
+      // {
+      //   title: 'Owner Number',
+      //   dataIndex: 'phoneNumber',
+      //   key: 'phoneNumber',
+      //   width: 80,
+      // },
       {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryLocation',
-        dataIndex:  'deliveryLocation',
-        key:  'deliveryLocation',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'materialType',
-        dataIndex: 'materialType',
-        key: 'materialType',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryLocation',
-        dataIndex:  'deliveryLocation',
-        key:  'deliveryLocation',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
+        title: 'Commission %',
+        dataIndex: 'commission',
+        key: 'commission',
+        width: 80,
       },
       {
         title: 'Action',
         key: 'action',
         width: 80,
-        fixed:'right',
         render: (record: unknown) => (
           <Space size="middle">
+            <Tooltip placement="top" title="Transfer"><a onClick={()=>handleTransferTruckClick(record)}><SwapOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Preview"><a onClick={() => onEditTruckClick(record)}><EyeOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
           </Space>
@@ -743,7 +611,7 @@ const DispatchContainer = () => {
           setCurrentPage(pageNumber);
           setCurrentPageSize(pageSize);
           const newData = await getTableData(searchQuery, pageNumber, pageSize,selectedHubId);
-          setchallanData(newData);
+          setFilteredTruckData(newData);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -754,7 +622,7 @@ const DispatchContainer = () => {
           setCurrentPage(pageNumber);
           setCurrentPageSize(pageSize);
           const newData = await getTableData(searchQuery, pageNumber, pageSize,selectedHubId);
-          setchallanData(newData);
+          setFilteredTruckData(newData);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
@@ -766,11 +634,11 @@ const DispatchContainer = () => {
          <Table
           rowSelection={rowSelection}
           columns={columns}
-        //   dataSource={challanData.map(truck => ({
+        //   dataSource={filteredTruckData.map(truck => ({
         //     ...truck,
         //     phoneNumber: truck.ownerId[0].phoneNumber // Assuming ownerId contains only one object
         // }))}
-        dataSource={challanData}
+        dataSource={filteredTruckData}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
@@ -990,4 +858,5 @@ const DispatchContainer = () => {
   }
   
 
-export default DispatchContainer
+  
+  export default TruckMaster

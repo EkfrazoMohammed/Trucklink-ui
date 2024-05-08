@@ -79,6 +79,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
     
     setLogoutModalVisible(false);
     // navigate("/")
+    localStorage.removeItem('token');
     window.location.replace("/");
   };
   return (

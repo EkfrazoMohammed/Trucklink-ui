@@ -1,0 +1,237 @@
+
+# 1 get all owner details
+https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-vehicle-details?page=1&limit=50&hubId=6634de2e2588845228b2dbe4
+{
+    "truck": [
+        {
+            "count": 1,
+            "data": [
+                {
+                    "_id": "6639e75cdbd783425cc39008",
+                    "isActive": true,
+                    "truckType": "open",
+                    "driverCountryCode": "+91",
+                    "commission": 3,
+                    "marketRate": 1000,
+                    "isMarketRate": true,
+                    "registrationNumber": "KA03AB1234",
+                    "ownerId": [
+                        {
+                            "_id": "66389562be0f5409f9651e8e",
+                            "countryCode": "+91",
+                            "vehicleIds": [
+                                "6639e75cdbd783425cc39008"
+                            ],
+                            "accountIds": [
+                                "66389562be0f5409f9651e91"
+                            ],
+                            "name": "may",
+                            "email": "may@gmail.com",
+                            "phoneNumber": "5545545646",
+                            "panNumber": "MAY",
+                            "address": "Bangalore",
+                            "district": "Agatti",
+                            "state": "Lakshadweep (UT)",
+                            "hubId": "6634de2e2588845228b2dbe4",
+                            "oldVehicleDetails": [],
+                            "vehicleDetails": [],
+                            "createdAt": "2024-05-06T08:31:30.460Z",
+                            "modifiedAt": "2024-05-06T08:31:30.460Z",
+                            "__v": 0
+                        }
+                    ],
+                    "accountId": [
+                        {
+                            "_id": "66389562be0f5409f9651e91",
+                            "accountNumber": "may",
+                            "accountHolderName": "may",
+                            "ifscCode": "may",
+                            "bankName": "may",
+                            "branchName": "may",
+                            "ownerId": "66389562be0f5409f9651e8e",
+                            "createdAt": "2024-05-06T08:31:30.523Z",
+                            "modifiedAt": "2024-05-06T08:31:30.523Z",
+                            "__v": 0
+                        }
+                    ],
+                    "hubId": "6634de2e2588845228b2dbe4",
+                    "createdAt": "2024-05-07T08:33:32.271Z",
+                    "modifiedAt": "2024-05-07T08:33:32.271Z",
+                    "__v": 0
+                }
+            ]
+        }
+    ],
+    "message": "Successfully retrived users informations"
+}
+
+# 2 get individual owner details
+
+http://localhost:3000/prod/v1/get-owner-bank-details/5ebd33d2bda0d60011efab9d
+
+{
+    "ownerDetails": [
+        {
+            "countryCode": "+91",
+            "vehicleIds": [
+                "5ebd7a7ebda0d60011efabcf",
+                "5ebd7aa0bda0d60011efabd0",
+                "5f0863324d22470535d1046f",
+                "60169227f0de0b03a59acb64"
+            ],
+            "accountIds": [
+                {
+                    "_id": "5ebd33d2bda0d60011efab9e",
+                    "accountNumber": "64213588710",
+                    "accountHolderName": "Syed Nadeem Raza",
+                    "ifscCode": "SBIN0040228",
+                    "bankName": "State Bank of India",
+                    "branchName": "Thondebhavi",
+                    "ownerId": "5ebd33d2bda0d60011efab9d",
+                    "createdAt": "2020-05-14T12:04:34.774Z",
+                    "modifiedAt": "2020-05-14T12:04:34.774Z",
+                    "__v": 0
+                }
+            ],
+            "_id": "5ebd33d2bda0d60011efab9d",
+            "name": "Syed Nadeem Raza",
+            "phoneNumber": "7676493816",
+            "state": "Karnataka",
+            "createdAt": "2020-05-14T12:04:34.320Z",
+            "modifiedAt": "2020-05-14T12:04:34.320Z",
+            "__v": 0,
+            "oldVehicleDetails": [],
+            "vehicleDetails": []
+        }
+    ],
+    "message": "Successfully retrived user informations"
+}
+
+
+# 3 UPDATE the mobile number and ownerID,userId
+Request URL:
+`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
+
+https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/6639e75cdbd783425cc39008/5ebe930dbda0d60011efac24
+Request Method:
+PUT
+//payload :
+{
+    accountId: "6634ca18f88be2601477c21b",
+commission: 5,
+driverName: "aa",
+driverPhoneNumber: "1231231234",
+ownerId: "6634ca18f88be2601477c217",
+ownerTransferDate: 1554114613959,
+ownerTransferFromDate: "",
+phoneNumber: "6634ca18f88be2601477c217",
+rcBookProof: null,
+registrationNumber: "KA03AB1234",
+transferDate: "2024-05-07T10:33:29.917Z",
+truckType: "open",
+userId:"5ebb92dccbfb5400119fcb4a"
+}
+
+//response :
+{
+    "user": {
+        "isActive": true,
+        "truckType": "open",
+        "driverCountryCode": "+91",
+        "commission": 5,
+        "marketRate": 1000,
+        "isMarketRate": true,
+        "_id": "6639e75cdbd783425cc39008",
+        "registrationNumber": "KA03AB1234",
+        "ownerId": "6634ca18f88be2601477c217",
+        "accountId": "6634ca18f88be2601477c21b",
+        "hubId": "6634de2e2588845228b2dbe4",
+        "createdAt": "2024-05-07T08:33:32.271Z",
+        "modifiedAt": "2024-05-07T10:33:34.889Z",
+        "__v": 0,
+        "driverName": "aa",
+        "driverPhoneNumber": "1231231234",
+        "rcBookProof": null
+    },
+    "message": "Successfully updated user informations"
+}
+
+#4 return all updated users information
+
+Request URL:
+https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-vehicle-details?page=1&limit=50&hubId=6634de2e2588845228b2dbe4
+Request Method:
+GET
+{
+    "truck": [
+        {
+            "count": 1,
+            "data": [
+                {
+                    "_id": "6639e75cdbd783425cc39008",
+                    "isActive": true,
+                    "truckType": "open",
+                    "driverCountryCode": "+91",
+                    "commission": 5,
+                    "marketRate": 1000,
+                    "isMarketRate": true,
+                    "registrationNumber": "KA03AB1234",
+                    "ownerId": [
+                        {
+                            "_id": "5ebd33d2bda0d60011efab9d",
+                            "countryCode": "+91",
+                            "vehicleIds": [
+                                "5ebd7a7ebda0d60011efabcf",
+                                "5ebd7aa0bda0d60011efabd0",
+                                "5f0863324d22470535d1046f",
+                                "60169227f0de0b03a59acb64",
+                                "6639e75cdbd783425cc39008"
+                            ],
+                            "accountIds": [
+                                "5ebd33d2bda0d60011efab9e"
+                            ],
+                            "name": "Syed Nadeem Raza",
+                            "phoneNumber": "7676493816",
+                            "state": "Karnataka",
+                            "createdAt": "2020-05-14T12:04:34.320Z",
+                            "modifiedAt": "2020-05-14T12:04:34.320Z",
+                            "__v": 0,
+                            "vehicleDetails": [
+                                {
+                                    "isOwnerTransfer": true,
+                                    "_id": "6639f462dbd783425cc39088",
+                                    "vehicleIds": "6639e75cdbd783425cc39008",
+                                    "ownerTransferDate": "2024-05-01T00:00:00.000Z",
+                                    "ownerId": "5ebd33d2bda0d60011efab9d",
+                                    "ownerTransferFromDate": null
+                                }
+                            ]
+                        }
+                    ],
+                    "accountId": [
+                        {
+                            "_id": "5ebd33d2bda0d60011efab9e",
+                            "accountNumber": "64213588710",
+                            "accountHolderName": "Syed Nadeem Raza",
+                            "ifscCode": "SBIN0040228",
+                            "bankName": "State Bank of India",
+                            "branchName": "Thondebhavi",
+                            "ownerId": "5ebd33d2bda0d60011efab9d",
+                            "createdAt": "2020-05-14T12:04:34.774Z",
+                            "modifiedAt": "2020-05-14T12:04:34.774Z",
+                            "__v": 0
+                        }
+                    ],
+                    "hubId": "6634de2e2588845228b2dbe4",
+                    "createdAt": "2024-05-07T08:33:32.271Z",
+                    "modifiedAt": "2024-05-07T09:29:06.074Z",
+                    "__v": 0,
+                    "driverName": "aa",
+                    "driverPhoneNumber": "1231231234",
+                    "rcBookProof": null
+                }
+            ]
+        }
+    ],
+    "message": "Successfully retrived users informations"
+}

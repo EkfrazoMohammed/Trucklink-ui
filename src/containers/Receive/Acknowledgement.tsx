@@ -27,7 +27,7 @@ const Acknowledgement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
-    const [challanData, setchallanData] = useState([]);
+    const [acknowledgement, setAcknowledgement] = useState([]);
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value);
@@ -36,7 +36,7 @@ const Acknowledgement = () => {
     const handleEditTruckClick = (rowData) => {
         console.log(rowData)
     };
-   
+
 
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,33 +46,29 @@ const Acknowledgement = () => {
     const getTableData = async () => {
         try {
             const searchData = searchQuery ? searchQuery : null;
-            const response = searchData ? await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`)
-                : await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`);
+            const response = searchData ? await axios.get(`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-acknowledgement-register?page=1&limit=50`)
+                : await axios.get(`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-acknowledgement-register?page=1&limit=50`);
             // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
             // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
 
-            let allChallans;
-            console.log(response)
-            if (response.data.disptachData == 0) {
-                allChallans = response.data.disptachData
-                setchallanData(allChallans);
+            let allAcknowledgement;
+            if (response.data.dispatchData.length == 0) {
+                allAcknowledgement = response.data.disptachData
+                console.log(allAcknowledgement)
+                setAcknowledgement(allAcknowledgement);
             } else {
+                allAcknowledgement = response.data.dispatchData[0].data || "";
+                setTotalTruckData(allAcknowledgement);
 
-                allChallans = response.data.disptachData[0].data || "";
-
-                setTotalTruckData(allChallans);
-
-                if (allChallans && allChallans.length > 0) {
-                    const arrRes = allChallans.sort(function (a, b) {
-                        a = a.
-                            registrationNumber.toLowerCase();
-                        b = b.
-                            registrationNumber.toLowerCase();
+                if (allAcknowledgement && allAcknowledgement.length > 0) {
+                    const arrRes = allAcknowledgement.sort(function (a, b) {
+                        a = a.vehicleNumber.toLowerCase();
+                        b = b.vehicleNumber.toLowerCase();
 
                         return a < b ? -1 : a > b ? 1 : 0;
                     });
 
-                    setchallanData(arrRes);
+                    setAcknowledgement(arrRes);
 
                     return arrRes;
                 }
@@ -112,7 +108,27 @@ const Acknowledgement = () => {
     };
 
     const TruckTable = ({ onEditTruckClick }) => {
-        console.log(challanData)
+        // Given date string
+        const grDate = "06/04/2024";
+
+        // Parse the given date string into a Date object
+        const givenDate = new Date(grDate);
+
+        // Get today's date
+        const today = new Date();
+        console.log("today=>", today)
+
+        // Calculate the difference in milliseconds between the given date and today's date
+        const differenceInMs = today - givenDate;
+        console.log("differenceInMs", differenceInMs)
+
+        // Convert the difference from milliseconds to days
+        const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+        console.log(differenceInDays, "differenceInDays")
+
+        console.log("Number of days over till today's date:", differenceInDays);
+
+        console.log(acknowledgement)
         const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
         const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -136,17 +152,40 @@ const Acknowledgement = () => {
                 fixed: 'left',
             },
             {
-                title: 'materialType',
-                dataIndex: 'materialType',
-                key: 'materialType',
-                width: 180,
+                title: 'Ageing',
+                dataIndex: 'ageing',
+                key: 'ageing',
+                width: 80,
+                fixed: 'left',
+                render: (_, record) => {
+                  const givenDate = new Date(record.grISODate);
+                  const today = new Date();
+                 const differenceInMs = today - givenDate;
+                  const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+                
+    let backgroundColor;
+    if (differenceInDays < 10) {
+      backgroundColor = 'green';
+    } else if (differenceInDays < 20) {
+      backgroundColor = 'yellow';
+    } else if (differenceInDays >= 30) {
+      backgroundColor = 'red';
+    } else {
+      backgroundColor = 'inherit'; // Default background color
+    }
+  
+    return (
+      <span style={{ backgroundColor, }}>{differenceInDays}</span>
+    );
+              },
             },
             {
-                title: 'grNumber',
-                dataIndex: 'grNumber',
-                key: 'grNumber',
-                width: 180,
+                title: 'GR Date',
+                dataIndex: 'grDate',
+                key: 'grDate',
+                width: 120,
             },
+
             {
                 title: 'deliveryNumber',
                 dataIndex: 'deliveryNumber',
@@ -228,7 +267,7 @@ const Acknowledgement = () => {
                 setCurrentPage(pageNumber);
                 setCurrentPageSize(pageSize);
                 const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setchallanData(newData);
+                setAcknowledgement(newData);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -239,7 +278,7 @@ const Acknowledgement = () => {
                 setCurrentPage(pageNumber);
                 setCurrentPageSize(pageSize);
                 const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setchallanData(newData);
+                setAcknowledgement(newData);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -251,11 +290,7 @@ const Acknowledgement = () => {
                 <Table
                     rowSelection={rowSelection}
                     columns={columns}
-                    //   dataSource={challanData.map(truck => ({
-                    //     ...truck,
-                    //     phoneNumber: truck.ownerId[0].phoneNumber // Assuming ownerId contains only one object
-                    // }))}
-                    dataSource={challanData}
+                    dataSource={acknowledgement}
                     scroll={{ x: 800, y: 320 }}
                     rowKey="_id"
                     pagination={{

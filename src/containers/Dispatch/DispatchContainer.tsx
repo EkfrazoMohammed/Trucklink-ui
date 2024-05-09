@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {API} from "../../API/apirequest"
-import {  DatePicker, Table, Input, Select, Space, Button, Upload,  Tooltip, Breadcrumb, Col,  Row,Switch } from 'antd';
+import {  DatePicker, Table, Input, Select, Space, Button, Upload,  Tooltip, Breadcrumb, Col,  Row,Switch,Image } from 'antd';
 import axios from "axios"
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,PrinterOutlined,SwapOutlined   } from '@ant-design/icons';
 
@@ -68,10 +68,10 @@ const DispatchContainer = () => {
           const searchData = searchQuery ? searchQuery : null;
     
        
-          const response = searchData ?  await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`)
-          : await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`);  
-          // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
-          // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
+          // const response = searchData ?  await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`)
+          // : await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`);  
+          const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
+          : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);  
     
           let allChallans;
           console.log(response)
@@ -661,6 +661,15 @@ const DispatchContainer = () => {
         dataIndex: 'grNumber',
         key: 'grNumber',
         width: 180,
+      },
+      { 
+        title: 'Invoice Proof', 
+        dataIndex: 'invoiceProof', 
+        key: 'invoiceProof',
+        width: 80, 
+        render: invoiceProof => (
+          invoiceProof ? <Image src={invoiceProof} alt="Defect Image" width={50} /> : null
+        )
       },
       {
         title: 'deliveryNumber',

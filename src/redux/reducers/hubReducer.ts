@@ -2,12 +2,17 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
+// interface HubData {
+//   _id?: string;
+//   name: string;
+//   cityCode: string;
+//   district: string;
+//   state: string;
+// }
 interface HubData {
   _id?: string;
-  name: string;
-  cityCode: string;
-  district: string;
-  state: string;
+  location: string;
+
 }
 
 interface PostHubResponse {
@@ -27,7 +32,7 @@ interface UpdateHubDataPayload {
 // Async thunk action for fetching hub data
 export const fetchHubData = createAsyncThunk("hub/fetchHubData", async () => {
   const response = await axios.get(
-    "https://trucklinkuatnew.thestorywallcafe.com/api/hubs"
+    "http://localhost:3000/prod/v1/get-hubs"
   );
   return (response as FetchHubDataResponse).data;
 });
@@ -37,7 +42,7 @@ export const postHubData = createAsyncThunk(
   "hub/postHubData",
   async (hubData: HubData) => {
     const response = await axios.post<PostHubResponse>(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/hubs",
+      "http://localhost:3000/prod/v1/create-hub",
       hubData
     );
     return response.data;

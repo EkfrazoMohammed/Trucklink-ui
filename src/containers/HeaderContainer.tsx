@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store'; // Import RootState and AppDispatch from your Redux store
 import axios from "axios"
@@ -7,12 +7,11 @@ import { setSelectedHub, fetchHubData } from '../redux/reducers/hubReducer';
 import { EditOutlined, DownOutlined } from '@ant-design/icons';
 import { Modal, Button, List, Avatar, Badge, Dropdown, Input, Space } from "antd";
 import Profile_image from "../assets/Profile.png";
+import {API} from "../API/apirequest"
 interface Hub {
   _id: string;
-  name: string;
-  cityCode: string;
-  district: string;
-  state: string;
+  location: string;
+  
 }
 
 interface RootState {
@@ -34,10 +33,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   //   state: ''
   // });
   const [hubFormData, setHubFormData] = useState({
-    name: '',
-    cityCode: '',
-    district: '',
-    state: ''
+    location:""
   });
   // background: rgba(255, 182, 40, 1);
 
@@ -46,7 +42,8 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   const getHubColor=localStorage.getItem("selectedHubColor")
 
 
-  const hubData = useSelector((state: RootState) => state.hub.hubData);
+  // const hubData = useSelector((state: RootState) => state.hub.hubData);
+  const [hubData,setHubData]=useState([])
 
   // Define a custom typed useDispatch hook
   const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -55,8 +52,19 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(fetchHubData());
-  }, [dispatch]);
+    const fetchHubData = async () => {
+      const response = await API.get("get-hubs");
+      if(response.status === 201) {
+        setHubData(response.data.hubs)
+      }else{
+        console.log("error fetching hubs")
+      }
+      // console.log()
+      return response.data;
+    };
+    fetchHubData();
+    // dispatch(fetchHubData());
+  }, []);
 
   const showModal = () => {
     setModalVisible(true);
@@ -91,7 +99,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     setModalVisible(false);
     setSecondModalVisible(false);
   }
-
+  
   const selectHubHandler = (value: string, id: string,color:string) => {
     dispatch(setSelectedHub(value));
     localStorage.setItem("selectedHubID", id);
@@ -99,16 +107,17 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
   };
-
+  
+  
   // const handleEdit = (hubId: string) => {
-  //   const selectedHub = hubData.find((hub: any) => hub._id === hubId);
-  //   if (selectedHub) {
-  //     setEditFormData({
-  //       name: selectedHub.name,
-  //       cityCode: selectedHub.cityCode,
-  //       district: selectedHub.district,
-  //       state: selectedHub.state
-  //     });
+    //   const selectedHub = hubData.find((hub: any) => hub._id === hubId);
+    //   if (selectedHub) {
+      //     setEditFormData({
+        //       name: selectedHub.name,
+        //       cityCode: selectedHub.cityCode,
+        //       district: selectedHub.district,
+        //       state: selectedHub.state
+        //     });
   //     setThirdModalVisible(true);
   //   }
   // };
@@ -125,8 +134,8 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
       // const response: any = action.payload; // Using 'any' type
       // console.log(response)
 
-      const response = await axios.post("https://trucklinkuatnew.thestorywallcafe.com/api/hubs", hubFormData)
-      if (response && response.data.message == "Hub has been created successfully") {
+      const response = await axios.post("http://localhost:3000/prod/v1/create-hub", hubFormData)
+      if (response.status==201) {
         setSecondModalVisible(false);
         showConfirmModal();
         setTimeout(() => {
@@ -146,11 +155,11 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   //   setEditFormData(prevState => ({ ...prevState, [name]: value }));
   // };
 
-  
+  const localDisplay = localStorage.getItem("displayHeader");
 
   return (
     <>
-      <div className="flex h-10 justify-between items-center">
+      <div className="flex h-10 justify-between items-center border-b-2" style={{display:`flex`}}>
         <div className='flex gap-2 justify-center items-center font-semibold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
           <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`,backgroundColor:`rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
@@ -159,19 +168,19 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
             <div className="flex flex-col">
          
                <div className="flex flex-wrap">
-      {hubData && hubData.map((option: Hub, index: number) => (
+    {hubData && hubData.map((option, index: number) => (
         <Space direction="vertical" key={index}>
           <div className={`card-hub `} >
-            <div onClick={() => selectHubHandler(option.name, option._id,borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center",borderColor: `rgb(${borderColors[index]})`,borderLeft:"3px solid #fff" }} className="progress-hub" >
+            <div onClick={() => selectHubHandler(option.location, option._id,borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center",borderColor: `rgb(${borderColors[index]})`,borderLeft:"3px solid #fff" }} className="progress-hub" >
               <div className="text-hub">
-                <p>{option.cityCode}</p>
-                <p>{option.name}</p>
-                {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div> */}
-                <div style={{ cursor: "pointer" }}><EditOutlined /></div>
+                {/* <p>{option.cityCode}</p> */}
+                <p>{option.location}</p>
+                 {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div>  */}
+                <div style={{ cursor: "pointer" }}><EditOutlined /></div> 
               </div>
             </div>
           </div>
-        </Space>
+        </Space> 
       ))}
     </div>
               <Button type="primary" onClick={showSecondModal}>Create New Hub</Button>
@@ -181,10 +190,10 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
           <Modal title="Create a Hub" visible={secondModalVisible} onCancel={handleSecondCancel} footer={null}>
             {errorMessage && <span style={{ color: "red" }}>{errorMessage}</span>}
             <div>
-              <Input size="large" placeholder="Enter Hub Location Name" className='mb-2 p-2' name="name" value={hubFormData.name} onChange={handleInputChange} />
-              <Input size="large" placeholder="Enter City Code" className='mb-2 p-2' name="cityCode" value={hubFormData.cityCode} onChange={handleInputChange} />
+              <Input size="large" placeholder="Enter Hub Location Name" className='mb-2 p-2' name="location" value={hubFormData.location} onChange={handleInputChange} />
+              {/* <Input size="large" placeholder="Enter City Code" className='mb-2 p-2' name="cityCode" value={hubFormData.cityCode} onChange={handleInputChange} />
               <Input size="large" placeholder="Enter District" className='mb-2 p-2' name="district" value={hubFormData.district} onChange={handleInputChange} />
-              <Input size="large" placeholder="Enter State" className='mb-2 p-2' name="state" value={hubFormData.state} onChange={handleInputChange} />
+              <Input size="large" placeholder="Enter State" className='mb-2 p-2' name="state" value={hubFormData.state} onChange={handleInputChange} /> */}
               <Space style={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button htmlType="button" onClick={handleSecondCancel}>Cancel</Button>
                 <Button type="primary" htmlType="submit" onClick={handleCreateHub}>Create</Button>
@@ -229,7 +238,6 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
           </div>
         </div>
       </div>
-      <hr />
     </>
   );
 }

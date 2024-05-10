@@ -349,9 +349,88 @@ fetchVehicleDetails();
     const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
     commissionTotal =commissionTotalInPercentage / 100;
   }
-
+//   http://localhost:3000/prod/v1/create-dispatch-challan
+//   balance
+// : 
+// 9970
+// bankTransfer
+// : 
+// "10"
+// cash
+// : 
+// "10"
+// commisionRate
+// : 
+// ""
+// commisionTotal
+// : 
+// 100
+// deliveryLocation
+// : 
+// "Kgf"
+// deliveryNumber
+// : 
+// "7788"
+// diesel
+// : 
+// "10"
+// grDate
+// : 
+// "01/05/2024"
+// grNumber
+// : 
+// "10"
+// hubId
+// : 
+// "663c93ddeafe706588fec3bb"
+// invoiceProof
+// : 
+// null
+// isMarketRate
+// : 
+// true
+// loadLocation
+// : 
+// "Pune"
+// marketRate
+// : 
+// "10"
+// materialType
+// : 
+// "GYPSUM"
+// ownerId
+// : 
+// "663c94392ee9e1c41f769afa"
+// ownerName
+// : 
+// "tayib"
+// ownerPhone
+// : 
+// "1234567890"
+// quantityInMetricTons
+// : 
+// "10"
+// rate
+// : 
+// "10000"
+// totalExpense
+// : 
+// 30
+// vehicleBank
+// : 
+// "663c94392ee9e1c41f769afd"
+// vehicleId
+// : 
+// "663cbb2b2ee9e1c41f769c90"
+// vehicleNumber
+// : 
+// "KA01AB1234"
+// vehicleType
+// : 
+// "bulk"
+//   {"message":"Please select right owner for the selected period"}
       const payload={
-        "balance": formData.balance,
+        "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
       
@@ -981,8 +1060,8 @@ fetchVehicleDetails();
       // },
       {
         title: 'C.Rate',
-        dataIndex: 'commisionRate',
-        key: 'commisionRate',
+        dataIndex: 'rate',
+        key: 'rate',
         width: 120,
       },
       // {

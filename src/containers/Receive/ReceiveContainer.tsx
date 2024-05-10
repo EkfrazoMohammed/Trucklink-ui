@@ -2,6 +2,7 @@ import { Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 import Acknowledgement from './Acknowledgement';
 import ReceiveRegister from './ReceiveRegister';
+import Receive from './Receive';
 
 const ReceiveContainer = () => {  
   const items: TabsProps['items'] = [
@@ -13,7 +14,7 @@ const ReceiveContainer = () => {
     {
       key: '2',
       label: 'ReceiveRegister',
-      children: <ReceiveRegister />,
+      children: <Receive />,
     }
   ];
 

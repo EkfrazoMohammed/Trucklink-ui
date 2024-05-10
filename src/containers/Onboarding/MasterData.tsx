@@ -36,7 +36,7 @@ const MasterData = () => {
             }
             const response = await API.post('create-material', payload);
             if (response.status === 201) {
-                alert("material added")
+                console.log("material added")
             }
             // Fetch updated materials
             fetchMaterials();

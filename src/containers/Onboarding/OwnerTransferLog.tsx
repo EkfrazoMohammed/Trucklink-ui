@@ -14,8 +14,7 @@ const OwnerTransferLog = () => {
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
-    const [showTransferLogTable, setShowTransferLogTable] = useState(true);
-  const [rowDataForTransferLogEdit, setRowDataForTransferLogEdit] = useState(null);
+
   const TransferLogHeader = () => {
     return (
       <div className='flex gap-2 justify-between p-2'>
@@ -54,8 +53,6 @@ const OwnerTransferLog = () => {
       let response = await API.get("get-all-users-logs")
         .then((res) => {
           if(res.status ==201){
-
-            console.log(res.data.ownerDetails)
             setTransferData(res.data.ownerDetails);
           }else{
             console.log('error')
@@ -124,7 +121,7 @@ const OwnerTransferLog = () => {
             dataIndex: 'ownerTransferId',
             key: 'ownerTransferId',
             render: (text, record) => record.oldOwnerId?.name || 'N/A',
-            width: 100,
+            width: 80,
           },
     
           {
@@ -132,7 +129,7 @@ const OwnerTransferLog = () => {
             dataIndex: 'ownerTransferId',
             key: 'ownerTransferId',
             render: (text, record) => record.newOwnerId?.name,
-            width: 100,
+            width: 80,
           },
     
           {

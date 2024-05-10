@@ -247,7 +247,20 @@ const TruckMaster = () => {
         "marketRate": 1000,
         "isMarketRate": true
       };
-      axios.post('https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-vehicle', payload)
+      const oldPayload = {
+        "hubId": "6634de2e2588845228b2dbe4",
+        "accountId": "66386d5267827a336ccac791",
+        "commission": "2",
+        "driverName": "AA",
+        "driverPhoneNumber": "1231231343",
+        "ownerId": "66386d5267827a336ccac78e",
+        "rcBookProof": null,
+        "registrationNumber": "KA01KA1287",
+        "truckType": "bag"
+      }
+
+      API.post('create-vehicle', payload)
+
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
@@ -644,7 +657,7 @@ const TruckMaster = () => {
     const handleSubmitTransfer = (e) => {
 
       e.preventDefault();
-
+99999999999
       const vehicleId = rowDataForTruckTransfer._id
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
       const url = `https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`

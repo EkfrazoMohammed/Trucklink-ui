@@ -6,26 +6,17 @@ import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutl
 
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
-
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch } from '../../redux/store'; // Import RootState and AppDispatch from your Redux store
 import type { DatePickerProps } from 'antd';
 
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
 };
-import { fetchOwnerData, addOwnerDataAccount } from "./../../redux/reducers/onboardingReducer";
-interface RootState {
-    onboarding: {
-        ownerData: [];
-    };
-}
 
-const ReceiveRegister = () => {
+
+const ReceiveRegister2 = () => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
     const [receive, setReceiveRegister] = useState([]);
 
@@ -46,8 +37,8 @@ const ReceiveRegister = () => {
     const getTableData = async () => {
         try {
             const searchData = searchQuery ? searchQuery : null;
-            const response = searchData ? await axios.get(`http://localhost:3000/prod/v1/get-receive-register?page=1&limit=50`)
-                : await axios.get(`http://localhost:3000/prod/v1/get-receive-register?page=1&limit=50`);
+            const response = searchData ? await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`)
+                : await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`);
             // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
             // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
             
@@ -268,4 +259,4 @@ const ReceiveRegister = () => {
 }
 
 
-export default ReceiveRegister
+export default ReceiveRegister2

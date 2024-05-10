@@ -46,9 +46,8 @@ const OnboardingContainer = () => {
     console.log(e)
     setSearchQuery(e);
   };
-  // Debounce the handleSearch function
-  const debouncedSearch = debounce(handleSearch, 800); // Adjust the debounce delay as needed
 
+  const debouncedSearch = debounce(handleSearch, 800); 
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
@@ -114,7 +113,6 @@ const OnboardingContainer = () => {
       <div className='flex gap-2 justify-between p-2'>
  <Search placeholder="Search by Owner Name / Truck no" size='large' onSearch={handleSearch} style={{ width: 320 }} />
        
-        {/* <Input type="text" placeholder="Search by Owner Name / Truck no" size='large' onChange={handleSearch} value={searchQuery} style={{ width: 320 }} /> */}
         <div className='flex gap-2'>
 
           <Upload>
@@ -405,7 +403,7 @@ const OnboardingContainer = () => {
             alert('Owner data added successfully!');
             setTimeout(() => {
               window.location.reload();
-            },3000)
+            },1000)
            
           }
         })

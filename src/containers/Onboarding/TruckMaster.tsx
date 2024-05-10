@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { DatePickerProps } from 'antd';
-import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch,Image } from 'antd';
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
@@ -17,9 +17,9 @@ const TruckMaster = () => {
   const [filteredTruckData, setFilteredTruckData] = useState([]);
 
   const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+    console.log(e)
+    setSearchQuery(e);
   };
-  // Debounce the handleSearch function
   // const debouncedSearch = debounce(handleSearch, 800); // Adjust the debounce delay as needed
 
   const [showTruckTable, setShowTruckTable] = useState(true);
@@ -46,7 +46,7 @@ const TruckMaster = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(50);
   const [totalTruckData, setTotalTruckData] = useState(100)
-  const getOwnerData = async (searchQuery, page, limit, selectedHubID) => {
+  const getOwnerData = async (page, limit, selectedHubID) => {
     try {
 
       const pages = page;
@@ -54,12 +54,10 @@ const TruckMaster = () => {
 
       const limitData = 600;
 
-      const searchData = searchQuery ? searchQuery : null;
-
       // this.setState({loading: true});
-      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-      // const response = await axios.get(`${BASE_URL}get-owner-bank-details?page=${pages}&limit=50`) 
+      // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      //   : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
         ownerDetails = response.data.ownerDetails
@@ -84,6 +82,7 @@ const TruckMaster = () => {
   };
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
+    console.log(searchQuery)
     try {
 
       const pages = page;
@@ -125,9 +124,10 @@ const TruckMaster = () => {
 
     }
   };
-  //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+  ;
+  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
-    getOwnerData(searchQuery, currentPage, currentPageSize, selectedHubId);
+    getOwnerData(currentPage, currentPageSize, selectedHubId);
     getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
   }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
 
@@ -162,7 +162,7 @@ const TruckMaster = () => {
       isCommission: true,
       marketRateCommission: '',
     });
-    const [bankData, setBankdata]=useState([])
+    const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
@@ -191,7 +191,7 @@ const TruckMaster = () => {
     };
     const handleFileChange = (file) => {
       console.log(file)
-        axiosFileUploadRequest(file.file);
+      axiosFileUploadRequest(file.file);
 
     };
     const handleChange = (name, value) => {
@@ -210,7 +210,7 @@ const TruckMaster = () => {
             marketRateCommission: "",
           }));
         }
-      }else if (name === "ownerId") {
+      } else if (name === "ownerId") {
         const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
           .then((res) => {
             console.log(res)
@@ -220,11 +220,11 @@ const TruckMaster = () => {
           .catch((err) => {
             console.log(err)
           })
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            accountId: null, // Set accountId to an empty string
-          }));
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+          accountId: null, // Set accountId to an empty string
+        }));
       } else {
         // For other fields, update state normally
         setFormData((prevFormData) => ({
@@ -233,7 +233,6 @@ const TruckMaster = () => {
         }));
       }
     };
-    console.log(formData)
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -261,9 +260,11 @@ const TruckMaster = () => {
       }
 
       API.post('create-vehicle', payload)
+
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
-          // window.location.reload(); // Reload the page or perform any necessary action
+          alert("Truck data added successfully")
+          window.location.reload(); // Reload the page or perform any necessary action
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
@@ -335,24 +336,24 @@ const TruckMaster = () => {
                     onChange={(value) => handleChange('accountId', value)}
                   >
                     {bankData.map((v, index) => (
-                        <Option key={v._id} value={v._id}>
-                          {`${v.bankName} - ${v.accountNumber}`}
-                        </Option>
+                      <Option key={v._id} value={v._id}>
+                        {`${v.bankName} - ${v.accountNumber}`}
+                      </Option>
                     ))}
                   </Select>
 
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
-                <div className='flex items-center justify-center gap-1'>
+                  <div className='flex items-center justify-center gap-1'>
                     RC Book*: {' '}
                     <Upload
-        name="rcBook"
-        onChange={handleFileChange}
-        showUploadList={false}
-        beforeUpload={() => false} 
-      >
-        <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
-      </Upload>
+                      name="rcBook"
+                      onChange={handleFileChange}
+                      showUploadList={false}
+                      beforeUpload={() => false}
+                    >
+                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                    </Upload>
                   </div>
                 </Col>
 
@@ -389,7 +390,7 @@ const TruckMaster = () => {
               </Row>
             </div>
           </div>
-          
+
 
           <div className="flex gap-4">
             <Button>Reset</Button>
@@ -403,171 +404,39 @@ const TruckMaster = () => {
   };
 
   const ViewTruckDataRow = ({ filterTruckTableData }) => {
-    const [formData, setFormData] = useState({
-      registrationNumber: '',
-      commission: '',
-      ownerId: '',
-      accountId: '',
-      vehicleType: '',
-      rcBook: null,
-      isCommission: true,
-      marketRateCommission: '',
-    });
-
-    const handleChange = (name, value) => {
-      if (name === "isCommission") {
-        if (!value) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            commission: "",
-          }));
-        } else {
-          // If isCommission is true, set marketRateCommission to an empty string
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            marketRateCommission: "",
-          }));
-        }
-      } else {
-        // For other fields, update state normally
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-        }));
-      }
-    };
-    console.log(formData)
-    const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
-      console.log(date, dateString);
-    };
-
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const payload = {
-        hubId: selectedHubId,
-        accountId: formData.accountId,
-        commission: formData.commission,
-        ownerId: formData.ownerId,
-        rcBook: null,
-        registrationNumber: formData.registrationNumber,
-        truckType: formData.vehicleType,
-        marketRateCommission: "0",
-      };
-      const oldPayload = {
-        "hubId": "6634de2e2588845228b2dbe4",
-        "accountId": "66386d5267827a336ccac791",
-        "commission": "2",
-        "driverName": "AA",
-        "driverPhoneNumber": "1231231343",
-        "ownerId": "66386d5267827a336ccac78e",
-        "rcBookProof": null,
-        "registrationNumber": "KA01KA1287",
-        "truckType": "bag"
-      }
-
-      await API.post('create-vehicle', payload)
-        .then((response) => {
-          console.log('Truck data added successfully:', response.data);
-          window.location.reload(); // Reload the page or perform any necessary action
-        })
-        .catch((error) => {
-          console.error('Error adding truck data:', error);
-        });
-    };
 
     return (
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Edit Truck</h1>
+            <h1 className="text-xl font-bold">View Truck Details</h1>
             {/* Breadcrumb component */}
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
 
           </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-col gap-1">
-              <div className="text-md font-semibold">Vehicle Information</div>
-              <div className="text-md font-normal">Edit Truck Details</div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
-                  <Input
-                    placeholder="Vehicle Number*"
-                    size="large"
-                    name="registrationNumber"
-                    value={filterTruckTableData.registrationNumber}
-                  // onChange={(e) => handleChange('registrationNumber', e.target.value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <Select
-                    name="vehicleType"
-                    placeholder="Vehicle Type*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    // options={[
-                    //   { value: 'open', label: 'Open' },
-                    //   { value: 'bulk', label: 'Bulk' },
-                    // ]}
-                    value={filterTruckTableData.truckType}
-                  // onChange={(value) => handleChange('vehicleType', value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
+          <div className="section mx-2 my-4">
+            <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {filterTruckTableData['ownerId'][0].name}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {filterTruckTableData['ownerId'][0].phoneNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {filterTruckTableData['ownerId'][0].email}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {filterTruckTableData['ownerId'][0].panNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {filterTruckTableData['ownerId'][0].district}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {filterTruckTableData['ownerId'][0].state}</p>
+              </Col>
 
-                  <Select
-                    size='large'
-                    placeholder="Owner Mobile Number"
-                    style={{ width: '100%' }}
-                    name="ownerId"
-                    onChange={(value) => handleChange('ownerId', value)}
-                  >
-                    {filteredOwnerData.map((owner, index) => (
-                      <Option key={index} value={owner._id}>
-                        {`${owner.name} - ${owner.phoneNumber}`}
-                      </Option>
-                    ))}
-                  </Select>
-
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <DatePicker
-                    placeholder='Owner Transfer From Date'
-                    style={{ width: "100%", height: "100%" }}
-                    size="large"
-                    onChange={onDateChange}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <DatePicker
-                    placeholder='Owner Transfer to Date'
-                    style={{ width: "100%", height: "100%" }}
-                    size="large"
-                    onChange={onDateChange}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <div style={{ width: "100%" }} >
-                    RC Book*: {' '}
-                    <Upload name="rcBook">
-                      <Button style={{ width: "100%" }} size="large" icon={<UploadOutlined />}>Upload</Button>
-                    </Upload>
-                  </div>
-                </Col>
-
-
-              </Row>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            {/* <Button onClick={() => setShowOwnerTable(true)}>Reset</Button> */}
-            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
-              Save
-            </Button>
+            </Row>
           </div>
         </div>
       </>
@@ -607,11 +476,11 @@ const TruckMaster = () => {
         key: 'truckType',
         width: 80,
       },
-      { 
-        title: 'RC Book', 
-        dataIndex: 'rcBookProof', 
+      {
+        title: 'RC Book',
+        dataIndex: 'rcBookProof',
         key: 'rcBookProof',
-        width: 80, 
+        width: 80,
         render: rcBookProof => (
           rcBookProof ? <Image src={rcBookProof} alt="img" width={50} /> : null
         )
@@ -696,15 +565,15 @@ const TruckMaster = () => {
       commission: rowDataForTruckTransfer.commission,
       truckType: rowDataForTruckTransfer.truckType,
       rcBookProof: rowDataForTruckTransfer.rcBookProof,
-      // change here
       phoneNumber: "",
-        ownerTransferDate: "1554114614999",
-        transferDate: "2024-04-30T10:33:29.917Z",
-        ownerTransferToDate: "1554214618099",
-        userId: "663a0e76e1d51550194c9320",
+      ownerTransferDate: "",
+      ownerTransferToDate: "",
+      // change here
+      transferDate: "2024-04-30T10:33:29.917Z",
+      userId: "663a0e76e1d51550194c9320",
 
     });
-    
+
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
@@ -733,39 +602,48 @@ const TruckMaster = () => {
     };
     const handleFileChange = (file) => {
       console.log(file)
-        axiosFileUploadRequest(file.file);
+      axiosFileUploadRequest(file.file);
 
     };
+    const onDateChangeOwnerTransfer = (date, dateString) => {
 
-    const [newOwnerDetails, setNewOwnerDetails] = useState([])
+      // Convert dateString to Unix timestamp
+      const unixTimestamp = new Date(dateString).getTime();
+      console.log(unixTimestamp)
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ownerTransferDate: unixTimestamp,
+      }));
+    };
+
+    const onDateChangeTransferToDate = (date, dateString) => {
+      const unixTimestamp = new Date(dateString).getTime();
+      console.log(unixTimestamp)
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ownerTransferToDate: unixTimestamp,
+      }));
+    };
     const handleChange = (name, value) => {
       if (name === "ownerId") {
         API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
           .then((res) => {
-            console.log(res)
-            setNewOwnerDetails(res.data.ownerDetails);
-        //     // Extract accountId from the newOwnerDetails
-        const newOwneraccountId = res.data.ownerDetails[0].accountIds[0]._id;
-        const phoneNumber=res.data.ownerDetails[0].phoneNumber
-        // setNewOwnerBankDetails(phoneNumber)
-                     
-            // setFormData((prevFormData) => ({
-            //   ...prevFormData,
-            //   [name]: value,
-            // }));
+            const newOwneraccountId = res.data.ownerDetails[0].accountIds[0]._id;
+            const phoneNumber = res.data.ownerDetails[0].phoneNumber
+
             setFormData((prevFormData) => ({
               ...prevFormData,
               ownerId: value,
               accountId: newOwneraccountId,
               phoneNumber: phoneNumber,
             }));
-          
+
           })
           .catch((err) => {
             console.log(err)
           })
       }
-       else {
+      else {
         // For other fields, update state normally
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -773,29 +651,30 @@ const TruckMaster = () => {
         }));
       }
     };
-    
 
-    const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
-    };
+
 
     const handleSubmitTransfer = (e) => {
 
       e.preventDefault();
-      
+99999999999
       const vehicleId = rowDataForTruckTransfer._id
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
-      const url=`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
-    
-      const headers={
+      const url = `https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
+
+      const headers = {
         "Content-Type": "application/json",
+
       }
-      axios.put(url,formData,headers)
-         .then((response) => {
-            console.log('Truck transfered successfully:', response.data);
-          })
-          .catch((error) => {
-            console.error('Error adding truck data:', error);
-          });
+      axios.put(url, formData, headers)
+        .then((response) => {
+          console.log('Truck transfered successfully:', response.data);
+          alert("Owner Transfered successfully")
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.error('Error adding truck data:', error);
+        });
     };
 
     return (
@@ -862,7 +741,7 @@ const TruckMaster = () => {
                     placeholder='Owner Transfer From Date'
                     style={{ width: "100%", height: "100%" }}
                     size="large"
-                    onChange={onDateChange}
+                    onChange={onDateChangeOwnerTransfer}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -870,20 +749,20 @@ const TruckMaster = () => {
                     placeholder='Owner Transfer to Date'
                     style={{ width: "100%", height: "100%" }}
                     size="large"
-                    onChange={onDateChange}
+                    onChange={onDateChangeTransferToDate}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <div className='flex items-center justify-center gap-1'>
                     RC Book*: {' '}
                     <Upload
-        name="rcBook"
-        onChange={handleFileChange}
-        showUploadList={false}
-        beforeUpload={() => false} 
-      >
-        <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
-      </Upload>
+                      name="rcBook"
+                      onChange={handleFileChange}
+                      showUploadList={false}
+                      beforeUpload={() => false}
+                    >
+                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                    </Upload>
                   </div>
                 </Col>
 
@@ -892,32 +771,32 @@ const TruckMaster = () => {
             </div>
           </div>
 
-          
-        <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
-            </Col>
 
-          </Row>
-        </div>
-        <div className="flex gap-4">
+          <div className="section mx-2 my-4">
+            <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
+              </Col>
+
+            </Row>
+          </div>
+          <div className="flex gap-4">
             <Button >Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmitTransfer}>
               Save

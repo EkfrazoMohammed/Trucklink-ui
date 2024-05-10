@@ -13,8 +13,8 @@ const MasterData = () => {
     const [loadLocationName, setLoadLocationName] = useState('');
     const [loadLocation, setloadLocations] = useState([]);
 
-    const [deliveryLocationName, setDeliveryLocationName] = useState('');
     const [deliveryLocation, setDeliveryLocations] = useState([]);
+    const [deliveryLocationName, setDeliveryLocationName] = useState('');
     // Function to fetch materials from the API
     const fetchMaterials = async () => {
         try {

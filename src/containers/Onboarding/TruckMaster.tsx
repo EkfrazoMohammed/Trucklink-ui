@@ -260,7 +260,7 @@ const TruckMaster = () => {
         "truckType": "bag"
       }
 
-      axios.post('https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-vehicle', payload)
+      API.post('create-vehicle', payload)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           // window.location.reload(); // Reload the page or perform any necessary action
@@ -780,34 +780,8 @@ const TruckMaster = () => {
 
     const handleSubmitTransfer = (e) => {
 
-      console.log("newOwnerDetails=>",newOwnerDetails)
       e.preventDefault();
-      const payload = {
-        hubId: selectedHubId,
-        accountId: formData.accountId,
-        commission: formData.commission,
-        ownerId: formData.ownerId,
-        rcBook: null,
-        registrationNumber: formData.registrationNumber,
-        truckType: formData.vehicleType,
-        "marketRate": 1000,
-        "isMarketRate": true
-      };
-      let newP = {
-        "accountId": "663b2f73e1d51550194c94c9",
-        "commission": 8,
-        "driverName": "aa",
-        "driverPhoneNumber": "1231231234",
-        "ownerId": "663a0e76e1d51550194c9320",
-        "phoneNumber": "1234512345",
-        "rcBookProof": null,
-        "registrationNumber": "KA03AA6789",
-        "ownerTransferDate": 1554114613959,
-        "transferDate": "2024-05-07T10:33:29.917Z",
-        "ownerTransferToDate": 1554114613988,
-        "truckType": "bulk",
-        "userId": "663a0e76e1d51550194c9320"
-      }
+      
       const vehicleId = rowDataForTruckTransfer._id
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
       const url=`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`

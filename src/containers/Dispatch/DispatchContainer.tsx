@@ -1,28 +1,18 @@
 import { useState, useEffect } from 'react';
-import {API} from "../../API/apirequest"
-import {  DatePicker, Table, Input, Select, Space, Button, Upload,  Tooltip, Breadcrumb, Col,  Row,Switch,Image } from 'antd';
+import { API } from "../../API/apirequest"
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import axios from "axios"
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,PrinterOutlined,SwapOutlined   } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
-
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch } from '../../redux/store'; // Import RootState and AppDispatch from your Redux store
 import type { DatePickerProps } from 'antd';
 
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
   console.log(date, dateString);
 };
-import { fetchOwnerData, addOwnerDataAccount } from "./../../redux/reducers/onboardingReducer";
-interface RootState {
-  onboarding: {
-    ownerData: [];
-  };
-}
-
 const DispatchContainer = () => {
-    
+
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -35,168 +25,168 @@ const DispatchContainer = () => {
   // Debounce the handleSearch function
   // const debouncedSearch = debounce(handleSearch, 800); // Adjust the debounce delay as needed
 
-    const [showTruckTable, setShowTruckTable] = useState(true);
-    const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
-    const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
-    const handleEditTruckClick = (rowData) => {
-      setRowDataForTruckEdit(rowData);
-      setShowTruckTable(false);
-      setShowTransferForm(false);
-    };
-    const handleAddTruckClick = () => {
-      setRowDataForTruckEdit(null);
-      setShowTruckTable(false);
-    };
+  const [showDispatchTable, setShowDispatchTable] = useState(true);
+  const [rowDataForDispatchEdit, setRowDataForDispatchEdit] = useState(null);
+  const handleEditTruckClick = (rowData) => {
+    setRowDataForDispatchEdit(rowData);
+    setShowDispatchTable(false);
+    setShowTransferForm(false);
+  };
+  const handleAddTruckClick = () => {
+    setRowDataForDispatchEdit(null);
+    setShowDispatchTable(false);
+  };
 
-    const handleTransferTruckClick = (rowData) => {
-      setShowTransferForm(true);
-      setRowDataForTruckTransfer(rowData)
-      setRowDataForTruckEdit(rowData);
-      setShowTruckTable(false);
-    };
+  // Initialize state variables for current page and page size
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(50);
+  const [totalDispatchData, setTotalDispatchData] = useState(100)
 
-   // Initialize state variables for current page and page size
-   const [currentPage, setCurrentPage] = useState(1);
-   const [currentPageSize, setCurrentPageSize] = useState(50);
-    const [totalTruckData, setTotalTruckData] = useState(100)
-    
-    const getTableData = async () => {
-        try {
-    
-        
-    
-          const searchData = searchQuery ? searchQuery : null;
-    
-       
-          // const response = searchData ?  await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`)
-          // : await axios.post(`http://localhost:3000/prod/v1/get-challan-data?page=1&limit=50`);  
-          const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
-          : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);  
-    
-          let allChallans;
-          console.log(response)
-      if(response.data.disptachData == 0){
+  const getTableData = async () => {
+    try {
+
+
+
+      const searchData = searchQuery ? searchQuery : null;
+
+
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
+        : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);
+
+      let allChallans;
+      if (response.data.disptachData == 0) {
         allChallans = response.data.disptachData
         setchallanData(allChallans);
-      }else{
-      
-      allChallans = response.data.disptachData[0].data || "";
-      
-          setTotalTruckData(allChallans);
-    
-          if (allChallans && allChallans.length > 0) {
-            const arrRes = allChallans.sort(function (a, b) {
-              a = a.
-              registrationNumber.toLowerCase();
-              b = b.
-              registrationNumber.toLowerCase();
-    
-              return a < b ? -1 : a > b ? 1 : 0;
-            });
-    
-            setchallanData(arrRes);
-    
-            return arrRes;
-          }
-    
-        } 
-      }catch (err) {
-          console.log(err)
-    
-        }
-      };
+      } else {
+
+        allChallans = response.data.disptachData[0].data || "";
+        setchallanData(allChallans);
+        setTotalDispatchData(allChallans.length);
+
+
+      }
+    } catch (err) {
+      console.log(err)
+
+    }
+  };
   //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getTableData();
-  }, [searchQuery, currentPage, currentPageSize,selectedHubId]);
-  
+  }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
+
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-<div className='flex gap-2'>
-        <Search
-          placeholder="Search by Vehicle Number"
-          size='large'
-          onSearch={handleSearch}
-          style={{ width: 320 }}
-        />
-         <DatePicker onChange={onChange} placeholder='From date' /> -
-         <DatePicker onChange={onChange}  placeholder='To date'/>
-         <Select
-                    name="materialType"
-                    placeholder="Material Type*"
-                    size="large"
-                    style={{width:"20%"}}
-                    options={[
-                      { value: 'cement', label: 'cement' },
-                      { value: 'flyash', label: 'flyash' },
-                    ]}
-                    onChange={(value) => handleChange('materialType', value)}
-                  />
-                  <Select
-                    name="truckType"
-                    placeholder="Truck Type*"
-                    size="large"
-                    style={{width:"20%"}}
-                    options={[
-                      { value: 'open', label: 'Open' },
-                      { value: 'bulk', label: 'Bulk' },
-                    ]}
-                    onChange={(value) => handleChange('vehicleType', value)}
-                  />
+        <div className='flex gap-2'>
+          <Search
+            placeholder="Search by Vehicle Number"
+            size='large'
+            onSearch={handleSearch}
+            style={{ width: 320 }}
+          />
+          <DatePicker onChange={onChange} placeholder='From date' /> -
+          <DatePicker onChange={onChange} placeholder='To date' />
+          <Select
+            name="materialType"
+            placeholder="Material Type*"
+            size="large"
+            style={{ width: "20%" }}
+            options={[
+              { value: 'cement', label: 'cement' },
+              { value: 'flyash', label: 'flyash' },
+            ]}
+            onChange={(value) => handleChange('materialType', value)}
+          />
+          <Select
+            name="truckType"
+            placeholder="Truck Type*"
+            size="large"
+            style={{ width: "20%" }}
+            options={[
+              { value: 'open', label: 'Open' },
+              { value: 'bulk', label: 'Bulk' },
+            ]}
+            onChange={(value) => handleChange('vehicleType', value)}
+          />
 
-                  </div>
+        </div>
         <div className='flex gap-2 justify-end'>
-        <Upload>
+          <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
-          
+
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
           </Upload>
-          <Button  onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
+          <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
 
     );
   };
 
-  const TruckMasterForm = () => {
+  const CreateChallanForm = () => {
+    const selectedHubId = localStorage.getItem("selectedHubID");
+    // State to store the list of materials
 
-    // const ownerIdSelect = filterOwnerTableData
-    const [formData, setFormData] = useState({
-      registrationNumber: '',
-      commission: '',
-      ownerId: '',
-      accountId:'',
-      vehicleType: '',
-      rcBook: null,
-      isCommission: true,
-      marketRateCommission: '',
-    });
 
+    const [formData, setFormData] = useState(
+      {
+        "balance": '',
+        "bankTransfer": '',
+        "cash": '',
+        "commisionRate": '',
+        "commisionTotal": '',
+        "deliveryLocation": '',
+        "deliveryNumber": '',
+        "diesel": '',
+        "grDate": null,
+        "grNumber":'',
+        "invoiceProof": null,
+        "loadLocation": '',
+        "materialType":'',
+        "ownerId": '',
+        "ownerName": '',
+        "ownerPhone":'',
+        "quantityInMetricTons": '',
+        "rate": '',
+        "totalExpense": '',
+        "vehicleBank": '',
+        "vehicleId": '',
+        "vehicleNumber": '',
+        "vehicleType": '',
+        "isMarketRate":false,
+        "marketRate": 0,
+          "hubId":''
+        }
+        
+          
+    );
+   
     const handleChange = (name, value) => {
-      if (name === "isCommission") {
+      if (name === "isMarketRate") {
         if (!value) {
           setFormData((prevFormData) => ({
             ...prevFormData,
             [name]: value,
-            commission: "",
+            isMarketRate:false,
+            commission: 0,
           }));
-        } else {
-          // If isCommission is true, set marketRateCommission to an empty string
+        } else{
           setFormData((prevFormData) => ({
             ...prevFormData,
             [name]: value,
-            marketRateCommission: "",
+            isMarketRate:true,
+            commission: 0,
           }));
         }
-      } else {
+      }  else {
         // For other fields, update state normally
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -204,41 +194,202 @@ const DispatchContainer = () => {
         }));
       }
     };
-    console.log(formData)
+    const formatDate = (dateString) => {
+      // Split the date string by '-'
+      const parts = dateString.split('-');
+      // Rearrange the parts in the required format
+      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return formattedDate;
+    };
+ // Function to handle date change
+ const handleDateChange = (date, dateString) => {
+  const formattedGrDate = formatDate(dateString);
+console.log(formattedGrDate); // Output: "01/05/2024"
+  // dateString will be in the format 'YYYY-MM-DD'
+  handleChange('grDate', formattedGrDate);
+};
+const [materials, setMaterials] = useState([]);
+const [loadLocation, setloadLocations] = useState([]);
+
+const [deliveryLocation, setDeliveryLocations] = useState([]);
+const fetchMaterials = async () => {
+  try {
+      const response = await API.get(`get-material/${selectedHubId}`);
+      if (response.status === 201) {
+          setMaterials(response.data.materials);
+      }
+  } catch (error) {
+      console.error('Error fetching materials:', error);
+  }
+};
+// Function to fetch LoadLocations from the API
+const fetchLoadLocations = async () => {
+try {
+    const response = await API.get(`get-load-location/${selectedHubId}`);
+    if (response.status == 201) {
+        setloadLocations(response.data.materials);
+    } else {
+        console.log("error in fetchLoadLocations")
+    }
+
+} catch (error) {
+    console.error('Error fetching materials:', error);
+}
+};
+// Function to fetch DeliveryLocations from the API
+const fetchDeliveryLocations = async () => {
+try {
+    const response = await API.get(`get-delivery-location/${selectedHubId}`);
+    setDeliveryLocations(response.data.materials);
+} catch (error) {
+    console.error('Error fetching materials:', error);
+}
+};
+const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+const fetchVehicleDetails = async () => {
+try {
+const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+let truckDetails;
+if (response.data.truck == 0) {
+  truckDetails = response.data.truck
+  setVehicleDetails(truckDetails);
+} else {
+
+  truckDetails = response.data.truck[0].data || "";
+  setVehicleDetails(response.data.truck[0].count);
+
+  if (truckDetails && truckDetails.length > 0) {
+    const arrRes = truckDetails.sort(function (a, b) {
+      a = a.
+        registrationNumber.toLowerCase();
+      b = b.
+        registrationNumber.toLowerCase();
+
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+
+    setVehicleDetails(arrRes);
+
+    return arrRes;
+  }  
+} 
+}catch (error) {
+console.error('Error fetching vehicle details:', error);
+// Handle error
+}
+};
+const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
+
+const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+
+const fetchSelectedVehicleDetails = async (vehicleId) => {
+  try {
+    const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+    const truckDetails = response.data.truck;
+    if (truckDetails && truckDetails.length > 0) {
+      const selectedVehicle = truckDetails[0];
+      // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
+      const ownerId=selectedVehicle.ownerId._id;
+      const ownerName=selectedVehicle.ownerId.name;
+      const ownerPhone=selectedVehicle.ownerId.phoneNumber;
+      const vehicleBank=selectedVehicle.accountId._id;
+      const vehicleId=selectedVehicle._id;
+      const vehicleNumber=selectedVehicle.registrationNumber;
+      const vehicleType=selectedVehicle.truckType;
+      setselectedCommission(selectedVehicle.commission)
+      let commissionRate;
+      if(formData.isMarketRate){
+        console.log('first')
+        commissionRate=formData.marketRate
+      }else{
+        console.log('second')
+        commissionRate=selectedVehicle.commission
+
+      }
+    
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        ownerId,
+        ownerName,
+        ownerPhone,
+        vehicleBank,
+        vehicleId,
+        vehicleNumber,
+        vehicleType,
+        commissionRate
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching vehicle details:', error);
+    // Handle error
+  }
+};
+useEffect(()=>{
+fetchSelectedVehicleDetails(selectedvehicleId)
+},[formData.vehicleNumber,selectedvehicleId])
+// Fetch materials on component mount
+useEffect(() => {
+fetchMaterials();
+fetchLoadLocations();
+fetchDeliveryLocations();
+fetchVehicleDetails();
+}, [selectedHubId]);
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      const payload = {
-        hubId:selectedHubId,
-        accountId:formData.accountId,
-        commission: formData.commission,
-        ownerId: formData.ownerId,
-        rcBook: null,
-        registrationNumber: formData.registrationNumber,
-        truckType: formData.vehicleType,
-        "marketRate":1000,
-        "isMarketRate":true
-      };
-     const oldPayload= {
-       "hubId":"6634de2e2588845228b2dbe4",
-      "accountId": "66386d5267827a336ccac791",
-"commission": "2",
-"driverName": "AA",
-"driverPhoneNumber": "1231231343",
-"ownerId": "66386d5267827a336ccac78e",
-"rcBookProof": null,
-"registrationNumber": "KA01KA1287",
-"truckType": "bag"
-}
+       // Calculate commissionTotal based on isMarketRate
+  let commissionTotal=0;
+  if (formData.isMarketRate) {
+    console.log("isMarketRate",formData.isMarketRate)
+    // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+    commissionTotal = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.marketRate);
+  } else {
+    console.log("isMarketRate",formData.isMarketRate)
+    // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+    const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
+    commissionTotal =commissionTotalInPercentage / 100;
+  }
 
-      axios.post('https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-vehicle', payload)
+      const payload={
+        "balance": formData.balance,
+        "bankTransfer": formData.bankTransfer,
+        "cash": formData.cash,
+      
+        "deliveryLocation": formData.deliveryLocation,
+        "deliveryNumber": formData.deliveryNumber,
+        "diesel": formData.diesel,
+        "grDate": formData.grDate,
+        "grNumber": formData.grNumber,
+        "invoiceProof":null,
+        "loadLocation": formData.loadLocation,
+        "materialType": formData.materialType,
+        "ownerId": formData.ownerId,
+        "ownerName": formData.ownerName,
+        "ownerPhone": formData.ownerPhone,
+        "quantityInMetricTons": formData.quantityInMetricTons,
+        "rate": formData.rate,
+        "totalExpense":parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "vehicleBank": formData.vehicleBank,
+        "vehicleId": formData.vehicleId,
+        "vehicleNumber": formData.vehicleNumber,
+        "vehicleType": formData.vehicleType,
+        "commisionRate": formData.commisionRate,
+        "commisionTotal": commissionTotal,
+        "isMarketRate":  formData.isMarketRate,
+          "marketRate": formData.marketRate,
+          "hubId":selectedHubId
+        }
+        API.post('create-dispatch-challan', payload)
         .then((response) => {
-          console.log('Truck data added successfully:', response.data);
+          console.log('Challan added successfully:', response.data);
+          alert("Challan added successfully")
           window.location.reload(); // Reload the page or perform any necessary action
         })
         .catch((error) => {
+          alert("error occurred")
           console.error('Error adding truck data:', error);
         });
+      
     };
 
     return (
@@ -247,86 +398,97 @@ const DispatchContainer = () => {
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold">Create Challan</h1>
             {/* Breadcrumb component */}
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} />
 
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex gap-1 justify-between">
               <div>
 
-              <div className="text-md font-semibold">Challan Details</div>
-              <div className="text-md font-normal">Enter Challan Details</div>
+                <div className="text-md font-semibold">Challan Details</div>
+                <div className="text-md font-normal">Enter Challan Details</div>
               </div>
               <div className='flex gap-2'>
-              Market Rate
-              <Switch
-                      defaultChecked={formData.isCommission}
-                      name="isCommission"
-                      onChange={(checked) => handleChange('isCommission', checked)}
-                      />
-                      </div>
+                Market Rate
+                <Switch
+                  defaultChecked={formData.isMarketRate}
+                  name="isMarketRate"
+                  onChange={(checked) => handleChange('isMarketRate', checked)}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
-                <Select
-                    name="materialType"
-                    placeholder="Material Type*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'cement', label: 'Cement' },
-                      { value: 'others', label: 'Others' },
-                    ]}
-                    onChange={(value) => handleChange('materialType', value)}
-                  />
+                  
+                   <Select
+                   name="materialType"
+                   onChange={(value) => handleChange('materialType', value)}
+                   placeholder="Material Type*"
+                   size="large"
+                   style={{ width: '100%' }}
+                  >
+                    {materials.map((v, index) => (
+                      <Option key={index} value={v.materialType}>
+                        {`${v.materialType}`}
+                      </Option>
+                    ))}
+                  </Select>
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
-                  type="text"
+                    type="text"
                     name="grNumber"
                     placeholder="grNumber*"
                     size="large"
                     style={{ width: '100%' }}
-                    
-                    onChange={(value) => handleChange('vehicleType', value)}
+
+                    onChange={(e) => handleChange('grNumber', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
-                  <DatePicker placeholder='GR Date' size="large" style={{width:"100%"}} />
-
+                <DatePicker
+        placeholder="GR Date"
+        size="large"
+        style={{ width: "100%" }}
+        onChange={handleDateChange} // Call handleDateChange function on date change
+      />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
                 <Select
-                    name="loadedFrom"
-                    placeholder="Loaded From*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'bengaluru', label: 'bengaluru' },
-                      { value: 'pune', label: 'pune' },
-                    ]}
-                    onChange={(value) => handleChange('loadedFrom', value)}
-                  />
+                   name="loadLocation"
+                   onChange={(value) => handleChange('loadLocation', value)}
+                   placeholder="Loaded From*"
+                   size="large"
+                   style={{ width: '100%' }}
+                  >
+                    {loadLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
 
                 </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                 <Select
-                    name="deliverTo"
-                    placeholder="Deliver To*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    options={[
-                      { value: 'chennai', label: 'chennai' },
-                      { value: 'nashik', label: 'nashik' },
-                    ]}
-                    onChange={(value) => handleChange('deliverTo', value)}
-                  />
+                   name="deliveryLocation"
+                   onChange={(value) => handleChange('deliveryLocation', value)}
+                   placeholder="Deliver To*"
+                   size="large"
+                   style={{ width: '100%' }}
+                  >
+                    {deliveryLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
@@ -334,69 +496,79 @@ const DispatchContainer = () => {
                     placeholder="Vehicle Number*"
                     size="large"
                     style={{ width: '100%' }}
-                    options={[
-                      { value: 'KA01AB1234', label: 'KA01AB1234' },
-                      { value: 'KA01AB1234', label: 'KA01AB1234' },
-                    ]}
-                    onChange={(value) => handleChange('vehicleNumber', value)}
-                  />
+                    onChange={(value) => {
+                      const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
+                      if (selectedVehicle) {
+                        console.log(selectedVehicle._id)
+                        setselectedVehicleId(selectedVehicle._id); 
+                      }
+                      handleChange('vehicleNumber', value);
+                    }}
+                  >
+                    {vehicleDetails.map((v, index) => (
+                      <Option key={index} value={v.registrationNumber}>
+                        {`${v.registrationNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
-                <Select
+                  <Select
                     name="vehicleType"
                     placeholder="Vehicle Type*"
                     size="large"
                     style={{ width: '100%' }}
-                    value="open"
+                    value={formData.vehicleType}
                     disabled
-                    onChange={(value) => handleChange('vehicleNumber', value)}
                   />
-                  
+
 
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
-                <Input
+                  <Input
                     placeholder="DeliveryNumber*"
                     size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
+                    name="deliveryNumber"
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
                   />
                 </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
-                <Input
+                  <Input
                     placeholder="Quantity (M/T)*"
                     size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
+                    name="quantityInMetricTons"
+                    onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                <Input
+                  <Input
                     placeholder="Company Rate*"
+                    type='number'
                     size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
+                    name="rate"
+                    onChange={(e) => handleChange('rate', e.target.value)}
                   />
                 </Col>
-                
+
                 <Col className="gutter-row mt-6" span={6}>
-{formData.isCommission ? <>
-  <Input
-                    placeholder="Market Rate Rs*"
-                    size="large"
-                    name="diesel"
-                    onChange={(e) => handleChange('diesel', e.target.value)}
-                  />
-</>:<></>}
+                  {formData.isMarketRate ? <>
+                    <Input
+                    type='number'
+                      placeholder="Market Rate Rs*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('marketRate', e.target.value)}
+                    />
+                  </> : <></>}
 
                 </Col>
               </Row>
 
-              
+
             </div>
           </div>
 
@@ -404,15 +576,16 @@ const DispatchContainer = () => {
             <div className="flex gap-1 justify-between">
               <div>
 
-              <div className="text-md font-semibold">Load Trip Expense Details</div>
-              <div className="text-md font-normal">Enter Trip Details</div>
+                <div className="text-md font-semibold">Load Trip Expense Details</div>
+                <div className="text-md font-normal">Enter Trip Details</div>
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-2" span={6}>
-                <Input
+                  <Input
+                  type='number'
                     placeholder="Diesel*"
                     size="large"
                     name="diesel"
@@ -421,6 +594,7 @@ const DispatchContainer = () => {
                 </Col>
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
+                                    type='number'
                     placeholder="Cash*"
                     size="large"
                     name="cash"
@@ -428,7 +602,8 @@ const DispatchContainer = () => {
                   />
                 </Col>
                 <Col className="gutter-row mt-2" span={6}>
-                <Input
+                  <Input
+                                    type='number'
                     placeholder="Bank Transfer*"
                     size="large"
                     name="bankTransfer"
@@ -438,7 +613,7 @@ const DispatchContainer = () => {
                 </Col>
               </Row>
 
-              
+
             </div>
           </div>
           <div className="flex gap-4">
@@ -452,418 +627,54 @@ const DispatchContainer = () => {
     );
   };
 
-  const ViewTruckDataRow = ({ filterTruckTableData }) => {
-  const [formData, setFormData] = useState({
-    registrationNumber: '',
-    commission: '',
-    ownerId: '',
-    accountId:'',
-    vehicleType: '',
-    rcBook: null,
-    isCommission: true,
-    marketRateCommission: '',
-  });
-
-  const handleChange = (name, value) => {
-    if (name === "isCommission") {
-      if (!value) {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-          commission: "",
-        }));
-      } else {
-        // If isCommission is true, set marketRateCommission to an empty string
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-          marketRateCommission: "",
-        }));
-      }
-    } else {
-      // For other fields, update state normally
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    }
-  };
-  console.log(formData)
-  const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      hubId:selectedHubId,
-      accountId:formData.accountId,
-      commission: formData.commission,
-      ownerId: formData.ownerId,
-      rcBook: null,
-      registrationNumber: formData.registrationNumber,
-      truckType: formData.vehicleType,
-      marketRateCommission: "0",
-    };
-   const oldPayload= {
-     "hubId":"6634de2e2588845228b2dbe4",
-    "accountId": "66386d5267827a336ccac791",
-"commission": "2",
-"driverName": "AA",
-"driverPhoneNumber": "1231231343",
-"ownerId": "66386d5267827a336ccac78e",
-"rcBookProof": null,
-"registrationNumber": "KA01KA1287",
-"truckType": "bag"
-}
-
-    await API.post('create-vehicle', payload)
-      .then((response) => {
-        console.log('Truck data added successfully:', response.data);
-        window.location.reload(); // Reload the page or perform any necessary action
-      })
-      .catch((error) => {
-        console.error('Error adding truck data:', error);
-      });
-  };
-
-  return (
-    <>
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold">Edit Challan</h1>
-          {/* Breadcrumb component */}
-          <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
-
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-col gap-1">
-            <div className="text-md font-semibold">Vehicle Information</div>
-            <div className="text-md font-normal">Edit Truck Details</div>
-          </div>
-          <p>{JSON.stringify(filterTruckTableData,null,2)}</p>
-          <div className="flex flex-col gap-1">
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row mt-6" span={6}>
-                <Input
-                  placeholder="Vehicle Number*"
-                  size="large"
-                  name="registrationNumber"
-                value={filterTruckTableData.registrationNumber}
-                  // onChange={(e) => handleChange('registrationNumber', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Select
-                  name="vehicleType"
-                  placeholder="Vehicle Type*"
-                  size="large"
-                  style={{ width: '100%' }}
-                  // options={[
-                  //   { value: 'open', label: 'Open' },
-                  //   { value: 'bulk', label: 'Bulk' },
-                  // ]}
-                  value={filterTruckTableData.truckType}
-                  // onChange={(value) => handleChange('vehicleType', value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-
-                <Select
-                  size='large'
-                  placeholder="Owner Mobile Number"
-                  style={{ width: '100%' }}
-                  name="ownerId"
-                  onChange={(value) => handleChange('ownerId', value)}
-                >
-                  {filteredOwnerData.map((owner, index) => (
-                    <Option key={index} value={owner._id}>
-                      {`${owner.name} - ${owner.phoneNumber}`}
-                    </Option>
-                  ))}
-                </Select> 
-
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-              <DatePicker
-              placeholder='Owner Transfer From Date'
-              style={{width: "100%", height: "100%"}}
-              size="large"
-              onChange={onDateChange} 
-              />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-              <DatePicker
-              placeholder='Owner Transfer to Date'
-              style={{width: "100%", height: "100%"}}
-              size="large"
-              onChange={onDateChange} 
-              />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <div  style={{width:"100%"}} >
-                  RC Book*: {' '}
-                  <Upload name="rcBook">
-                    <Button    style={{width:"100%"}} size="large" icon={<UploadOutlined />}>Upload</Button>
-                  </Upload>
-                </div>
-              </Col>
-
-            
-            </Row>
-          </div>
-        </div>
-
-        <div className="flex gap-4">
-          {/* <Button onClick={() => setShowOwnerTable(true)}>Reset</Button> */}
-          <Button type="primary" className="bg-primary" onClick={handleSubmit}>
-            Save
-          </Button>
-        </div>
-      </div>
-    </>
-  );
-  };
-  const [showTransferForm, setShowTransferForm] = useState(false);
- 
-  const TruckTable = ({  onEditTruckClick,onTransferTruckClick }) => {
-    console.log(challanData)
-    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
-    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-    };
-
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    const columns = [
-      {
-        title: 'Sl No',
-        dataIndex: 'serialNumber',
-        key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
-        width: 80,
-        
-        fixed: 'left',
-      },
-      {
-        title: 'materialType',
-        dataIndex: 'materialType',
-        key: 'materialType',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      { 
-        title: 'Invoice Proof', 
-        dataIndex: 'invoiceProof', 
-        key: 'invoiceProof',
-        width: 80, 
-        render: invoiceProof => (
-          invoiceProof ? <Image src={invoiceProof} alt="Defect Image" width={50} /> : null
-        )
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryLocation',
-        dataIndex:  'deliveryLocation',
-        key:  'deliveryLocation',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'materialType',
-        dataIndex: 'materialType',
-        key: 'materialType',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryLocation',
-        dataIndex:  'deliveryLocation',
-        key:  'deliveryLocation',
-        width: 180,
-      },
-      {
-        title: 'grNumber',
-        dataIndex: 'grNumber',
-        key: 'grNumber',
-        width: 180,
-      },
-      {
-        title: 'deliveryNumber',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        width: 180,
-      },
-      {
-        title: 'Action',
-        key: 'action',
-        width: 80,
-        fixed:'right',
-        render: (record: unknown) => (
-          <Space size="middle">
-            <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
-          </Space>
-        ),
-      },
-    ];
-
-
-    // Update the changePagination and changePaginationAll functions to set currentPage and currentPageSize
-    const changePagination = async (pageNumber, pageSize) => {
-        try {
-          setCurrentPage(pageNumber);
-          setCurrentPageSize(pageSize);
-          const newData = await getTableData(searchQuery, pageNumber, pageSize,selectedHubId);
-          setchallanData(newData);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-  
-      const changePaginationAll = async (pageNumber, pageSize) => {
-        try {
-          setCurrentPage(pageNumber);
-          setCurrentPageSize(pageSize);
-          const newData = await getTableData(searchQuery, pageNumber, pageSize,selectedHubId);
-          setchallanData(newData);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-    return (
-      <>
-
-       
-         <Table
-          rowSelection={rowSelection}
-          columns={columns}
-        //   dataSource={challanData.map(truck => ({
-        //     ...truck,
-        //     phoneNumber: truck.ownerId[0].phoneNumber // Assuming ownerId contains only one object
-        // }))}
-        dataSource={challanData}
-          scroll={{ x: 800, y: 320 }}
-          rowKey="_id"
-          pagination={{
-            current: currentPage,
-            total: totalTruckData,
-            defaultPageSize: currentPageSize, // Set the default page size
-            showSizeChanger: true,
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
-          }}
-        />
-      </>
-    );
-  };
-  
-  const TransferTruck = ({rowDataForTruckTransfer}) => {
-    console.log(rowDataForTruckTransfer)
-  
+  const ViewTruckDataRow = ({ filterDispatchTableData }) => {
     const [formData, setFormData] = useState({
-      registrationNumber: rowDataForTruckTransfer.registrationNumber,
-      commission: rowDataForTruckTransfer.commission,
+      registrationNumber: '',
+      commission: '',
       ownerId: '',
-      accountId:'',
-      vehicleType: rowDataForTruckTransfer.truckType,
+      accountId: '',
+      vehicleType: '',
       rcBook: null,
-      isMarketRate: rowDataForTruckTransfer.isMarketRate,
-    marketRate:  rowDataForTruckTransfer.marketRate,
+      isMarketRate: true,
+      marketRateCommission: '',
     });
 
     const handleChange = (name, value) => {
-      if (name === "isCommission") {
-        if (!value) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            commission: "",
-          }));
-        } else {
-          // If isCommission is true, set marketRateCommission to an empty string
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            marketRateCommission: "",
-          }));
-        }
-      } else {
-        // For other fields, update state normally
-        setFormData((prevFormData) => ({
+       setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
         }));
-      }
+  
     };
-    console.log(formData)
     const onDateChange: DatePickerProps['onChange'] = (date, dateString) => {
-      console.log( dateString);
+      console.log(date, dateString);
     };
 
-    const handleSubmitTransfer = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
-        hubId:selectedHubId,
-        accountId:formData.accountId,
+        hubId: selectedHubId,
+        accountId: formData.accountId,
         commission: formData.commission,
         ownerId: formData.ownerId,
         rcBook: null,
         registrationNumber: formData.registrationNumber,
         truckType: formData.vehicleType,
-        "marketRate":1000,
-"isMarketRate":true
+        marketRateCommission: "0",
       };
-     const oldPayload= {
-       "hubId":"6634de2e2588845228b2dbe4",
-      "accountId": "66386d5267827a336ccac791",
-"commission": "2",
-"driverName": "AA",
-"driverPhoneNumber": "1231231343",
-"ownerId": "66386d5267827a336ccac78e",
-"rcBookProof": null,
-"registrationNumber": "KA01KA1287",
-"truckType": "bag"
-}
+      const oldPayload = {
+        "hubId": "6634de2e2588845228b2dbe4",
+        "accountId": "66386d5267827a336ccac791",
+        "commission": "2",
+        "driverName": "AA",
+        "driverPhoneNumber": "1231231343",
+        "ownerId": "66386d5267827a336ccac78e",
+        "rcBookProof": null,
+        "registrationNumber": "KA01KA1287",
+        "truckType": "bag"
+      }
 
-      axios.post('https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-vehicle', payload)
+      await API.post('create-vehicle', payload)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           window.location.reload(); // Reload the page or perform any necessary action
@@ -877,126 +688,490 @@ const DispatchContainer = () => {
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Transfer Truck</h1>
+            <h1 className="text-xl font-bold">Edit Challan</h1>
             {/* Breadcrumb component */}
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} />
 
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
-              <div className="text-md font-semibold">Vehicle Information</div>
-              <div className="text-md font-normal">Enter Truck Details</div>
+              <div className="flex gap-1 justify-between">
+                <div>
+
+                  <div className="text-md font-semibold">Challan Details</div>
+                  <div className="text-md font-normal">Enter Challan Details</div>
+                </div>
+                <div className='flex gap-2'>
+                  Market Rate
+                  <Switch
+                    defaultChecked={formData.isMarketRate}
+                    name="isMarketRate"
+                    onChange={(checked) => handleChange('isMarketRate', checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Select
+                      name="materialType"
+                      placeholder="Material Type*"
+                      size="large"
+                      style={{ width: '100%' }}
+                      options={[
+                        { value: 'cement', label: 'Cement' },
+                        { value: 'others', label: 'Others' },
+                      ]}
+                      onChange={(value) => handleChange('materialType', value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Input
+                      type="text"
+                      name="grNumber"
+                      placeholder="grNumber*"
+                      size="large"
+                      style={{ width: '100%' }}
+
+                      onChange={(value) => handleChange('vehicleType', value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-6" span={6}>
+
+                    <DatePicker placeholder='GR Date' size="large" style={{ width: "100%" }} />
+
+                  </Col>
+                  <Col className="gutter-row mt-6" span={6}>
+
+                    <Select
+                      name="loadedFrom"
+                      placeholder="Loaded From*"
+                      size="large"
+                      style={{ width: '100%' }}
+                      options={[
+                        { value: 'bengaluru', label: 'bengaluru' },
+                        { value: 'pune', label: 'pune' },
+                      ]}
+                      onChange={(value) => handleChange('loadedFrom', value)}
+                    />
+
+                  </Col>
+                </Row>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Select
+                      name="deliverTo"
+                      placeholder="Deliver To*"
+                      size="large"
+                      style={{ width: '100%' }}
+                      options={[
+                        { value: 'chennai', label: 'chennai' },
+                        { value: 'nashik', label: 'nashik' },
+                      ]}
+                      onChange={(value) => handleChange('deliverTo', value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Select
+                      name="vehicleNumber"
+                      placeholder="Vehicle Number*"
+                      size="large"
+                      style={{ width: '100%' }}
+                      options={[
+                        { value: 'KA01AB1234', label: 'KA01AB1234' },
+                        { value: 'KA01AB1234', label: 'KA01AB1234' },
+                      ]}
+                      onChange={(value) => handleChange('vehicleNumber', value)}
+                    />
+                  </Col>
+                  
+                  <Col className="gutter-row mt-6" span={6}>
+
+                    <Input
+                      placeholder="DeliveryNumber*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('diesel', e.target.value)}
+                    />
+                  </Col>
+                </Row>
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Input
+                      placeholder="Quantity (M/T)*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('diesel', e.target.value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-6" span={6}>
+                    <Input
+                      placeholder="Company Rate*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('diesel', e.target.value)}
+                    />
+                  </Col>
+
+                  <Col className="gutter-row mt-6" span={6}>
+                    {formData.isMarketRate ? <>
+                      <Input
+                        placeholder="Market Rate Rs*"
+                        size="large"
+                        name="diesel"
+                        onChange={(e) => handleChange('diesel', e.target.value)}
+                      />
+                    </> : <></>}
+
+                  </Col>
+                </Row>
+
+
+              </div>
             </div>
-            <div className="flex p-2 " style={{fontSize:"1rem",borderRadius:"5px",color:"rgb(255, 40, 40)",border: "2px solid rgb(255, 40, 40)",backgroundColor: "rgba(255, 40, 40, 0.2)"}}>
-            Please review the owner details before transferring the vehicle owner.
-            </div>
+
             <div className="flex flex-col gap-1">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
-                  <Input
-                    placeholder="Vehicle Number*"
-                    size="large"
-                    name="registrationNumber"
-                  value={rowDataForTruckTransfer.registrationNumber}
-                    // onChange={(e) => handleChange('registrationNumber', e.target.value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <Select
-                    name="vehicleType"
-                    placeholder="Vehicle Type*"
-                    size="large"
-                    style={{ width: '100%' }}
-                    // options={[
-                    //   { value: 'open', label: 'Open' },
-                    //   { value: 'bulk', label: 'Bulk' },
-                    // ]}
-                    value={rowDataForTruckTransfer.truckType}
-                    // onChange={(value) => handleChange('vehicleType', value)}
-                  />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
+              <div className="flex gap-1 justify-between">
+                <div>
 
-                  <Select
-                    size='large'
-                    placeholder="Owner Mobile Number"
-                    style={{ width: '100%' }}
-                    name="ownerId"
-                    onChange={(value) => handleChange('ownerId', value)}
-                  >
-                    {filteredOwnerData.map((owner, index) => (
-                      <Option key={index} value={owner._id}>
-                        {`${owner.name} - ${owner.phoneNumber}`}
-                      </Option>
-                    ))}
-                  </Select> 
+                  <div className="text-md font-semibold">Load Trip Expense Details</div>
+                  <div className="text-md font-normal">Enter Trip Details</div>
+                </div>
+              </div>
 
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                <DatePicker
-                placeholder='Owner Transfer From Date'
-                style={{width: "100%", height: "100%"}}
-                size="large"
-                onChange={onDateChange} 
-                />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                <DatePicker
-                placeholder='Owner Transfer to Date'
-                style={{width: "100%", height: "100%"}}
-                size="large"
-                onChange={onDateChange} 
-                />
-                </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <div  style={{width:"100%"}} >
-                    RC Book*: {' '}
-                    <Upload name="rcBook">
-                      <Button    style={{width:"100%"}} size="large" icon={<UploadOutlined />}>Upload</Button>
-                    </Upload>
-                  </div>
-                </Col>
+              <div className="flex flex-col gap-1">
+                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                  <Col className="gutter-row mt-2" span={6}>
+                    <Input
+                      placeholder="Diesel*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('diesel', e.target.value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={6}>
+                    <Input
+                      placeholder="Cash*"
+                      size="large"
+                      name="cash"
+                      onChange={(e) => handleChange('cash', e.target.value)}
+                    />
+                  </Col>
+                  <Col className="gutter-row mt-2" span={6}>
+                    <Input
+                      placeholder="Bank Transfer*"
+                      size="large"
+                      name="bankTransfer"
+                      onChange={(e) => handleChange('bankTransfer', e.target.value)}
+                    />
 
-              
-              </Row>
+                  </Col>
+                </Row>
+
+
+              </div>
             </div>
-          </div>
-
-          <div className="flex gap-4">
-            {/* <Button onClick={() => setShowOwnerTable(true)}>Reset</Button> */}
-            <Button type="primary" className="bg-primary" onClick={handleSubmitTransfer}>
-              Save
-            </Button>
           </div>
         </div>
-        <>{JSON.stringify(rowDataForTruckTransfer['ownerId'],null,2)}</>
       </>
     );
   };
-  
+  const [showTransferForm, setShowTransferForm] = useState(false);
+
+  const DispatchTable = ({ onEditTruckClick}) => {
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    };
+
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+    const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index: any) => index + 1,
+        width: 80,
+
+        fixed: 'left',
+      },
+      {
+        title: 'Material Type',
+        dataIndex: 'materialType',
+        key: 'materialType',
+        width: 180,
+      },
+      {
+        title: 'GR No',
+        dataIndex: 'grNumber',
+        key: 'grNumber',
+        width: 100,
+      },
+      {
+        title: 'GR Date',
+        dataIndex: 'grDate',
+        key: 'grDate',
+        width: 120,
+      },
+      {
+        title: 'Load Location',
+        dataIndex: 'loadLocation',
+        key: 'loadLocation',
+        width: 150,
+      },
+      {
+        title: 'Delivery Location',
+        dataIndex: 'deliveryLocation',
+        key: 'deliveryLocation',
+        width: 150,
+      },
+      {
+        title: 'Vehicle Number',
+        dataIndex: 'vehicleNumber',
+        key: 'vehicleNumber',
+        width: 120,
+      },
+      // {
+      //   title: 'Owner Name',
+      //   dataIndex: 'ownerName',
+      //   key: 'ownerName',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Owner Phone',
+      //   dataIndex: 'ownerPhone',
+      //   key: 'ownerPhone',
+      //   width: 120,
+      // },
+      {
+        title: 'Vehicle Type',
+        dataIndex: 'vehicleType',
+        key: 'vehicleType',
+        width: 120,
+      },
+      {
+        title: 'Delivery Number',
+        dataIndex: 'deliveryNumber',
+        key: 'deliveryNumber',
+        width: 120,
+      },
+      // {
+      //   title: 'Invoice Proof',
+      //   dataIndex: 'invoiceProof',
+      //   key: 'invoiceProof',
+      //   width: 120,
+      //   render: invoiceProof => <Image src={invoiceProof} alt="Invoice Proof" width={50} />
+      // },
+      {
+        title: 'Quantity',
+        dataIndex: 'quantityInMetricTons',
+        key: 'quantityInMetricTons',
+        width: 180,
+      },
+      // {
+      //   title: 'Rate',
+      //   dataIndex: 'rate',
+      //   key: 'rate',
+      //   width: 100,
+      // },
+      {
+        title: 'C.Rate',
+        dataIndex: 'commisionRate',
+        key: 'commisionRate',
+        width: 120,
+      },
+      // {
+      //   title: 'Market Rate',
+      //   dataIndex: 'isMarketRate',
+      //   key: 'isMarketRate',
+      //   width: 120,
+      //   render: isMarketRate => (isMarketRate ? 'Yes' : 'No')
+      // },
+      {
+        title: 'Market Rate Value',
+        dataIndex: 'marketRate',
+        key: 'marketRate',
+        width: 150,
+      },
+      // {
+      //   title: 'Commission Total',
+      //   dataIndex: 'commisionTotal',
+      //   key: 'commisionTotal',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Total Expense',
+      //   dataIndex: 'totalExpense',
+      //   key: 'totalExpense',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Shortage',
+      //   dataIndex: 'shortage',
+      //   key: 'shortage',
+      //   width: 100,
+      // },
+      // {
+      //   title: 'Balance',
+      //   dataIndex: 'balance',
+      //   key: 'balance',
+      //   width: 100,
+      // },
+      {
+        title: 'Diesel',
+        dataIndex: 'diesel',
+        key: 'diesel',
+        width: 100,
+      },
+      {
+        title: 'Cash',
+        dataIndex: 'cash',
+        key: 'cash',
+        width: 100,
+      },
+      {
+        title: 'Bank Transfer',
+        dataIndex: 'bankTransfer',
+        key: 'bankTransfer',
+        width: 120,
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        width: 80,
+        fixed: 'right',
+        render: (record: unknown) => (
+          <Space size="middle">
+            <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
+          </Space>
+        ),
+      },
+      // {
+      //   title: 'Recovery',
+      //   dataIndex: 'recovery',
+      //   key: 'recovery',
+      //   width: 100,
+      // },
+      // {
+      //   title: 'Outstanding',
+      //   dataIndex: 'outstanding',
+      //   key: 'outstanding',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Acknowledged',
+      //   dataIndex: 'isAcknowledged',
+      //   key: 'isAcknowledged',
+      //   width: 120,
+      //   render: isAcknowledged => (isAcknowledged ? 'Yes' : 'No')
+      // },
+      // {
+      //   title: 'Received',
+      //   dataIndex: 'isReceived',
+      //   key: 'isReceived',
+      //   width: 100,
+      //   render: isReceived => (isReceived ? 'Yes' : 'No')
+      // },
+
+      // {
+      //   title: 'Material Type',
+      //   dataIndex: 'materialType',
+      //   key: 'materialType',
+      //   width: 120,
+      // },
+
+
+      // {
+      //   title: 'Vehicle ID',
+      //   dataIndex: 'vehicleId',
+      //   key: 'vehicleId',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Vehicle Bank',
+      //   dataIndex: 'vehicleBank',
+      //   key: 'vehicleBank',
+      //   width: 120,
+      // },
+
+      // {
+      //   title: 'Created At',
+      //   dataIndex: 'createdAt',
+      //   key: 'createdAt',
+      //   width: 150,
+      // },
+      // {
+      //   title: 'Modified At',
+      //   dataIndex: 'modifiedAt',
+      //   key: 'modifiedAt',
+      //   width: 150,
+      // },
+    ];
+     const changePagination = async (pageNumber, pageSize) => {
+      try {
+        setCurrentPage(pageNumber);
+        setCurrentPageSize(pageSize);
+        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        setchallanData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    const changePaginationAll = async (pageNumber, pageSize) => {
+      try {
+        setCurrentPage(pageNumber);
+        setCurrentPageSize(pageSize);
+        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        setchallanData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
     return (
       <>
-        <>
-          {showTruckTable ? (
-            <>
-              <Truck onAddTruckClick={handleAddTruckClick} />
-              <TruckTable onEditTruckClick={handleEditTruckClick} onTransferTruckClick={handleTransferTruckClick}/>
-            </>
-          ) : (
-            rowDataForTruckEdit ? <>
-              {showTransferForm ? <TransferTruck rowDataForTruckTransfer={rowDataForTruckTransfer} /> :
-              <ViewTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
-          }
-              </>
-            : (
-              
-                  <TruckMasterForm />
-            )
-          )}
-        </>
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={challanData}
+          scroll={{ x: 800, y: 320 }}
+          rowKey="_id"
+          pagination={{
+            current: currentPage,
+            total: totalDispatchData,
+            defaultPageSize: currentPageSize, // Set the default page size
+            showSizeChanger: true,
+            onChange: changePagination,
+            onShowSizeChange: changePaginationAll,
+          }}
+        />
       </>
-    )
-  }
-  
+    );
+  };
+
+  return (
+    <>
+      <>
+        {showDispatchTable ? (
+          <>
+            <Truck onAddTruckClick={handleAddTruckClick} />
+            <DispatchTable onEditTruckClick={handleEditTruckClick} />
+          </>
+        ) : (
+          rowDataForDispatchEdit ? <>
+            <ViewTruckDataRow filterDispatchTableData={rowDataForDispatchEdit} />
+          </>
+            : (<CreateChallanForm />)
+        )}
+      </>
+    </>
+  )
+}
 
 export default DispatchContainer

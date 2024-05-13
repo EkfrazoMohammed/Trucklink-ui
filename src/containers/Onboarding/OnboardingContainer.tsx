@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row,Pagination } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -624,40 +624,40 @@ const OnboardingContainer = () => {
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index) => index + 1,
-        width: 30,
+        width: "auto",
       },
       {
         title: 'Owner Name',
         dataIndex: 'name',
         key: 'name',
-        width: 80,
+        width: "auto",
       },
       {
         title: 'District',
         dataIndex: 'district',
         key: 'district',
-        width: 90,
+        width: "auto",
       },
       {
         title: 'State',
         dataIndex: 'state',
         key: 'state',
-        width: 70,
+        width: "auto",
       },
       {
         title: 'Email ID',
         dataIndex: 'email',
         key: 'email',
-        width: 100,
+        width: "auto",
       },
       {
         title: 'Action',
         key: 'action',
-        width: 60,
+        width: "auto",
         render: (record) => (
           <Space size="middle">
             <Tooltip placement="top" title="Preview"><a onClick={() => onEditClick(record)}><EyeOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Edit"><a onClick={() => onEditClick(record)}><FormOutlined /></a></Tooltip>
+            {/* <Tooltip placement="top" title="Edit"><a onClick={() => onEditClick(record)}><FormOutlined /></a></Tooltip> */}
             <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
           </Space>
         ),
@@ -687,17 +687,50 @@ const OnboardingContainer = () => {
         console.error('Error fetching data:', error);
       }
     };
-  
+    const PaginationWithSizeChanger = () => (
+      <Pagination
+        current={currentPage}
+        total={totalOwnerData}
+        defaultPageSize={currentPageSize}
+       
+        onChange={changePagination}
+        style={{ textAlign: 'right', marginTop: '10px' }} // Adjust top margin as needed
+      />
+    );
     return (
       <>
+<Table
+  rowSelection={rowSelection}
+  columns={columns}
+  dataSource={filteredOwnerData}
+  scroll={{ x: 800, y: 320 }}
+  rowKey="_id"
+  pagination={{
+    position: ['bottomCenter','topRight'], // Position of bottom pagination
+    current: currentPage,
+    total: totalOwnerData,
+    defaultPageSize: currentPageSize,
+    showSizeChanger: false,
+    onChange: changePagination,
+  }}
+  components={{
+    pagination: {
+      showSizeChanger: false,
+      top: PaginationWithSizeChanger, // Use custom pagination for the top position
+      bottom: Pagination, // Default pagination for the bottom position
+    },
+  }}
+/>
 
-        <Table
+
+        {/* <Table
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredOwnerData}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
+            position: ['bottomCenter'], // Position of both components
             current: currentPage,
             total: totalOwnerData,
             defaultPageSize: currentPageSize, // Set the default page size
@@ -705,7 +738,7 @@ const OnboardingContainer = () => {
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
-        />
+        /> */}
       </>
     );
   };

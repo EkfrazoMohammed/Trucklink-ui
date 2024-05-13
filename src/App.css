@@ -143,3 +143,8 @@ margin: 0 auto;
   border-radius: 4px;
   background-color: #fff;
 }
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-tbody >tr >th, :where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-tbody >tr >td {
+  transition: background 0.2s,border-color 0.2s;
+  border: 1px solid #f0f0f0 !important;
+}

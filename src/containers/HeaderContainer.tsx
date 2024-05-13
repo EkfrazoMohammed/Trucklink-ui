@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store'; // Import RootState and AppDispatch from your Redux store
 import axios from "axios"
@@ -7,11 +7,11 @@ import { setSelectedHub, fetchHubData } from '../redux/reducers/hubReducer';
 import { EditOutlined, DownOutlined } from '@ant-design/icons';
 import { Modal, Button, List, Avatar, Badge, Dropdown, Input, Space } from "antd";
 import Profile_image from "../assets/Profile.png";
-import {API} from "../API/apirequest"
+import { API } from "../API/apirequest"
 interface Hub {
   _id: string;
   location: string;
-  
+
 }
 
 interface RootState {
@@ -33,17 +33,17 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   //   state: ''
   // });
   const [hubFormData, setHubFormData] = useState({
-    location:""
+    location: ""
   });
   // background: rgba(255, 182, 40, 1);
 
-  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255','255, 182, 40','255,79,40','11,205,181','40,255,178','70,255,40']; 
+  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40'];
 
-  const getHubColor=localStorage.getItem("selectedHubColor")
+  const getHubColor = localStorage.getItem("selectedHubColor")
 
 
   // const hubData = useSelector((state: RootState) => state.hub.hubData);
-  const [hubData,setHubData]=useState([])
+  const [hubData, setHubData] = useState([])
 
   // Define a custom typed useDispatch hook
   const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -54,9 +54,9 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   useEffect(() => {
     const fetchHubData = async () => {
       const response = await API.get("get-hubs");
-      if(response.status === 201) {
+      if (response.status === 201) {
         setHubData(response.data.hubs)
-      }else{
+      } else {
         console.log("error fetching hubs")
       }
       // console.log()
@@ -99,25 +99,25 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     setModalVisible(false);
     setSecondModalVisible(false);
   }
-  
-  const selectHubHandler = (value: string, id: string,color:string) => {
+
+  const selectHubHandler = (value: string, id: string, color: string) => {
     dispatch(setSelectedHub(value));
     localStorage.setItem("selectedHubID", id);
     localStorage.setItem("selectedHubName", value);
     localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
   };
-  
-  
+
+
   // const handleEdit = (hubId: string) => {
-    //   const selectedHub = hubData.find((hub: any) => hub._id === hubId);
-    //   if (selectedHub) {
-      //     setEditFormData({
-        //       name: selectedHub.name,
-        //       cityCode: selectedHub.cityCode,
-        //       district: selectedHub.district,
-        //       state: selectedHub.state
-        //     });
+  //   const selectedHub = hubData.find((hub: any) => hub._id === hubId);
+  //   if (selectedHub) {
+  //     setEditFormData({
+  //       name: selectedHub.name,
+  //       cityCode: selectedHub.cityCode,
+  //       district: selectedHub.district,
+  //       state: selectedHub.state
+  //     });
   //     setThirdModalVisible(true);
   //   }
   // };
@@ -129,13 +129,8 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   const handleCreateHub = async () => {
     try {
-      // const action = await dispatch(postHubData(hubFormData));
-      // console.log(action)
-      // const response: any = action.payload; // Using 'any' type
-      // console.log(response)
-
       const response = await API.post("create-hub", hubFormData)
-      if (response.status==201) {
+      if (response.status == 201) {
         setSecondModalVisible(false);
         showConfirmModal();
         setTimeout(() => {
@@ -159,30 +154,30 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   return (
     <>
-      <div className="flex h-10 justify-between items-center border-b-2" style={{display:`flex`}}>
+      <div className="flex h-10 justify-between items-center border-b-2" style={{ display: `flex` }}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`,backgroundColor:`rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
+          <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
           {/* Select Hub Modal */}
           <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
             <div className="flex flex-col">
-         
-               <div className="flex flex-wrap">
-    {hubData && hubData.map((option, index: number) => (
-        <Space direction="vertical" key={index}>
-          <div className={`card-hub `} >
-            <div onClick={() => selectHubHandler(option.location, option._id,borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center",borderColor: `rgb(${borderColors[index]})`,borderLeft:"3px solid #fff" }} className="progress-hub" >
-              <div className="text-hub">
-                {/* <p>{option.cityCode}</p> */}
-                <p>{option.location}</p>
-                 {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div>  */}
-                <div style={{ cursor: "pointer" }}><EditOutlined /></div> 
+
+              <div className="flex flex-wrap">
+                {hubData && hubData.map((option, index: number) => (
+                  <Space direction="vertical" key={index}>
+                    <div className={`card-hub `} >
+                      <div onClick={() => selectHubHandler(option.location, option._id, borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center", borderColor: `rgb(${borderColors[index]})`, borderLeft: "3px solid #fff" }} className="progress-hub" >
+                        <div className="text-hub">
+                          {/* <p>{option.cityCode}</p> */}
+                          <p>{option.location}</p>
+                          {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div>  */}
+                          <div style={{ cursor: "pointer" }}><EditOutlined /></div>
+                        </div>
+                      </div>
+                    </div>
+                  </Space>
+                ))}
               </div>
-            </div>
-          </div>
-        </Space> 
-      ))}
-    </div>
               <Button type="primary" onClick={showSecondModal}>Create New Hub</Button>
             </div>
           </Modal>

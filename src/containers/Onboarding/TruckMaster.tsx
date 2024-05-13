@@ -657,16 +657,15 @@ const TruckMaster = () => {
     const handleSubmitTransfer = (e) => {
 
       e.preventDefault();
-99999999999
       const vehicleId = rowDataForTruckTransfer._id
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
-      const url = `https://trucklinkuatnew.thestorywallcafe.com/prod/v1/update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
+      const url = `update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
 
       const headers = {
         "Content-Type": "application/json",
 
       }
-      axios.put(url, formData, headers)
+      API.put(url, formData, headers)
         .then((response) => {
           console.log('Truck transfered successfully:', response.data);
           alert("Owner Transfered successfully")

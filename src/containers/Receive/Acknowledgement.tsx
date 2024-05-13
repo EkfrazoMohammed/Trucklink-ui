@@ -316,7 +316,6 @@ const Acknowledgement = () => {
     };
 
     const handleSaveAndMoveToReceiveChallan = (rowData) => {
-        console.log(rowData);
         try {
             // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
             API.put(`update-challan-status/${rowData._id}/ACK`, rowData)

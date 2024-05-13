@@ -80,10 +80,12 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
     setLogoutModalVisible(false);
     // navigate("/")
     localStorage.removeItem('token');
+    localStorage.clear();
+
     window.location.replace("/");
   };
   return (
-    <Layout style={{ minHeight: '90vh' }}>
+    <Layout style={{ minHeight: '95vh' }}>
       <Sider style={{background:"radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)"}} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div

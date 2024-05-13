@@ -160,7 +160,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   return (
     <>
       <div className="flex h-10 justify-between items-center border-b-2" style={{display:`flex`}}>
-        <div className='flex gap-2 justify-center items-center font-semibold text-lg'>{title}</div>
+        <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
           <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`,backgroundColor:`rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
           {/* Select Hub Modal */}

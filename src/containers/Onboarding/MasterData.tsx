@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch } from 'antd';
 import axios from 'axios';
-import {API} from "../../API/apirequest"
+import { API } from "../../API/apirequest"
 const MasterData = () => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
@@ -123,7 +123,7 @@ const MasterData = () => {
 
     return (
         <>
-            <div className="flex flex-col">
+            <div className="flex flex-col" style={{ height: "70vh", overflowY: "scroll" }}>
                 <div className="flex gap-12">
 
 

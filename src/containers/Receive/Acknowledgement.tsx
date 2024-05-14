@@ -12,6 +12,10 @@ import type { DatePickerProps } from 'antd';
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
 };
+
+const filterOption = (input, option) =>
+    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+  
 const Acknowledgement = () => {
 
     const [showTable, setShowTable] = useState(true);
@@ -68,7 +72,7 @@ const Acknowledgement = () => {
     const DispatchChallanComponent = () => {
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
-
+{/* 
                 <div className='flex gap-2'>
                     <Search
                         placeholder="Search by Vehicle Number"
@@ -80,7 +84,7 @@ const Acknowledgement = () => {
                     <DatePicker onChange={onChange} placeholder='To date' />
 
 
-                </div>
+                </div> */}
 
             </div>
 
@@ -107,7 +111,7 @@ const Acknowledgement = () => {
                 title: 'Ageing',
                 dataIndex: 'ageing',
                 key: 'ageing',
-                width: 80,
+                width: 110,
                 fixed: 'left',
                 onCell: (record) => {
                     const givenDate = new Date(record.grISODate);
@@ -130,7 +134,7 @@ const Acknowledgement = () => {
 
                     return {
                         id: `ageing-${record._id}`,
-                        style: { backgroundColor, color: "#fff", },
+                        style: { backgroundColor, color: "#fff",textAlign: "center"},
                     };
                 },
                 render: (_, record) => {
@@ -149,26 +153,26 @@ const Acknowledgement = () => {
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
                 render: (text, record, index: any) => index + 1,
-                width: 80,
+                width: 110,
 
             },
             {
-                title: 'grNumber',
+                title: 'GR Number',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
-                width: 180,
+                width: 100,
             },
             {
-                title: 'grDate',
+                title: 'GR Date',
                 dataIndex: 'grDate',
                 key: 'grDate',
-                width: 180,
+                width: 140,
             },
             {
                 title: 'Truck Number',
                 dataIndex: 'vehicleNumber',
                 key: 'vehicleNumber',
-                width: 180,
+                width: 140,
             },
             {
                 title: 'From',
@@ -186,72 +190,106 @@ const Acknowledgement = () => {
                 title: 'Delivery No',
                 dataIndex: 'deliveryNumber',
                 key: 'deliveryNumber',
-                width: 180,
+                width: 140,
             },
 
             {
-                title: 'QTY',
+                title: 'Qty',
                 dataIndex: 'quantityInMetricTons',
                 key: 'quantityInMetricTons',
-                width: 90,
+                width: 110,
             },
 
             {
-                title: 'C.Rate',
+                title: 'Company Rate',
                 dataIndex: 'rate',
                 key: 'rate',
-                width: 120,
+                width: 110,
             },
             {
-                title: 'M.Rate',
+                title: 'Market Rate',
                 dataIndex: 'marketRate',
                 key: 'marketRate',
-                width: 120,
+                width: 110,
             },
-            {
+            // {
+            //     title: 'Total',
+            //     dataIndex: 'commisionTotal',
+            //     key: 'commisionTotal',
+            //     width: 110,
+            // },
+            // {
+            //     title: 'Commission',
+            //     dataIndex: 'commisionTotal',
+            //     key: 'commisionTotal',
+            //     width: 140,
+            // },
+           {
                 title: 'Total',
-                dataIndex: 'commisionTotal',
-                key: 'commisionTotal',
-                width: 120,
+                dataIndex: 'rate',
+                key: 'rate',
+                width: 110,
             },
             {
                 title: 'Commission',
-                dataIndex: 'commisionTotal',
-                key: 'commisionTotal',
-                width: 120,
-            },
+                width: 140,
+                render: (_, record) => {
+                  return (
+                    <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
+
+                    <p>
+                      {record.commisionRate == null ?<>0{"%"}</>:<> record.commisionRate{"%"}</>}
+                    </p>
+                    <p>
+                      {`${record.marketRate}`}
+                    </p>
+                    </div>
+                  );
+                }
+              },
             {
                 title: 'Diesel',
                 dataIndex: 'diesel',
                 key: 'diesel',
-                width: 80,
+                width: 110,
             },
             {
                 title: 'Cash',
                 dataIndex: 'cash',
                 key: 'cash',
-                width: 80,
+                width: 110,
             },
             {
                 title: 'Bank Transfer',
                 dataIndex: 'bankTransfer',
                 key: 'bankTransfer',
-                width: 180,
+                width: 110,
             },
             {
-                title: 'shortage',
+                title: 'Shortage',
                 dataIndex: 'shortage',
                 key: 'shortage',
                 width: 180,
                 render: (_, record) => {
-                    return record.shortage == 0 ? <><Input type="number" placeholder='Enter' /> </> : 0;
+                    return record.shortage == 0 ? <><Input type="number" placeholder='Enter' /> </> : record.shortage;
                 },
             },
             {
-                title: 'balance',
+                title: 'Balance',
                 dataIndex: 'balance',
                 key: 'balance',
-                width: 120,
+                width: 140,
+                render: (_,record: unknown) => (
+                    <p>
+                        {record.balance > 0 ?
+                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {record.balance}</span>
+                        :
+                        <span style={{color:"red"}}>{record.balance}</span>
+                        
+                    }
+                    </p>
+                )
+                    
             },
             {
                 title: 'Action',
@@ -366,7 +404,7 @@ const EditableChallan = ({ editingRow }) => {
             "isMarketRate": editingRow.isMarketRate,
             "marketRate": editingRow.marketRate,
             "hubId": selectedHubId,
-            "shortage": 0,
+            "shortage": editingRow.shortage,
         }
 
     );
@@ -553,8 +591,8 @@ const EditableChallan = ({ editingRow }) => {
         }
 
         const payload = {
-            // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-            "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+            "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+            // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
             "bankTransfer": formData.bankTransfer,
             "cash": formData.cash,
             "deliveryLocation": formData.deliveryLocation,
@@ -579,7 +617,8 @@ const EditableChallan = ({ editingRow }) => {
             "commisionTotal": commissionTotal,
             "isMarketRate": formData.isMarketRate,
             "marketRate": formData.marketRate,
-            "hubId": selectedHubId
+            "hubId": selectedHubId,
+            "shortage":formData.shortage
         }
         // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
         API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
@@ -632,6 +671,9 @@ const EditableChallan = ({ editingRow }) => {
                                     size="large"
                                     value={formData.materialType}
                                     style={{ width: '100%' }}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    filterOption={filterOption}
                                 >
                                     {materials.map((v, index) => (
                                         <Option key={index} value={v.materialType}>
@@ -670,6 +712,9 @@ const EditableChallan = ({ editingRow }) => {
                                     size="large"
                                     value={formData.loadLocation}
                                     style={{ width: '100%' }}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    filterOption={filterOption}
                                 >
                                     {loadLocation.map((v, index) => (
                                         <Option key={index} value={v.location}>
@@ -689,6 +734,9 @@ const EditableChallan = ({ editingRow }) => {
                                     size="large"
                                     value={formData.deliveryLocation}
                                     style={{ width: '100%' }}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    filterOption={filterOption}
                                 >
                                     {deliveryLocation.map((v, index) => (
                                         <Option key={index} value={v.location}>
@@ -704,6 +752,9 @@ const EditableChallan = ({ editingRow }) => {
                                     size="large"
                                     value={formData.vehicleNumber}
                                     style={{ width: '100%' }}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    filterOption={filterOption}
                                     onChange={(value) => {
                                         const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
                                         if (selectedVehicle) {

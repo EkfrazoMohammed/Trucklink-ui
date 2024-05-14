@@ -12,6 +12,10 @@ import type { DatePickerProps } from 'antd';
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
 };
+
+const filterOption = (input, option) =>
+    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+  
 const Receive = () => {
 
     const [showTable, setShowTable] = useState(true);
@@ -71,7 +75,7 @@ const Receive = () => {
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
 
-                <div className='flex gap-2'>
+                {/* <div className='flex gap-2'>
                     <Search
                         placeholder="Search by Vehicle Number"
                         size='large'
@@ -82,7 +86,7 @@ const Receive = () => {
                     <DatePicker onChange={onChange} placeholder='To date' />
 
 
-                </div>
+                </div> */}
 
             </div>
 
@@ -105,47 +109,47 @@ const Receive = () => {
 
         const columns = [
 
-            {
-                title: 'Ageing',
-                dataIndex: 'ageing',
-                key: 'ageing',
-                width: 80,
-                fixed: 'left',
-                onCell: (record) => {
-                    const givenDate = new Date(record.grISODate);
-                    const today = new Date();
-                    const differenceInMs = today - givenDate;
-                    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+            // {
+            //     title: 'Ageing',
+            //     dataIndex: 'ageing',
+            //     key: 'ageing',
+            //     width: 80,
+            //     fixed: 'left',
+            //     onCell: (record) => {
+            //         const givenDate = new Date(record.grISODate);
+            //         const today = new Date();
+            //         const differenceInMs = today - givenDate;
+            //         const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
 
-                    let backgroundColor;
+            //         let backgroundColor;
 
-                    if (differenceInDays < 10) {
-                        backgroundColor = '#009F23';
-                    } else if (differenceInDays < 20) {
-                        backgroundColor = '#FFED4A';
+            //         if (differenceInDays < 10) {
+            //             backgroundColor = '#009F23';
+            //         } else if (differenceInDays < 20) {
+            //             backgroundColor = '#FFED4A';
 
-                    } else if (differenceInDays >= 30) {
-                        backgroundColor = '#FF0000';
-                    } else {
-                        backgroundColor = 'inherit'; // Default background color
-                    }
+            //         } else if (differenceInDays >= 30) {
+            //             backgroundColor = '#FF0000';
+            //         } else {
+            //             backgroundColor = 'inherit'; // Default background color
+            //         }
 
-                    return {
-                        id: `ageing-${record._id}`,
-                        style: { backgroundColor, color: "#fff", },
-                    };
-                },
-                render: (_, record) => {
-                    const givenDate = new Date(record.grISODate);
-                    const today = new Date();
-                    const differenceInMs = today - givenDate;
-                    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+            //         return {
+            //             id: `ageing-${record._id}`,
+            //             style: { backgroundColor, color: "#fff", },
+            //         };
+            //     },
+            //     render: (_, record) => {
+            //         const givenDate = new Date(record.grISODate);
+            //         const today = new Date();
+            //         const differenceInMs = today - givenDate;
+            //         const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
 
-                    return (
-                        <span>{differenceInDays}</span>
-                    );
-                },
-            },
+            //         return (
+            //             <span>{differenceInDays}</span>
+            //         );
+            //     },
+            // },
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
@@ -155,13 +159,13 @@ const Receive = () => {
 
             },
             {
-                title: 'grNumber',
+                title: 'GR Number',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
                 width: 180,
             },
             {
-                title: 'grDate',
+                title: 'GR Date',
                 dataIndex: 'grDate',
                 key: 'grDate',
                 width: 180,
@@ -192,20 +196,20 @@ const Receive = () => {
             },
 
             {
-                title: 'QTY',
+                title: 'Qty',
                 dataIndex: 'quantityInMetricTons',
                 key: 'quantityInMetricTons',
                 width: 90,
             },
 
             {
-                title: 'C.Rate',
+                title: 'Company Rate',
                 dataIndex: 'rate',
                 key: 'rate',
                 width: 120,
             },
             {
-                title: 'M.Rate',
+                title: 'Market Rate',
                 dataIndex: 'marketRate',
                 key: 'marketRate',
                 width: 120,
@@ -218,10 +222,21 @@ const Receive = () => {
             },
             {
                 title: 'Commission',
-                dataIndex: 'commisionTotal',
-                key: 'commisionTotal',
-                width: 120,
-            },
+                width: 140,
+                render: (_, record) => {
+                  return (
+                    <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
+
+                    <p>
+                      {record.commisionRate == null ?<>0{"%"}</>:<> record.commisionRate{"%"}</>}
+                    </p>
+                    <p>
+                      {`${record.marketRate}`}
+                    </p>
+                    </div>
+                  );
+                }
+              },
             {
                 title: 'Diesel',
                 dataIndex: 'diesel',
@@ -245,15 +260,26 @@ const Receive = () => {
                 dataIndex: 'shortage',
                 key: 'shortage',
                 width: 180,
-                render: (text) => {
-                    return text === 0 ? <><Input type="number" placeholder='Enter' /> </> : text;
+                render: (_,record) => {
+                    return record.shortage
                 },
             },
             {
-                title: 'balance',
+                title: 'Balance',
                 dataIndex: 'balance',
                 key: 'balance',
-                width: 120,
+                width: 140,
+                render: (_,record: unknown) => (
+                    <p>
+                        {record.balance > 0 ?
+                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {record.balance}</span>
+                        :
+                        <span style={{color:"red"}}>{record.balance}</span>
+                        
+                    }
+                    </p>
+                )
+                    
             },
             {
                 title: 'Action',
@@ -350,7 +376,7 @@ const Receive = () => {
                 "isMarketRate": editingRow.isMarketRate,
                 "marketRate": editingRow.marketRate,
                 "hubId": selectedHubId,
-                "shortage": 0,
+                "shortage": editingRow.shortage,
             }
     
         );
@@ -537,8 +563,8 @@ const Receive = () => {
             }
     
             const payload = {
-                // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-                "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+                "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+                // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
                 "bankTransfer": formData.bankTransfer,
                 "cash": formData.cash,
                 "deliveryLocation": formData.deliveryLocation,
@@ -563,7 +589,8 @@ const Receive = () => {
                 "commisionTotal": commissionTotal,
                 "isMarketRate": formData.isMarketRate,
                 "marketRate": formData.marketRate,
-                "hubId": selectedHubId
+                "hubId": selectedHubId,
+                "shortage":formData.shortage
             }
             // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
             API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
@@ -610,6 +637,9 @@ const Receive = () => {
                                 <Col className="gutter-row mt-6" span={6}>
     
                                     <Select
+                                      showSearch
+                                      optionFilterProp="children"
+                                      filterOption={filterOption}
                                         name="materialType"
                                         onChange={(value) => handleChange('materialType', value)}
                                         placeholder="Material Type*"
@@ -648,6 +678,9 @@ const Receive = () => {
                                 <Col className="gutter-row mt-6" span={6}>
     
                                     <Select
+                                      showSearch
+                                      optionFilterProp="children"
+                                      filterOption={filterOption}
                                         name="loadLocation"
                                         onChange={(value) => handleChange('loadLocation', value)}
                                         placeholder="Loaded From*"
@@ -667,6 +700,9 @@ const Receive = () => {
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col className="gutter-row mt-6" span={6}>
                                     <Select
+                                      showSearch
+                                      optionFilterProp="children"
+                                      filterOption={filterOption}
                                         name="deliveryLocation"
                                         onChange={(value) => handleChange('deliveryLocation', value)}
                                         placeholder="Deliver To*"
@@ -683,6 +719,9 @@ const Receive = () => {
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
                                     <Select
+                                      showSearch
+                                      optionFilterProp="children"
+                                      filterOption={filterOption}
                                         name="vehicleNumber"
                                         placeholder="Vehicle Number*"
                                         size="large"

@@ -13,7 +13,7 @@ const ReceiveContainer = () => {
     },
     {
       key: '2',
-      label: 'ReceiveRegister',
+      label: 'Receive Register',
       children: <Receive />,
     }
   ];

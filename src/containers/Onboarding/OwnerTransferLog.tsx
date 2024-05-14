@@ -3,13 +3,13 @@ import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb,
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import {API} from "../../API/apirequest"
+import { API } from "../../API/apirequest"
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 
 
 const OwnerTransferLog = () => {
-    
+
   const [searchQuery, setSearchQuery] = useState('');
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -48,151 +48,151 @@ const OwnerTransferLog = () => {
       </div>
     );
   };
-    const [transferData, setTransferData] = useState([])
-    const getTransferDetails = async () => {
-      let response = await API.get("get-all-users-logs")
-        .then((res) => {
-          if(res.status ==201){
-            setTransferData(res.data.ownerDetails);
-          }else{
-            console.log('error')
-          }
-        }).catch((err) => {
-          console.log(err)
-        })
+  const [transferData, setTransferData] = useState([])
+  const getTransferDetails = async () => {
+    let response = await API.get("get-all-users-logs")
+      .then((res) => {
+        if (res.status == 201) {
+          setTransferData(res.data.ownerDetails);
+        } else {
+          console.log('error')
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
 
 
-    }
-    useEffect(() => {
-      getTransferDetails()
-    }, [])
-    const TransferLogTable = ({ transferData }) => {
-        console.log(transferData)
-        const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-    
-        const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-          setSelectedRowKeys(newSelectedRowKeys);
-        };
-    
-    
-        const rowSelection = {
-          selectedRowKeys,
-          onChange: onSelectChange,
-        };
-    
-        
-        const mypayload=[
-          {
-            "_id": "663a037fdbd783425cc391e6",
-            "vehicleNumber": "KA03AB1234",
-            "userId": "5ebb92dccbfb5400119fcb4a",
-            "oldOwnerId": {
-                "_id": "5ebe930dbda0d60011efac24",
-                "name": "Shafiullah M"
-            },
-            "newOwnerId": {
-                "_id": "6634ca18f88be2601477c217",
-                "name": "tay"
-            },
-            "vehicleIds": "6639e75cdbd783425cc39008",
-            "ownerTransferDate": "2024-05-07T10:33:29.917Z",
-            "ownerTransferFromDate": null,
-            "createdAt": "2024-05-07T10:33:35.355Z",
-            "__v": 0
+  }
+  useEffect(() => {
+    getTransferDetails()
+  }, [])
+  const TransferLogTable = ({ transferData }) => {
+    console.log(transferData)
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    };
+
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+
+
+    const mypayload = [
+      {
+        "_id": "663a037fdbd783425cc391e6",
+        "vehicleNumber": "KA03AB1234",
+        "userId": "5ebb92dccbfb5400119fcb4a",
+        "oldOwnerId": {
+          "_id": "5ebe930dbda0d60011efac24",
+          "name": "Shafiullah M"
         },
-        ]
-    
-        const columns = [
-          {
-            title: 'Sl No',
-            dataIndex: 'serialNumber',
-            key: 'serialNumber',
-            render: (text, record, index: any) => index + 1,
-            width: 50,
-          },
-          {
-            title: 'Vehicle Number',
-            dataIndex: 'vehicleNumber',
-            key: 'vehicleNumber',
-            width: 80,
-          },
-          {
-            title: 'Transfer From (owner)',
-            dataIndex: 'ownerTransferId',
-            key: 'ownerTransferId',
-            render: (text, record) => record.oldOwnerId?.name || 'N/A',
-            width: 80,
-          },
-    
-          {
-            title: 'Transfer To (owner)',
-            dataIndex: 'ownerTransferId',
-            key: 'ownerTransferId',
-            render: (text, record) => record.newOwnerId?.name,
-            width: 80,
-          },
-    
-          {
-            title: 'Transfer Date',
-            dataIndex: 'ownerTransferDate',
-            key: 'ownerTransferDate',
-            render: (text, record) => {
-              const date = new Date(record.ownerTransferDate);
-              const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-                hour12: true
-              };
-              return date.toLocaleDateString('en-US', options);
-            },
-            width: 150, // Adjust width as needed
-          },
-          
-          {
-            title: 'Transfer To Date',
-            dataIndex: 'ownerTransferToDate',
-            key: 'ownerTransferToDate',
-            render: (text, record) => {
-              const date = new Date(record.ownerTransferToDate);
-              const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-                hour12: true
-              };
-              return date.toLocaleDateString('en-US', options);
-            },
-            width: 100,
-          },
-        ];
-        return (
-          <>
-    
-            <Table
-              rowSelection={rowSelection}
-              columns={columns}
-              dataSource={transferData}
-              scroll={{ x: 800, y: 320 }}
-              rowKey="_id"
-            />
-          </>
-        );
-      };
+        "newOwnerId": {
+          "_id": "6634ca18f88be2601477c217",
+          "name": "tay"
+        },
+        "vehicleIds": "6639e75cdbd783425cc39008",
+        "ownerTransferDate": "2024-05-07T10:33:29.917Z",
+        "ownerTransferFromDate": null,
+        "createdAt": "2024-05-07T10:33:35.355Z",
+        "__v": 0
+      },
+    ]
+
+    const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index: any) => index + 1,
+        width: 40,
+      },
+      {
+        title: 'Vehicle Number',
+        dataIndex: 'vehicleNumber',
+        key: 'vehicleNumber',
+        width: 80,
+      },
+      {
+        title: 'Transfer From (owner)',
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.oldOwnerId?.name || 'N/A',
+        width: 110,
+      },
+
+      {
+        title: 'Transfer To (owner)',
+        dataIndex: 'ownerTransferId',
+        key: 'ownerTransferId',
+        render: (text, record) => record.newOwnerId?.name,
+        width: 110,
+      },
+
+      {
+        title: 'Transfer From Date',
+        dataIndex: 'ownerTransferDate',
+        key: 'ownerTransferDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 80, // Adjust width as needed
+      },
+
+      {
+        title: 'Transfer To Date',
+        dataIndex: 'ownerTransferToDate',
+        key: 'ownerTransferToDate',
+        render: (text, record) => {
+          const date = new Date(record.ownerTransferToDate);
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: true
+          };
+          return date.toLocaleDateString('en-US', options);
+        },
+        width: 80,
+      },
+    ];
     return (
       <>
 
-        <TransferLogHeader />
-        <TransferLogTable transferData={transferData} />
-
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={transferData}
+          scroll={{ x: 767, y: 360 }}
+          rowKey="_id"
+        />
       </>
-    )
-  }
+    );
+  };
+  return (
+    <>
+
+      {/* <TransferLogHeader /> */}
+      <TransferLogTable transferData={transferData} />
+
+    </>
+  )
+}
 
 export default OwnerTransferLog

@@ -8,6 +8,10 @@ import { API } from "../../API/apirequest"
 import debounce from 'lodash/debounce';
 import axios from 'axios';
 
+
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+
 const TruckMaster = () => {
 
   const selectedHubId = localStorage.getItem("selectedHubID");
@@ -17,18 +21,26 @@ const TruckMaster = () => {
   const [filteredTruckData, setFilteredTruckData] = useState([]);
 
   const handleSearch = (e) => {
-    console.log(e)
     setSearchQuery(e);
   };
-  // const debouncedSearch = debounce(handleSearch, 800); // Adjust the debounce delay as needed
-
   const [showTruckTable, setShowTruckTable] = useState(true);
+  const [showTruckView, setShowTruckView] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(false);
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
+  const [rowDataForTruckView, setRowDataForTruckView] = useState(null);
   const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
   const handleEditTruckClick = (rowData) => {
     setRowDataForTruckEdit(rowData);
     setShowTruckTable(false);
     setShowTransferForm(false);
+    setShowTruckView(false)
+  };
+  const handleViewTruckClick = (rowData) => {
+    setRowDataForTruckEdit(rowData);
+    setRowDataForTruckView(rowData)
+    setShowTruckTable(false);
+    setShowTransferForm(false);
+    setShowTruckView(true)
   };
   const handleAddTruckClick = () => {
     setRowDataForTruckEdit(null);
@@ -42,7 +54,23 @@ const TruckMaster = () => {
     setShowTruckTable(false);
   };
 
-  // Initialize state variables for current page and page size
+  const handleDeleteTruckClick = async (rowData) => {
+    console.log("deleting", rowData._id)
+    const vehicleId = rowData._id
+    const oldOwnerId = rowData.ownerId[0]._id;
+    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`);
+    if (response.status === 201) {
+      alert("deleted data")
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } else {
+      alert(`unable to delete data`)
+      console.log(response.data)
+    }
+  }
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(50);
   const [totalTruckData, setTotalTruckData] = useState(100)
@@ -124,7 +152,6 @@ const TruckMaster = () => {
 
     }
   };
-  ;
   // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getOwnerData(currentPage, currentPageSize, selectedHubId);
@@ -154,13 +181,14 @@ const TruckMaster = () => {
 
     const [formData, setFormData] = useState({
       registrationNumber: '',
-      commission: '',
+      commission: 0,
       ownerId: '',
       accountId: null,
       vehicleType: '',
       rcBookProof: null,
       isCommission: true,
-      marketRateCommission: '',
+      marketRate: '',
+      isMarketRate: false,
     });
     const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
@@ -195,22 +223,24 @@ const TruckMaster = () => {
 
     };
     const handleChange = (name, value) => {
-      if (name === "isCommission") {
-        if (!value) {
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            commission: "",
-          }));
-        } else {
-          // If isCommission is true, set marketRateCommission to an empty string
-          setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-            marketRateCommission: "",
-          }));
-        }
-      } else if (name === "ownerId") {
+      if (name === 'isCommission' && value === true) {
+        setFormData(prevFormData => ({
+          ...prevFormData,
+          isCommission: true,
+          isMarketRate: false,
+          marketRate: "",
+        }));
+      }
+      else if (name === 'isCommission' && value === false) {
+        setFormData(prevFormData => ({
+          ...prevFormData,
+          isCommission: false,
+          isMarketRate: true,
+          commission: 0
+        }));
+      }
+
+      else if (name === "ownerId") {
         const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
           .then((res) => {
             console.log(res)
@@ -223,10 +253,9 @@ const TruckMaster = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
-          accountId: null, // Set accountId to an empty string
+          accountId: null,
         }));
       } else {
-        // For other fields, update state normally
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
@@ -244,30 +273,34 @@ const TruckMaster = () => {
         rcBookProof: formData.rcBookProof,
         registrationNumber: formData.registrationNumber,
         truckType: formData.vehicleType,
-        "marketRate": 1000,
-        "isMarketRate": true
+        marketRate: formData.marketRate,
+        isMarketRate: formData.isMarketRate
       };
-      const oldPayload = {
-        "hubId": "6634de2e2588845228b2dbe4",
-        "accountId": "66386d5267827a336ccac791",
-        "commission": "2",
-        "driverName": "AA",
-        "driverPhoneNumber": "1231231343",
-        "ownerId": "66386d5267827a336ccac78e",
-        "rcBookProof": null,
-        "registrationNumber": "KA01KA1287",
-        "truckType": "bag"
-      }
-
       API.post('create-vehicle', payload)
-
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
-          window.location.reload(); // Reload the page or perform any necessary action
+          window.location.reload();
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
+          let errorResponse = error.response.data
+
+          let errorMessages = [];
+
+          if (errorResponse.error && errorResponse.error.err && errorResponse.error.err.errors) {
+            Object.keys(errorResponse.error.err.errors).forEach((key) => {
+              const errorMessage = errorResponse.error.err.errors[key].message;
+              errorMessages.push(errorMessage);
+            });
+          }
+
+
+          if (errorMessages.length > 0) {
+            console.log("Error:", errorMessages.join(", "));
+          } else {
+            console.log("Something went wrong");
+          }
         });
     };
 
@@ -276,7 +309,6 @@ const TruckMaster = () => {
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold">Create Truck</h1>
-            {/* Breadcrumb component */}
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
 
           </div>
@@ -285,7 +317,6 @@ const TruckMaster = () => {
               <div className="text-md font-semibold">Vehicle Information</div>
               <div className="text-md font-normal">Enter Truck Details</div>
             </div>
-
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
@@ -317,6 +348,9 @@ const TruckMaster = () => {
                     style={{ width: '100%' }}
                     name="ownerId"
                     onChange={(value) => handleChange('ownerId', value)}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
                   >
                     {filteredOwnerData.map((owner, index) => (
                       <Option key={index} value={owner._id}>
@@ -344,8 +378,8 @@ const TruckMaster = () => {
 
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
-                  <div className='flex items-center justify-center gap-1'>
-                    RC Book*: {' '}
+                  <div className='flex items-center gap-4'>
+                    RC Book* : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
@@ -371,8 +405,11 @@ const TruckMaster = () => {
                     <>
                       <Input
                         placeholder="Enter Commission %*"
+                        type='number'
                         size="large"
+                        maxLength={2}
                         name="commission"
+                        value={formData.commission}
                         onChange={(e) => handleChange('commission', e.target.value)}
                       />
                     </>
@@ -381,8 +418,10 @@ const TruckMaster = () => {
                       <Input
                         placeholder="Enter Market Rate"
                         size="large"
-                        name="commission"
-                        onChange={(e) => handleChange('commission', e.target.value)}
+                        type='number'
+                        name="marketRate"
+                        value={formData.marketRate}
+                        onChange={(e) => handleChange('marketRate', e.target.value)}
                       />
                     </>
                   )}
@@ -442,9 +481,8 @@ const TruckMaster = () => {
       </>
     );
   };
-  const [showTransferForm, setShowTransferForm] = useState(false);
 
-  const TruckTable = ({ onEditTruckClick, onTransferTruckClick }) => {
+  const TruckTable = ({ onEditTruckClick, onTransferTruckClick, onViewTruckClick, onDeleteTruckClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -499,9 +537,9 @@ const TruckMaster = () => {
         render: (record: unknown) => (
           <Space size="middle">
             <Tooltip placement="top" title="Transfer"><a onClick={() => handleTransferTruckClick(record)}><SwapOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Preview"><a onClick={() => onEditTruckClick(record)}><EyeOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Preview"><a onClick={() => onViewTruckClick(record)}><EyeOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>
         ),
       },
@@ -568,12 +606,13 @@ const TruckMaster = () => {
       phoneNumber: "",
       ownerTransferDate: "",
       ownerTransferToDate: "",
-      // change here
-      transferDate: "2024-04-30T10:33:29.917Z",
-      userId: "663a0e76e1d51550194c9320",
+      // // change here
+      // transferDate: "2024-04-30T10:33:29.917Z",
+      // userId: "663a0e76e1d51550194c9320",
 
     });
-
+    // Assuming filteredOwnerData is the filtered array of owner data
+    const filteredOptions = filteredOwnerData.filter(owner => owner._id !== rowDataForTruckTransfer.ownerId[0]._id);
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
@@ -681,7 +720,6 @@ const TruckMaster = () => {
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold">Transfer Truck</h1>
-            {/* Breadcrumb component */}
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
 
           </div>
@@ -701,7 +739,6 @@ const TruckMaster = () => {
                     size="large"
                     name="registrationNumber"
                     value={rowDataForTruckTransfer.registrationNumber}
-                  // onChange={(e) => handleChange('registrationNumber', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -710,24 +747,21 @@ const TruckMaster = () => {
                     placeholder="Vehicle Type*"
                     size="large"
                     style={{ width: '100%' }}
-                    // options={[
-                    //   { value: 'open', label: 'Open' },
-                    //   { value: 'bulk', label: 'Bulk' },
-                    // ]}
                     value={rowDataForTruckTransfer.truckType}
-                  // onChange={(value) => handleChange('vehicleType', value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                   <Select
                     size='large'
                     placeholder="Owner Mobile Number"
                     style={{ width: '100%' }}
                     name="ownerId"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
                     onChange={(value) => handleChange('ownerId', value)}
                   >
-                    {filteredOwnerData.map((owner, index) => (
+                    {filteredOptions.map((owner, index) => (
                       <Option key={index} value={owner._id}>
                         {`${owner.name} - ${owner.phoneNumber}`}
                       </Option>
@@ -752,8 +786,8 @@ const TruckMaster = () => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                  <div className='flex items-center justify-center gap-1'>
-                    RC Book*: {' '}
+                  <div className='flex items-center  gap-4'>
+                    RC Book* : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
@@ -806,28 +840,287 @@ const TruckMaster = () => {
     );
   };
 
+  const EditTruckDataRow = ({ filterTruckTableData }) => {
+    const [formData, setFormData] = useState({
+      registrationNumber: filterTruckTableData.registrationNumber,
+      commission: filterTruckTableData.commission,
+      // ownerId:filterTruckTableData.ownerId[0]._id,
+      ownerId: '',
+      accountId: null,
+      vehicleType: filterTruckTableData.truckType,
+      rcBookProof: null,
+      isCommission: filterTruckTableData.isCommission,
+      marketRate: filterTruckTableData.marketRate,
+      isMarketRate: filterTruckTableData.isMarketRate,
+    });
+    const [bankData, setBankdata] = useState([])
+    const axiosFileUploadRequest = async (file) => {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const config = {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        };
+        const response = await API.post(
+          `rc-upload`,
+          formData,
+          config
+        );
+        const { rcBookProof } = response.data;
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          rcBookProof: rcBookProof,
+        }));
+        alert("File uploaded successfully");
+      } catch (err) {
+        console.log(err);
+        alert("Failed to upload, retry again!");
+      }
+    };
+    const handleFileChange = (file) => {
+      console.log(file)
+      axiosFileUploadRequest(file.file);
+
+    };
+    const handleChange = (name, value) => {
+      if (name === 'isCommission' && value === true) {
+        setFormData(prevFormData => ({
+          ...prevFormData,
+          isCommission: true,
+          isMarketRate: false,
+          marketRate: "",
+        }));
+      }
+      else if (name === 'isCommission' && value === false) {
+        setFormData(prevFormData => ({
+          ...prevFormData,
+          isCommission: false,
+          isMarketRate: true,
+          commission: 0
+        }));
+      }
+
+      else if (name === "ownerId") {
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
+          .then((res) => {
+            setBankdata(res.data.ownerDetails[0]['accountIds'])
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+          accountId: null,
+        }));
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+      }
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const payload = {
+        hubId: selectedHubId,
+        accountId: formData.accountId,
+        commission: formData.commission,
+        ownerId: formData.ownerId,
+        rcBookProof: formData.rcBookProof,
+        registrationNumber: formData.registrationNumber,
+        truckType: formData.vehicleType,
+        marketRate: formData.marketRate,
+        isMarketRate: formData.isMarketRate
+      };
+      const vehicleId = filterTruckTableData._id;
+      const oldOwnerId = filterTruckTableData.ownerId[0]._id;
+      const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      API.put(url, payload, headers)
+        .then((response) => {
+          alert("Truck data updated successfully");
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.error('Error updating truck data:', error);
+          alert("An error occurred while updating truck data");
+        });
+    };
+
+
+    return (
+      <>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-xl font-bold">Edit Truck Details</h1>
+            {/* Breadcrumb component */}
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
+
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
+              <div className="text-md font-semibold">Vehicle Information</div>
+              <div className="text-md font-normal">Enter Truck Details</div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Vehicle Number*"
+                    size="large"
+                    name="registrationNumber"
+                    value={formData.registrationNumber}
+                    onChange={(e) => handleChange('registrationNumber', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Select
+                    name="vehicleType"
+                    placeholder="Vehicle Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    value={formData.vehicleType}
+                    options={[
+                      { value: 'open', label: 'Open' },
+                      { value: 'bulk', label: 'Bulk' },
+                    ]}
+                    onChange={(value) => handleChange('vehicleType', value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+
+                  <Select
+                    size='large'
+                    placeholder="Owner Mobile Number"
+                    style={{ width: '100%' }}
+                    name="ownerId"
+                    onChange={(value) => handleChange('ownerId', value)}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                  >
+                    {filteredOwnerData.map((owner, index) => (
+                      <Option key={index} value={owner._id}>
+                        {`${owner.name} - ${owner.phoneNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
+
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Select
+                    size='large'
+                    placeholder="Select bank account"
+                    style={{ width: '100%' }}
+                    name="accountId"
+                    onChange={(value) => handleChange('accountId', value)}
+                  >
+                    {bankData.map((v, index) => (
+                      <Option key={v._id} value={v._id}>
+                        {`${v.bankName} - ${v.accountNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
+
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <div className='flex items-center gap-4'>
+                    RC Book* : {' '}
+                    <Upload
+                      name="rcBook"
+                      onChange={handleFileChange}
+                      showUploadList={false}
+                      beforeUpload={() => false}
+                    >
+                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                    </Upload>
+                  </div>
+                </Col>
+
+                <Col className="gutter-row mt-6 flex gap-2" span={8}>
+                  <div>
+                    {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>}
+                    <Switch
+                      defaultChecked={formData.isCommission}
+                      name="isCommission"
+                      onChange={(checked) => handleChange('isCommission', checked)}
+                    />
+                  </div>
+
+                  {formData.isCommission ? (
+                    <>
+                      <Input
+                        placeholder="Enter Commission %*"
+                        type='number'
+                        size="large"
+                        maxLength={2}
+                        name="commission"
+                        value={formData.commission}
+                        onChange={(e) => handleChange('commission', e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        placeholder="Enter Market Rate"
+                        size="large"
+                        type='number'
+                        name="marketRate"
+                        value={formData.marketRate}
+                        onChange={(e) => handleChange('marketRate', e.target.value)}
+                      />
+                    </>
+                  )}
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+
+          <div className="flex gap-4">
+            <Button>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
   return (
     <>
-      <>
-        {showTruckTable ? (
+      {showTruckTable ? (
+        <>
+          <Truck onAddTruckClick={handleAddTruckClick} />
+          <TruckTable onEditTruckClick={handleEditTruckClick} onViewTruckClick={handleViewTruckClick} onTransferTruckClick={handleTransferTruckClick} onDeleteTruckClick={handleDeleteTruckClick} />
+        </>
+      ) : (
+        rowDataForTruckEdit ? (
           <>
-            <Truck onAddTruckClick={handleAddTruckClick} />
-            <TruckTable onEditTruckClick={handleEditTruckClick} onTransferTruckClick={handleTransferTruckClick} />
+            {showTransferForm ? (
+              <TransferTruck rowDataForTruckTransfer={rowDataForTruckTransfer} />
+            ) : (
+              showTruckView ? (
+                <ViewTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
+              ) : (
+                <EditTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
+              )
+            )}
           </>
         ) : (
-          rowDataForTruckEdit ? <>
-            {showTransferForm ? <TransferTruck rowDataForTruckTransfer={rowDataForTruckTransfer} /> :
-              <ViewTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
-            }
-          </>
-            : (
-
-              <TruckMasterForm />
-            )
-        )}
-      </>
+          <TruckMasterForm />
+        )
+      )}
     </>
-  )
+  );
+
 }
 
 

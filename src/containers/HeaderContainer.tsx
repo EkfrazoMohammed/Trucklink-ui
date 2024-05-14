@@ -154,10 +154,19 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   return (
     <>
-      <div className="flex h-10 justify-between items-center border-b-2" style={{ display: `flex` }}>
+      <div className="flex h-12 pb-4 justify-between items-center border-b-2" >
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex flex-col w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "0 5px" }}> <span className="flex justify-between"> Select Hub <DownOutlined /></span>{localStorage.getItem("selectedHubName") || "All Locations"}</div>
+          <div onClick={showModal} className="flex justify-between w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px" }}>
+            <div className="flex flex-col">
+
+         <span className="flex justify-between" style={{color:"grey",fontSize:".6rem",fontWeight:"600"}}> Select Hub</span> 
+         <span style={{fontWeight:"700"}}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
+            </div>
+         <div className="flex">
+         <DownOutlined />
+         </div>
+         </div>
           {/* Select Hub Modal */}
           <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
             <div className="flex flex-col">

@@ -11,6 +11,9 @@ import type { DatePickerProps } from 'antd';
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
   console.log(date, dateString);
 };
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+
 const DispatchContainer = () => {
 
   const selectedHubId = localStorage.getItem("selectedHubID");
@@ -27,14 +30,8 @@ const DispatchContainer = () => {
 
   const [showDispatchTable, setShowDispatchTable] = useState(true);
   const [rowDataForDispatchEdit, setRowDataForDispatchEdit] = useState(null);
-  const handleEditTruckClick = (rowData) => {
-    setRowDataForDispatchEdit(rowData);
-    setShowDispatchTable(false);
-  };
-  const handleAddTruckClick = () => {
-    setRowDataForDispatchEdit(null);
-    setShowDispatchTable(false);
-  };
+  const [editingChallan, setEditingChallan] = useState(false);
+ 
 
   // Initialize state variables for current page and page size
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,13 +40,8 @@ const DispatchContainer = () => {
 
   const getTableData = async () => {
     try {
-
-
-
-      const searchData = searchQuery ? searchQuery : null;
-
-
-      const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
+    const searchData = searchQuery ? searchQuery : null;
+  const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
         : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);
 
       let allChallans;
@@ -79,7 +71,7 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-        <div className='flex gap-2'>
+        {/* <div className='flex gap-2'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
@@ -111,9 +103,9 @@ const DispatchContainer = () => {
             onChange={(value) => handleChange('vehicleType', value)}
           />
 
-        </div>
+        </div> */}
         <div className='flex gap-2 justify-end'>
-          <Upload>
+          {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
 
@@ -122,7 +114,7 @@ const DispatchContainer = () => {
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload>
+          </Upload> */}
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -506,6 +498,9 @@ fetchVehicleDetails();
                    placeholder="Material Type*"
                    size="large"
                    style={{ width: '100%' }}
+                   showSearch
+                   optionFilterProp="children"
+                   filterOption={filterOption}
                   >
                     {materials.map((v, index) => (
                       <Option key={index} value={v.materialType}>
@@ -516,9 +511,9 @@ fetchVehicleDetails();
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
-                    type="text"
+                    type="number"
                     name="grNumber"
-                    placeholder="grNumber*"
+                    placeholder="GR Number*"
                     size="large"
                     style={{ width: '100%' }}
 
@@ -542,6 +537,9 @@ fetchVehicleDetails();
                    placeholder="Loaded From*"
                    size="large"
                    style={{ width: '100%' }}
+                   showSearch
+                   optionFilterProp="children"
+                   filterOption={filterOption}
                   >
                     {loadLocation.map((v, index) => (
                       <Option key={index} value={v.location}>
@@ -559,6 +557,9 @@ fetchVehicleDetails();
                    onChange={(value) => handleChange('deliveryLocation', value)}
                    placeholder="Deliver To*"
                    size="large"
+                   showSearch
+                   optionFilterProp="children"
+                   filterOption={filterOption}
                    style={{ width: '100%' }}
                   >
                     {deliveryLocation.map((v, index) => (
@@ -574,6 +575,9 @@ fetchVehicleDetails();
                     placeholder="Vehicle Number*"
                     size="large"
                     style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
                     onChange={(value) => {
                       const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
                       if (selectedVehicle) {
@@ -606,7 +610,7 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
 
                   <Input
-                    placeholder="DeliveryNumber*"
+                    placeholder="Delivery Number*"
                     size="large"
                     name="deliveryNumber"
                     onChange={(e) => handleChange('deliveryNumber', e.target.value)}
@@ -616,6 +620,7 @@ fetchVehicleDetails();
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
+                  type='number'
                     placeholder="Quantity (M/T)*"
                     size="large"
                     name="quantityInMetricTons"
@@ -672,7 +677,7 @@ fetchVehicleDetails();
                 </Col>
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
-                                    type='number'
+                    type='number'
                     placeholder="Cash*"
                     size="large"
                     name="cash"
@@ -704,12 +709,33 @@ fetchVehicleDetails();
       </>
     );
   };
-  const [editingChallan, setEditingChallan] = useState(false);
- 
-  const handleEditChallanClick = (rowData) => {
-      setEditingChallan(true);
-      setShowDispatchTable(false);
+  const handleEditTruckClick = (rowData) => {
+    setRowDataForDispatchEdit(rowData);
+    setShowDispatchTable(false);
+    setEditingChallan(true);
   };
+  const handleAddTruckClick = () => {
+    setRowDataForDispatchEdit(null);
+    setShowDispatchTable(false);
+    setEditingChallan(false);
+  };
+
+  const handleDeleteTruckClick = async (rowData) => {
+    console.log("deleting", rowData._id)
+    const challanId = rowData._id
+    const response = await API.delete(`delete-dispatch-challan/${challanId}`);
+    if (response.status === 201) {
+      alert("deleted data")
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } else {
+      alert(`unable to delete data`)
+      console.log(response.data)
+    }
+  }
+  
+  
   const EditableChallan = ({ editingRow }) => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
@@ -742,7 +768,7 @@ fetchVehicleDetails();
             "isMarketRate": editingRow.isMarketRate,
             "marketRate": editingRow.marketRate,
             "hubId": selectedHubId,
-            "shortage": 0,
+            "shortage": editingRow.shortage,
         }
 
     );
@@ -877,10 +903,8 @@ fetchVehicleDetails();
                 setselectedCommission(selectedVehicle.commission)
                 let commissionRate;
                 if (formData.isMarketRate) {
-                    console.log('first')
                     commissionRate = formData.marketRate
                 } else {
-                    console.log('second')
                     commissionRate = selectedVehicle.commission
 
                 }
@@ -918,19 +942,15 @@ fetchVehicleDetails();
         // Calculate commissionTotal based on isMarketRate
         let commissionTotal = 0;
         if (formData.isMarketRate) {
-            console.log("isMarketRate", formData.isMarketRate)
-            // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
             commissionTotal = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.marketRate);
         } else {
-            console.log("isMarketRate", formData.isMarketRate)
-            // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-            const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
+           const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
             commissionTotal = commissionTotalInPercentage / 100;
         }
 
         const payload = {
-            // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-            "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+            "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+            // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
             "bankTransfer": formData.bankTransfer,
             "cash": formData.cash,
             "deliveryLocation": formData.deliveryLocation,
@@ -955,14 +975,15 @@ fetchVehicleDetails();
             "commisionTotal": commissionTotal,
             "isMarketRate": formData.isMarketRate,
             "marketRate": formData.marketRate,
-            "hubId": selectedHubId
+            "hubId": selectedHubId,
+            "shortage":formData.shortage,
         }
         // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
         API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
             .then((response) => {
                 console.log('Challan updated successfully:', response.data);
                 alert("Challan updated successfully")
-                window.location.reload(); // Reload the page or perform any necessary action
+                // window.location.reload(); // Reload the page or perform any necessary action
             })
             .catch((error) => {
                 alert("error occurred")
@@ -1204,7 +1225,7 @@ fetchVehicleDetails();
                             </Col>
                             <Col className="gutter-row mt-2" span={6}>
                                 <Input
-                                    type='text'
+                                    type='number'
                                     placeholder="Shortage*"
                                     size="large"
                                     name="shortage"
@@ -1229,7 +1250,7 @@ fetchVehicleDetails();
     );
 };
 
-  const DispatchTable = ({ onEditTruckClick}) => {
+  const DispatchTable = ({ onEditTruckClick,onDeleteTruckClick}) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -1284,7 +1305,7 @@ fetchVehicleDetails();
         title: 'Vehicle Number',
         dataIndex: 'vehicleNumber',
         key: 'vehicleNumber',
-        width: 120,
+        width: 160,
       },
       // {
       //   title: 'Owner Name',
@@ -1321,7 +1342,7 @@ fetchVehicleDetails();
         title: 'Quantity',
         dataIndex: 'quantityInMetricTons',
         key: 'quantityInMetricTons',
-        width: 180,
+        width: 100,
       },
       // {
       //   title: 'Rate',
@@ -1330,10 +1351,10 @@ fetchVehicleDetails();
       //   width: 100,
       // },
       {
-        title: 'Company .Rate',
+        title: 'Company Rate',
         dataIndex: 'rate',
         key: 'rate',
-        width: 120,
+        width: 150,
       },
       // {
       //   title: 'Market Rate',
@@ -1343,7 +1364,7 @@ fetchVehicleDetails();
       //   render: isMarketRate => (isMarketRate ? 'Yes' : 'No')
       // },
       {
-        title: 'Market Rate Value',
+        title: 'Market Rate',
         dataIndex: 'marketRate',
         key: 'marketRate',
         width: 150,
@@ -1398,7 +1419,7 @@ fetchVehicleDetails();
         render: (record: unknown) => (
           <Space size="middle">
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>
         ),
       },
@@ -1507,21 +1528,21 @@ fetchVehicleDetails();
 
   return (
     <>
-      <>
-        {showDispatchTable ? (
-          <>
-            <Truck onAddTruckClick={handleAddTruckClick} />
-            <DispatchTable onEditTruckClick={handleEditTruckClick} />
-          </>
+      {showDispatchTable ? (
+        <>
+          <Truck onAddTruckClick={handleAddTruckClick} />
+          <DispatchTable onEditTruckClick={handleEditTruckClick} onDeleteTruckClick={handleDeleteTruckClick} />
+        </>
+      ) : (
+        editingChallan ? (
+          <EditableChallan editingRow={rowDataForDispatchEdit} />
         ) : (
-          editingChallan ? <>
-            <EditableChallan editingRow={handleEditChallanClick} />
-          </>
-            : (<CreateChallanForm />)
-        )}
-      </>
+          <CreateChallanForm />
+        )
+      )}
     </>
-  )
+  );
+  
 }
 
 export default DispatchContainer

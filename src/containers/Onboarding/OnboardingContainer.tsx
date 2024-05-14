@@ -395,6 +395,7 @@ const OnboardingContainer = () => {
           .catch((error) => {
             // Log any errors that occur during the dispatch process
             console.error('Error adding owner data:', error);
+            alert("error occurred")
             setTimeout(() => {
               window.location.reload();
             }, 3000)

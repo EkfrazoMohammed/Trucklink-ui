@@ -298,7 +298,9 @@ const TruckMaster = () => {
 
           if (errorMessages.length > 0) {
             console.log("Error:", errorMessages.join(", "));
+            alert("error occurred")
           } else {
+            alert("error occurred")
             console.log("Something went wrong");
           }
         });
@@ -712,6 +714,7 @@ const TruckMaster = () => {
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
+          alert("error occurred")
         });
     };
 

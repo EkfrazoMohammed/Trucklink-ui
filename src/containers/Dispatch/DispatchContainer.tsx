@@ -983,7 +983,7 @@ fetchVehicleDetails();
             .then((response) => {
                 console.log('Challan updated successfully:', response.data);
                 alert("Challan updated successfully")
-                // window.location.reload(); // Reload the page or perform any necessary action
+                window.location.reload(); // Reload the page or perform any necessary action
             })
             .catch((error) => {
                 alert("error occurred")

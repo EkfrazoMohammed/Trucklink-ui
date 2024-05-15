@@ -423,8 +423,7 @@ fetchVehicleDetails();
       const payload={
         "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
-        "cash": formData.cash,
-      
+        "cash": formData.cash,      
         "deliveryLocation": formData.deliveryLocation,
         "deliveryNumber": formData.deliveryNumber,
         "diesel": formData.diesel,
@@ -610,6 +609,7 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
 
                   <Input
+                  type='number'
                     placeholder="Delivery Number*"
                     size="large"
                     name="deliveryNumber"
@@ -808,8 +808,6 @@ fetchVehicleDetails();
     // Function to handle date change
     const handleDateChange = (date, dateString) => {
         const formattedGrDate = formatDate(dateString);
-        console.log(formattedGrDate); // Output: "01/05/2024"
-        // dateString will be in the format 'YYYY-MM-DD'
         handleChange('grDate', formattedGrDate);
     };
     const [materials, setMaterials] = useState([]);
@@ -1052,6 +1050,7 @@ fetchVehicleDetails();
                             <Col className="gutter-row mt-6" span={6}>
 
                                 <DatePicker
+                                    required
                                     placeholder="GR Date"
                                     size="large"
                                     style={{ width: "100%" }}
@@ -1135,6 +1134,7 @@ fetchVehicleDetails();
                                 <Input
                                     placeholder="DeliveryNumber*"
                                     size="large"
+                                    type='number'
                                     name="deliveryNumber"
                                     value={formData.deliveryNumber}
                                     onChange={(e) => handleChange('deliveryNumber', e.target.value)}

@@ -226,9 +226,10 @@ const Acknowledgement = () => {
             // },
            {
                 title: 'Total',
-                dataIndex: 'rate',
-                key: 'rate',
                 width: 110,
+                render: (_,record) => {
+                    return record.quantityInMetricTons * record.rate
+                }
             },
             {
                 title: 'Commission',

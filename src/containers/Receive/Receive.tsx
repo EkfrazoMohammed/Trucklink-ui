@@ -216,9 +216,11 @@ const Receive = () => {
             },
             {
                 title: 'Total',
-                dataIndex: 'commisionTotal',
-                key: 'commisionTotal',
                 width: 120,
+                render: (_,record) => {
+                    return record.quantityInMetricTons * record.rate
+
+                }
             },
             {
                 title: 'Commission',

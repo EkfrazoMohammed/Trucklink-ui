@@ -108,7 +108,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
           ))}
         </Menu>
         
-        <div style={{marginTop:"30vh"}}>
+        <div style={{marginTop:"26vh"}}>
           <button className='flex justify-center items-center m-auto px-4 py-2' onClick={() => setLogoutModalVisible(true)}> <img src={logout_logo} alt="" />{collapsed ? null : <span className='text-white'>Logout</span>}</button>
           {collapsed ? <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto' /> : <img src={dark_logo} alt="dark_logo" />}
         </div>

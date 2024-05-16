@@ -12,7 +12,8 @@
 }
 
 .ant-btn-primary {
-  background-color: #03B9E7;
+  /* background-color: #03B9E7; */
+  background-color: #1573b6 !important;
 }
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-input-outlined {
@@ -165,8 +166,11 @@ margin: 0 auto;
 }
 :where(.css-dev-only-do-not-override-11xg00t).ant-input-search >.ant-input-group >.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary),
 :where(.css-dev-only-do-not-override-11xg00t).ant-input-search >.ant-input-group >.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
-  color: #03b9e7 !important;
+  /* color: #03b9e7 !important; */
   background-color: transparent !important;
+  color:  #1573b6 !important;
+ 
+ 
 }
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-btn {

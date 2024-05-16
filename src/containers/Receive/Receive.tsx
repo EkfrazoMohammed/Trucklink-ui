@@ -607,12 +607,26 @@ const Receive = () => {
         return (
             <>
                 <div className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-xl font-bold">Edit Challan</h1>
-                        {/* Breadcrumb component */}
-                        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTable(true)} />
-    
-                    </div>
+                
+<div className="flex items-center gap-4">
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'Receive',
+                  },
+                  {
+                    title: 'Receive Register',
+                  },
+                  {
+                    title: 'Edit',
+                  },
+                ]}
+              />
+            </div>
+          </div>
                     <div className="flex flex-col gap-1">
                         <div className="flex gap-1 justify-between">
                             <div>
@@ -863,7 +877,7 @@ const Receive = () => {
     
                         </div>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center justify-center reset-button-container">
                         <Button>Reset</Button>
                         <Button type="primary" className="bg-primary" onClick={handleSubmit}>
                             Save

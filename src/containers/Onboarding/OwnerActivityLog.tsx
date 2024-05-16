@@ -8,7 +8,8 @@ const OwnerActivityLog = () => {
 
   const ActivityLogHeader = () => {
     return (
-      <div className='flex gap-2 justify-between p-2'>
+
+        <div className='flex gap-2 justify-between  py-3'>
 
         <Search
           placeholder="Search by Vehicle Number"
@@ -137,7 +138,7 @@ const OwnerActivityLog = () => {
   return (
     <>
 
-      {/* <ActivityLogHeader /> */}
+      <ActivityLogHeader />
       <ActivityLogTable ActivityData={ActivityData} />
 
     </>

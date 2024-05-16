@@ -72,8 +72,7 @@ const Acknowledgement = () => {
     const DispatchChallanComponent = () => {
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
-{/* 
-                <div className='flex gap-2'>
+  <div className='flex gap-2'>
                     <Search
                         placeholder="Search by Vehicle Number"
                         size='large'
@@ -84,9 +83,8 @@ const Acknowledgement = () => {
                     <DatePicker onChange={onChange} placeholder='To date' />
 
 
-                </div> */}
-
-            </div>
+                </div> 
+                </div>
 
         );
     };

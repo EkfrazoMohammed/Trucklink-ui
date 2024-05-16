@@ -155,11 +155,6 @@ margin: 0 auto;
   border: 1px solid #f0f0f0 !important;
 }
 
-.mytab-content {
-  overflow-y: scroll !important;
-  height: 66vh !important;
-  overflow-x: hidden !important;
-}
 
 .reset-button-container {
     padding: 1rem !important;
@@ -172,4 +167,69 @@ margin: 0 auto;
 :where(.css-dev-only-do-not-override-11xg00t).ant-input-search >.ant-input-group >.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
   color: #03b9e7 !important;
   background-color: transparent !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-btn {
+  font-size: 14px;
+  line-height: 1.5714285714285714;
+  height: 36px;
+  padding: 6px 16px !important;
+  border-radius: 6px;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-btn span{
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+/* Target Ant Design input fields within ant-input-group */
+
+ .ant-input-group .ant-input::placeholder {
+  color: black !important; 
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-input::placeholder{
+  color: black !important; 
+
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-select-single.ant-select-lg:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-search-input::placeholder {
+  height: 38px;
+  color: black !important; 
+
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-select-single.ant-select-lg .ant-select-selector .ant-select-selection-placeholder {
+  transition: none;
+  pointer-events: none;
+  color: #000 !important;
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-picker .ant-picker-input >input::placeholder {
+
+ color: #000 !important;
+}
+
+
+.mytab-content {
+  overflow-y: scroll !important;
+  height: 66vh !important;
+  overflow-x: hidden !important;
+}
+
+.mytab-content::-webkit-scrollbar {
+  width: 6px; /* Width of the scrollbar */
+  border-radius: 6px;
+}
+
+.mytab-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.mytab-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.mytab-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 6px;
 }

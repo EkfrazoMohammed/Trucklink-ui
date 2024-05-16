@@ -123,7 +123,7 @@ const MasterData = () => {
 
     return (
         <>
-            <div className="flex flex-col" style={{ height: "70vh", overflowY: "scroll" }}>
+            <div className="flex flex-col" className="mytab-content">
                 <div className="flex gap-12">
 
 

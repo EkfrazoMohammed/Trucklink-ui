@@ -137,7 +137,7 @@ const OnboardingContainer = () => {
 
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
     return (
-      <div className='flex gap-2 justify-between p-2'>
+      <div className='flex gap-2 justify-between  py-3'>
         <Search placeholder="Search by Owner Name / Truck no" size='large' onSearch={handleSearch} onChange={onChangeSearch} style={{ width: 320 }} />
         <div className='flex gap-2'>
           <Upload>
@@ -920,7 +920,7 @@ const OnboardingContainer = () => {
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index) => index + 1,
-        width: "auto",
+        width: 80,
       },
       {
         title: 'Owner Name',
@@ -938,7 +938,7 @@ const OnboardingContainer = () => {
         title: 'State',
         dataIndex: 'state',
         key: 'state',
-        width: "auto",
+        width: 160,
       },
       {
         title: 'Email ID',
@@ -949,7 +949,7 @@ const OnboardingContainer = () => {
       {
         title: 'Action',
         key: 'action',
-        width: "auto",
+        width: 120,
         render: (record) => (
 
           <Space size="middle">
@@ -987,7 +987,7 @@ const OnboardingContainer = () => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredOwnerData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800, y: 310 }}
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],

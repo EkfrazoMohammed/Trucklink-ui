@@ -121,7 +121,7 @@ const Login = () => {
         if (res.status == 201) {
           localStorage.setItem("userDetails", JSON.stringify(res.data.userDetails))
           localStorage.setItem("token", res.data.token)
-          localStorage.setItem("loginData",  JSON.stringify(res.data.userDetails))
+          localStorage.setItem("loginData", JSON.stringify(res.data.userDetails))
           navigate("/dashboard");
         }
         else {
@@ -171,7 +171,7 @@ const Login = () => {
                 <div className="flex gap-2 flex-col">
 
                   <Button type="primary" onClick={handleClick}>Sign in</Button>
-                  <Button type="link" className='text-black'>Reset password</Button>
+                  <Button type="link" className='text-black'>Reset password here</Button>
                 </div>
               </div>
             </div>

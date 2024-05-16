@@ -17,8 +17,7 @@ const OwnerTransferLog = () => {
 
   const TransferLogHeader = () => {
     return (
-      <div className='flex gap-2 justify-between p-2'>
-
+<div className='flex gap-2 justify-between  py-3'>
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
@@ -79,28 +78,6 @@ const OwnerTransferLog = () => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-
-
-    const mypayload = [
-      {
-        "_id": "663a037fdbd783425cc391e6",
-        "vehicleNumber": "KA03AB1234",
-        "userId": "5ebb92dccbfb5400119fcb4a",
-        "oldOwnerId": {
-          "_id": "5ebe930dbda0d60011efac24",
-          "name": "Shafiullah M"
-        },
-        "newOwnerId": {
-          "_id": "6634ca18f88be2601477c217",
-          "name": "tay"
-        },
-        "vehicleIds": "6639e75cdbd783425cc39008",
-        "ownerTransferDate": "2024-05-07T10:33:29.917Z",
-        "ownerTransferFromDate": null,
-        "createdAt": "2024-05-07T10:33:35.355Z",
-        "__v": 0
-      },
-    ]
 
     const columns = [
       {
@@ -188,7 +165,7 @@ const OwnerTransferLog = () => {
   return (
     <>
 
-      {/* <TransferLogHeader /> */}
+      <TransferLogHeader />
       <TransferLogTable transferData={transferData} />
 
     </>

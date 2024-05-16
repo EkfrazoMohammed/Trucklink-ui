@@ -71,7 +71,7 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-        {/* <div className='flex gap-2'>
+         <div className='flex gap-2'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
@@ -102,19 +102,17 @@ const DispatchContainer = () => {
             ]}
             onChange={(value) => handleChange('vehicleType', value)}
           />
-
-        </div> */}
+        </div> 
         <div className='flex gap-2 justify-end'>
-          {/* <Upload>
+           <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
-
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload> */}
+          </Upload> 
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -328,6 +326,9 @@ fetchVehicleDetails();
 
     const handleSubmit = (e) => {
       e.preventDefault();
+//       total= quantity * c.rate
+// toggle off = %/total
+// toggal on = total -market rate*quantity
        // Calculate commissionTotal based on isMarketRate
   let commissionTotal=0;
   if (formData.isMarketRate) {
@@ -340,86 +341,7 @@ fetchVehicleDetails();
     const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
     commissionTotal =commissionTotalInPercentage / 100;
   }
-//   http://localhost:3000/prod/v1/create-dispatch-challan
-//   balance
-// : 
-// 9970
-// bankTransfer
-// : 
-// "10"
-// cash
-// : 
-// "10"
-// commisionRate
-// : 
-// ""
-// commisionTotal
-// : 
-// 100
-// deliveryLocation
-// : 
-// "Kgf"
-// deliveryNumber
-// : 
-// "7788"
-// diesel
-// : 
-// "10"
-// grDate
-// : 
-// "01/05/2024"
-// grNumber
-// : 
-// "10"
-// hubId
-// : 
-// "663c93ddeafe706588fec3bb"
-// invoiceProof
-// : 
-// null
-// isMarketRate
-// : 
-// true
-// loadLocation
-// : 
-// "Pune"
-// marketRate
-// : 
-// "10"
-// materialType
-// : 
-// "GYPSUM"
-// ownerId
-// : 
-// "663c94392ee9e1c41f769afa"
-// ownerName
-// : 
-// "tayib"
-// ownerPhone
-// : 
-// "1234567890"
-// quantityInMetricTons
-// : 
-// "10"
-// rate
-// : 
-// "10000"
-// totalExpense
-// : 
-// 30
-// vehicleBank
-// : 
-// "663c94392ee9e1c41f769afd"
-// vehicleId
-// : 
-// "663cbb2b2ee9e1c41f769c90"
-// vehicleNumber
-// : 
-// "KA01AB1234"
-// vehicleType
-// : 
-// "bulk"
-//   {"message":"Please select right owner for the selected period"}
+
       const payload={
         "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
@@ -448,6 +370,8 @@ fetchVehicleDetails();
           "marketRate": formData.marketRate,
           "hubId":selectedHubId
         }
+
+        if(formData.grDate !== null || formData.grDate !==""){
         API.post('create-dispatch-challan', payload)
         .then((response) => {
           console.log('Challan added successfully:', response.data);
@@ -458,7 +382,9 @@ fetchVehicleDetails();
           alert("error occurred")
           console.error('Error adding truck data:', error);
         });
-      
+      }else{
+        alert("GR Date is required")
+      }
     };
 
     return (
@@ -473,7 +399,7 @@ fetchVehicleDetails();
           <div className="flex flex-col gap-1">
             <div className="flex gap-1 justify-between">
               <div>
-
+                  {JSON.stringify(formData.grDate, null,2)}
                 <div className="text-md font-semibold">Challan Details</div>
                 <div className="text-md font-normal">Enter Challan Details</div>
               </div>
@@ -512,7 +438,7 @@ fetchVehicleDetails();
                   <Input
                     type="number"
                     name="grNumber"
-                    placeholder="GR Number*"
+                    placeholder="GR Number"
                     size="large"
                     style={{ width: '100%' }}
 
@@ -522,14 +448,14 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
 
                 <DatePicker
-        placeholder="GR Date"
+                required
+        placeholder="GR Date *"
         size="large"
         style={{ width: "100%" }}
         onChange={handleDateChange} // Call handleDateChange function on date change
       />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                 <Select
                    name="loadLocation"
                    onChange={(value) => handleChange('loadLocation', value)}
@@ -780,7 +706,7 @@ fetchVehicleDetails();
                     ...prevFormData,
                     [name]: value,
                     isMarketRate: false,
-                    commission: 0,
+                    commission: selectedvehicleCommission,
                 }));
             } else {
                 setFormData((prevFormData) => ({

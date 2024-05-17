@@ -61,7 +61,6 @@ const DispatchContainer = () => {
 
     }
   };
-  //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getTableData();
   }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
@@ -71,15 +70,15 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-        {/* <div className='flex gap-2'>
+         <div className='flex gap-2 items-center'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
             onSearch={handleSearch}
             style={{ width: 320 }}
           />
-          <DatePicker onChange={onChange} placeholder='From date' /> -
-          <DatePicker onChange={onChange} placeholder='To date' />
+          <DatePicker  size='large' onChange={onChange} placeholder='From date' /> -
+          <DatePicker  size='large' onChange={onChange} placeholder='To date' />
           <Select
             name="materialType"
             placeholder="Material Type*"
@@ -102,19 +101,17 @@ const DispatchContainer = () => {
             ]}
             onChange={(value) => handleChange('vehicleType', value)}
           />
-
-        </div> */}
+        </div> 
         <div className='flex gap-2 justify-end'>
-          {/* <Upload>
+           <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
-
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload> */}
+          </Upload> 
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -124,10 +121,7 @@ const DispatchContainer = () => {
 
   const CreateChallanForm = () => {
     const selectedHubId = localStorage.getItem("selectedHubID");
-    // State to store the list of materials
-
-
-    const [formData, setFormData] = useState(
+     const [formData, setFormData] = useState(
       {
         "balance": '',
         "bankTransfer": '',
@@ -328,6 +322,9 @@ fetchVehicleDetails();
 
     const handleSubmit = (e) => {
       e.preventDefault();
+//       total= quantity * c.rate
+// toggle off = %/total
+// toggal on = total -market rate*quantity
        // Calculate commissionTotal based on isMarketRate
   let commissionTotal=0;
   if (formData.isMarketRate) {
@@ -340,86 +337,7 @@ fetchVehicleDetails();
     const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
     commissionTotal =commissionTotalInPercentage / 100;
   }
-//   http://localhost:3000/prod/v1/create-dispatch-challan
-//   balance
-// : 
-// 9970
-// bankTransfer
-// : 
-// "10"
-// cash
-// : 
-// "10"
-// commisionRate
-// : 
-// ""
-// commisionTotal
-// : 
-// 100
-// deliveryLocation
-// : 
-// "Kgf"
-// deliveryNumber
-// : 
-// "7788"
-// diesel
-// : 
-// "10"
-// grDate
-// : 
-// "01/05/2024"
-// grNumber
-// : 
-// "10"
-// hubId
-// : 
-// "663c93ddeafe706588fec3bb"
-// invoiceProof
-// : 
-// null
-// isMarketRate
-// : 
-// true
-// loadLocation
-// : 
-// "Pune"
-// marketRate
-// : 
-// "10"
-// materialType
-// : 
-// "GYPSUM"
-// ownerId
-// : 
-// "663c94392ee9e1c41f769afa"
-// ownerName
-// : 
-// "tayib"
-// ownerPhone
-// : 
-// "1234567890"
-// quantityInMetricTons
-// : 
-// "10"
-// rate
-// : 
-// "10000"
-// totalExpense
-// : 
-// 30
-// vehicleBank
-// : 
-// "663c94392ee9e1c41f769afd"
-// vehicleId
-// : 
-// "663cbb2b2ee9e1c41f769c90"
-// vehicleNumber
-// : 
-// "KA01AB1234"
-// vehicleType
-// : 
-// "bulk"
-//   {"message":"Please select right owner for the selected period"}
+
       const payload={
         "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
@@ -448,6 +366,8 @@ fetchVehicleDetails();
           "marketRate": formData.marketRate,
           "hubId":selectedHubId
         }
+
+        if(formData.grDate !== null || formData.grDate !==""){
         API.post('create-dispatch-challan', payload)
         .then((response) => {
           console.log('Challan added successfully:', response.data);
@@ -458,22 +378,40 @@ fetchVehicleDetails();
           alert("error occurred")
           console.error('Error adding truck data:', error);
         });
-      
+      }else{
+        alert("GR Date is required")
+      }
     };
 
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
+          {/* <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold">Create Challan</h1>
-            {/* Breadcrumb component */}
+         
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} />
 
+          </div> */}
+          <div className="flex items-center gap-4">
+            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Challan</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'Dispatch',
+                  },
+                  {
+                    title: 'Create Challan',
+                  },
+
+                ]}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex gap-1 justify-between">
               <div>
-
                 <div className="text-md font-semibold">Challan Details</div>
                 <div className="text-md font-normal">Enter Challan Details</div>
               </div>
@@ -512,7 +450,7 @@ fetchVehicleDetails();
                   <Input
                     type="number"
                     name="grNumber"
-                    placeholder="GR Number*"
+                    placeholder="GR Number"
                     size="large"
                     style={{ width: '100%' }}
 
@@ -522,14 +460,14 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
 
                 <DatePicker
-        placeholder="GR Date"
+                required
+        placeholder="GR Date *"
         size="large"
         style={{ width: "100%" }}
         onChange={handleDateChange} // Call handleDateChange function on date change
       />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                 <Select
                    name="loadLocation"
                    onChange={(value) => handleChange('loadLocation', value)}
@@ -699,7 +637,7 @@ fetchVehicleDetails();
 
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
@@ -780,7 +718,7 @@ fetchVehicleDetails();
                     ...prevFormData,
                     [name]: value,
                     isMarketRate: false,
-                    commission: 0,
+                    commission: selectedvehicleCommission,
                 }));
             } else {
                 setFormData((prevFormData) => ({
@@ -993,12 +931,24 @@ fetchVehicleDetails();
     return (
         <>
             <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-xl font-bold">Edit Challan</h1>
-                    {/* Breadcrumb component */}
-                    <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} />
+             
+                <div className="flex items-center gap-4">
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'Dispatch',
+                  },
+                  {
+                    title: 'Edit Challan',
+                  },
+                ]}
+              />
+            </div>
+          </div>
 
-                </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex gap-1 justify-between">
                         <div>
@@ -1239,7 +1189,7 @@ fetchVehicleDetails();
 
                     </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-center justify-center reset-button-container">
                     <Button>Reset</Button>
                     <Button type="primary" className="bg-primary" onClick={handleSubmit}>
                         Save
@@ -1514,10 +1464,11 @@ fetchVehicleDetails();
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
             current: currentPage,
             total: totalDispatchData,
             defaultPageSize: currentPageSize, // Set the default page size
-            showSizeChanger: true,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}

@@ -8,7 +8,8 @@ const OwnerActivityLog = () => {
 
   const ActivityLogHeader = () => {
     return (
-      <div className='flex gap-2 justify-between p-2'>
+
+        <div className='flex gap-2 justify-between  py-3'>
 
         <Search
           placeholder="Search by Vehicle Number"
@@ -130,6 +131,11 @@ const OwnerActivityLog = () => {
           dataSource={ActivityData}
           scroll={{ x: 767, y: 360 }}
           rowKey="_id"
+          pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
+
+          }}
         />
       </>
     );
@@ -137,7 +143,7 @@ const OwnerActivityLog = () => {
   return (
     <>
 
-      {/* <ActivityLogHeader /> */}
+      <ActivityLogHeader />
       <ActivityLogTable ActivityData={ActivityData} />
 
     </>

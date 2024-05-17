@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch } from 'antd';
-import axios from 'axios';
+import { Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch } from 'antd';
 import { API } from "../../API/apirequest"
+const onSearch = (value: string) => {
+    console.log('search:', value);
+  };
+  
+  // Filter `option.value` match the user type `input`
+  const filterOption = (input: string, option?: { label: string; value: string }) =>
+    (option?.value ?? '').toLowerCase().includes(input.toLowerCase());
+  
 const MasterData = () => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
-    const selectedHubName = localStorage.getItem("selectedHubName");
     // State to store the list of materials
     const [materials, setMaterials] = useState([]);
     // State to store the input value for adding material type
@@ -123,7 +129,7 @@ const MasterData = () => {
 
     return (
         <>
-            <div className="flex flex-col" style={{ height: "70vh", overflowY: "scroll" }}>
+            <div className="flex flex-col" className="mytab-content">
                 <div className="flex gap-12">
 
 
@@ -131,7 +137,7 @@ const MasterData = () => {
                         <div className="flex gap-2">
 
                             <Input
-                                placeholder="Enter material type"
+                                placeholder="Enter Material Type"
                                 value={materialType}
                                 size="large"
                                 onChange={(e) => setMaterialType(e.target.value)}
@@ -142,6 +148,25 @@ const MasterData = () => {
                         </div>
 
                         <div>
+
+                            <div>
+                            <Select
+                      placeholder="Materials"
+                      style={{ width: "100%",marginBottom: "10px" }}
+                      size='large'
+                      showSearch
+                      optionFilterProp="children"
+                      onSearch={onSearch}
+                      filterOption={filterOption}
+                    >
+                      {materials.map((value, index) => (
+                        <Option key={index} value={value.materialType}>
+                          {value.materialType}
+                        </Option>
+                      ))}
+
+                    </Select>
+                            </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
                                 header={<div>Material List</div>}
@@ -155,6 +180,8 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
+
+
                     <div className='flex flex-col gap-2 p-2' style={{ width: "600px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
 
@@ -170,6 +197,24 @@ const MasterData = () => {
                         </div>
 
                         <div>
+                        <div>
+                            <Select
+                      placeholder="Load Location"
+                      style={{ width: "100%",marginBottom: "10px" }}
+                      size='large'
+                      showSearch
+                      optionFilterProp="children"
+                      onSearch={onSearch}
+                      filterOption={filterOption}
+                    >
+                      {loadLocation.map((value, index) => (
+                        <Option  key={index} value={value.location}>
+                          {value.location}
+                        </Option>
+                      ))}
+
+                    </Select>
+                            </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
                                 header={<div>Load Location</div>}
@@ -203,6 +248,24 @@ const MasterData = () => {
                         </div>
 
                         <div>
+                        <div>
+                            <Select
+                      placeholder="Delivery Location"
+                      style={{ width: "100%",marginBottom: "10px" }}
+                      size='large'
+                      showSearch
+                      optionFilterProp="children"
+                      onSearch={onSearch}
+                      filterOption={filterOption}
+                    >
+                      {deliveryLocation.map((value, index) => (
+                        <Option  key={index} value={value.location}>
+                          {value.location}
+                        </Option>
+                      ))}
+
+                    </Select>
+                            </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
                                 header={<div>Delivery Location</div>}

@@ -161,8 +161,7 @@ const TruckMaster = () => {
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
-      <div className='flex gap-2 justify-between p-2'>
-
+<div className='flex gap-2 justify-between  py-3'>
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
@@ -336,8 +335,8 @@ const TruckMaster = () => {
                     size="large"
                     style={{ width: '100%' }}
                     options={[
-                      { value: 'open', label: 'Open' },
-                      { value: 'bulk', label: 'Bulk' },
+                      { value: 'Open', label: 'Open' },
+                      { value: 'Bulk', label: 'Bulk' },
                     ]}
                     onChange={(value) => handleChange('vehicleType', value)}
                   />
@@ -388,14 +387,15 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                      <Button size="large" style={{width:"110px"}} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
 
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
-                    {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>}
+                    {/* {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>} */}
+                    {formData.isCommission ? <>Commission%*</> : <>Commission%*</>}
                     <Switch
                       defaultChecked={formData.isCommission}
                       name="isCommission"
@@ -417,14 +417,14 @@ const TruckMaster = () => {
                     </>
                   ) : (
                     <>
-                      <Input
+                      {/* <Input
                         placeholder="Enter Market Rate"
                         size="large"
                         type='number'
                         name="marketRate"
                         value={formData.marketRate}
                         onChange={(e) => handleChange('marketRate', e.target.value)}
-                      />
+                      /> */}
                     </>
                   )}
                 </Col>
@@ -433,7 +433,8 @@ const TruckMaster = () => {
           </div>
 
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+
             <Button>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
@@ -449,11 +450,25 @@ const TruckMaster = () => {
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">View Truck Details</h1>
-            {/* Breadcrumb component */}
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
-
+        
+          <div className="flex items-center gap-4">
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /> </div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>View Truck Details</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'OnBoarding',
+                  },
+                  {
+                    title: 'Truck Master',
+                  },
+                  {
+                    title: 'View',
+                  },
+                ]}
+              />
+            </div>
           </div>
           <div className="section mx-2 my-4">
             <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
@@ -502,7 +517,7 @@ const TruckMaster = () => {
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index: any) => index + 1,
-        width: 80,
+        width: 40,
       },
       {
         title: 'Vehicle Number',
@@ -577,18 +592,15 @@ const TruckMaster = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          //   dataSource={filteredTruckData.map(truck => ({
-          //     ...truck,
-          //     phoneNumber: truck.ownerId[0].phoneNumber // Assuming ownerId contains only one object
-          // }))}
-          dataSource={filteredTruckData}
+           dataSource={filteredTruckData}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
             current: currentPage,
             total: totalTruckData,
             defaultPageSize: currentPageSize, // Set the default page size
-            showSizeChanger: true,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
@@ -721,10 +733,25 @@ const TruckMaster = () => {
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Transfer Truck</h1>
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
-
+          
+          <div className="flex items-center gap-4">
+            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Transfer Truck</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'OnBoarding',
+                  },
+                  {
+                    title: 'Truck Master',
+                  },
+                  {
+                    title: 'Transfer',
+                  },
+                ]}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
@@ -797,7 +824,7 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                      <Button size="large"  style={{width:"170px"}} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
@@ -833,10 +860,13 @@ const TruckMaster = () => {
             </Row>
           </div>
           <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+
             <Button >Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmitTransfer}>
               Save
             </Button>
+            </div>
           </div>
         </div>
       </>
@@ -901,7 +931,8 @@ const TruckMaster = () => {
           ...prevFormData,
           isCommission: false,
           isMarketRate: true,
-          commission: 0
+          commission: 0,
+
         }));
       }
 
@@ -961,11 +992,25 @@ const TruckMaster = () => {
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Edit Truck Details</h1>
-            {/* Breadcrumb component */}
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
-
+          
+          <div className="flex items-center gap-4">
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)}  /> </div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Truck Details</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'OnBoarding',
+                  },
+                  {
+                    title: 'Truck Master',
+                  },
+                  {
+                    title: 'Edit',
+                  },
+                ]}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
@@ -991,8 +1036,8 @@ const TruckMaster = () => {
                     style={{ width: '100%' }}
                     value={formData.vehicleType}
                     options={[
-                      { value: 'open', label: 'Open' },
-                      { value: 'bulk', label: 'Bulk' },
+                      { value: 'Open', label: 'Open' },
+                      { value: 'Bulk', label: 'Bulk' },
                     ]}
                     onChange={(value) => handleChange('vehicleType', value)}
                   />
@@ -1042,7 +1087,7 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" icon={<UploadOutlined />}>Upload RC</Button>
+                      <Button size="large" style={{width:"110px"}} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
@@ -1071,14 +1116,14 @@ const TruckMaster = () => {
                     </>
                   ) : (
                     <>
-                      <Input
+                      {/* <Input
                         placeholder="Enter Market Rate"
                         size="large"
                         type='number'
                         name="marketRate"
                         value={formData.marketRate}
                         onChange={(e) => handleChange('marketRate', e.target.value)}
-                      />
+                      /> */}
                     </>
                   )}
                 </Col>
@@ -1087,7 +1132,8 @@ const TruckMaster = () => {
           </div>
 
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+
             <Button>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save

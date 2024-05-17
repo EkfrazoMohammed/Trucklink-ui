@@ -131,6 +131,11 @@ const OwnerActivityLog = () => {
           dataSource={ActivityData}
           scroll={{ x: 767, y: 360 }}
           rowKey="_id"
+          pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
+
+          }}
         />
       </>
     );

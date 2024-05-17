@@ -61,7 +61,6 @@ const DispatchContainer = () => {
 
     }
   };
-  //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getTableData();
   }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
@@ -71,15 +70,15 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-         <div className='flex gap-2'>
+         <div className='flex gap-2 items-center'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
             onSearch={handleSearch}
             style={{ width: 320 }}
           />
-          <DatePicker onChange={onChange} placeholder='From date' /> -
-          <DatePicker onChange={onChange} placeholder='To date' />
+          <DatePicker  size='large' onChange={onChange} placeholder='From date' /> -
+          <DatePicker  size='large' onChange={onChange} placeholder='To date' />
           <Select
             name="materialType"
             placeholder="Material Type*"
@@ -122,10 +121,7 @@ const DispatchContainer = () => {
 
   const CreateChallanForm = () => {
     const selectedHubId = localStorage.getItem("selectedHubID");
-    // State to store the list of materials
-
-
-    const [formData, setFormData] = useState(
+     const [formData, setFormData] = useState(
       {
         "balance": '',
         "bankTransfer": '',
@@ -1468,10 +1464,11 @@ fetchVehicleDetails();
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
             current: currentPage,
             total: totalDispatchData,
             defaultPageSize: currentPageSize, // Set the default page size
-            showSizeChanger: true,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}

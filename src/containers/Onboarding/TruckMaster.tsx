@@ -596,10 +596,11 @@ const TruckMaster = () => {
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
             current: currentPage,
             total: totalTruckData,
             defaultPageSize: currentPageSize, // Set the default page size
-            showSizeChanger: true,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}

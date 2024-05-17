@@ -158,6 +158,10 @@ const OwnerTransferLog = () => {
           dataSource={transferData}
           scroll={{ x: 767, y: 360 }}
           rowKey="_id"
+          pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
+          }}
         />
       </>
     );

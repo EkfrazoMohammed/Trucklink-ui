@@ -89,16 +89,41 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
       <Sider style={{background:"radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)"}} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
-        className='flex justify-end items-center py-2 px-4 cursor-pointer'
+        className='flex justify-end items-center justify-center p-2 cursor-pointer'
           onClick={() => setCollapsed(!collapsed)}>
-        <img src={menu_logo} alt={menu_logo} 
-        style={{
-            fontSize: '16px',
-            width: "40px",
-            height: "40px",
-            color: "#fff",
-            margin: ".5rem 0"
-          }}/>
+              {collapsed ?
+              <>
+              <div className="flex flex-col items-center justify-center gap-0">
+              <img src={menu_logo} alt={menu_logo} 
+               style={{
+                   fontSize: '16px',
+                   width: "50px",
+                   height: "50px",
+                   color: "#fff",
+                   margin: ".5rem 0"
+                 }}/>
+
+               <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto truck-top-logo-close' /> 
+           
+                               </div>
+                 </>
+              : 
+              
+              <>
+              
+              <img src={dark_logo} alt="dark_logo" className='truck-top-logo-open' />
+              
+              <img src={menu_logo} alt={menu_logo} 
+              style={{
+                  fontSize: '16px',
+                  width: "40px",
+                  height: "40px",
+                  color: "#fff",
+                  margin: ".5rem 0"
+                }}/>
+                </>
+                }
+       
           </div>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]} >
           {items.map(item => (
@@ -108,9 +133,22 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
           ))}
         </Menu>
         
-        <div style={{marginTop:"26vh"}}>
-          <button className='flex justify-center items-center m-auto px-4 py-2' onClick={() => setLogoutModalVisible(true)}> <img src={logout_logo} alt="" />{collapsed ? null : <span className='text-white'>Logout</span>}</button>
-          {collapsed ? <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto' /> : <img src={dark_logo} alt="dark_logo" />}
+        <div>
+          {/* <button className='flex  mx-8 my-0 items-center gap-2' onClick={() => setLogoutModalVisible(true)}> 
+          <img src={logout_logo} alt="" style={{width:"30px"}}/>
+          {collapsed ? null : <span className='text-white'>Logout</span>}
+          </button> */}
+       {collapsed ?
+        <button className='flex  mx-4 my-0 items-center gap-2   trucklink-sidemenu-logout-close' onClick={() => setLogoutModalVisible(true)}> 
+          <img src={logout_logo} alt="" style={{width:"30px"}}/>
+         
+          </button>
+          :
+          <button className='flex  mx-8 my-0 items-center gap-2   trucklink-sidemenu-logout-open' onClick={() => setLogoutModalVisible(true)}> 
+          <img src={logout_logo} alt="" style={{width:"30px"}}/>
+          <span className='text-white'>Logout</span>
+          </button>
+          }
         </div>
       </Sider>
       <Layout>

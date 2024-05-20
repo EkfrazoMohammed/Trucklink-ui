@@ -26,6 +26,7 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
 const OnboardingContainer = () => {
   const selectedHubId = localStorage.getItem("selectedHubID");
   const selectedHubName = localStorage.getItem("selectedHubName");
+  const authToken=localStorage.getItem("token");
   const [showOwnerTable, setShowOwnerTable] = useState(true);
   const [rowDataForEdit, setRowDataForEdit] = useState(null);
   const [rowDataForView, setRowDataForView] = useState(null);
@@ -41,10 +42,14 @@ const OnboardingContainer = () => {
     setShowEditForm(true)
   };
   const handleViewClick = (rowData) => {
-    console.log(rowData)
-    console.log(rowData._id)
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${authToken}`
+      }
+    }
     try {
-     let res= API.get(`get-owner-details/${rowData._id}`)
+     let res= API.get(`get-owner-details/${rowData._id}`,headersOb)
         .then((res)=>{
           console.log(res.data.ownerDetails)
           setRowDataForEdit(res.data.ownerDetails[0]);
@@ -67,8 +72,13 @@ const OnboardingContainer = () => {
 
   };
   const handleDeleteClick = async (rowData) => {
-    console.log("deleting", rowData._id)
-    const response = await API.delete(`delete-owner-details/${rowData._id}`);
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${authToken}`
+      }
+    }
+    const response = await API.delete(`delete-owner-details/${rowData._id}`,headersOb);
     console.log(response)
     if (response.status === 201) {
       alert("deleted data")
@@ -101,12 +111,18 @@ const OnboardingContainer = () => {
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${authToken}`
+      }
+    }
     try {
       const pages = page;
       const limitData = 600;
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
+        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
         ownerDetails = response.data.ownerDetails
@@ -209,7 +225,13 @@ const OnboardingContainer = () => {
           {rowData.vehicleIds.map((vehicle, index) => (
             <div key={index}>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Vehicle No:</span> {vehicle.registrationNumber}</p> </Col>
+                <Col className="gutter-row m-1 flex items-center gap-2" span={5}>
+                  <p>{index}</p>
+                   <p className='flex flex-col font-normal m-2'>
+                    <span className="label text-sm">Vehicle No:</span>
+                     {vehicle.registrationNumber}
+                     </p>
+                </Col>
               </Row>
             </div>
           ))}
@@ -389,7 +411,8 @@ const OnboardingContainer = () => {
       };
       const headersOb = {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
         }
       }
       const postData = async () => {
@@ -714,7 +737,8 @@ const OnboardingContainer = () => {
       };
       const headersOb = {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
         }
       }
       const postData = async () => {

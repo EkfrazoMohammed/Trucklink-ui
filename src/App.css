@@ -44,6 +44,7 @@ margin: 0 auto;
   height: 100vh;
   margin-top: -0.1px;
   padding-top: 0.1px;
+  padding: 0 .5rem;
 }
 :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-trigger {
   /* width: 240px !important; */
@@ -251,4 +252,60 @@ align-items: center;
 :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
   /* background-color: #1677ff; */
   background-color: #424242 !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 260px;
+  margin: .6rem;
+  border: 2px solid #eee !important;
+  border-top: 2px solid #eee !important;
+  padding: 0.4rem;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.truck-top-logo-open{
+  width: 150px !important;
+  height: auto;
+}
+
+.truck-top-logo-close{
+  width: 50px !important;
+  height: auto !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline .ant-menu-item {
+  height: 40px;
+  line-height: 40px;
+  list-style-position: inside;
+  list-style-type: disc;
+  padding: 10px !important;
+}
+
+
+.IconImage-icon {
+  width: 36px !important;
+  height: 36px !important;
+  
+  margin: 0 auto;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-submenu>.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-submenu>.ant-menu-submenu-title {
+  inset-inline-start: 0;
+  padding-inline: 8px !important;
+  text-overflow: clip;
+}
+
+.trucklink-sidemenu-logout-open{
+  margin-top: 36vh;
+}
+
+.trucklink-sidemenu-logout-close{
+  margin-top: 28vh;
+  width: 100%;
+  height: auto;
+  
 }

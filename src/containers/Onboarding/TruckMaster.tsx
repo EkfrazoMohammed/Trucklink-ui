@@ -13,7 +13,7 @@ const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const TruckMaster = () => {
-
+  const authToken=localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -111,6 +111,12 @@ const TruckMaster = () => {
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     console.log(searchQuery)
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${authToken}`
+      }
+    }
     try {
 
       const pages = page;
@@ -119,8 +125,8 @@ const TruckMaster = () => {
       const searchData = searchQuery ? searchQuery : null;
 
 
-      const response = searchData ? await API.get(`get-vehicle-details?searchVehicleNumber=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-        : await API.get(`get-vehicle-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`);
+      const response = searchData ? await API.get(`get-vehicle-details?searchVehicleNumber=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
+        : await API.get(`get-vehicle-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb);
 
       let truckDetails;
       if (response.data.truck == 0) {
@@ -547,7 +553,7 @@ const TruckMaster = () => {
         title: 'Commission %',
         dataIndex: 'commission',
         key: 'commission',
-        width: 80,
+        width: 60,
       },
 
       {

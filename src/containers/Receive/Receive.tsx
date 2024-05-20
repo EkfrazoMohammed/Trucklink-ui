@@ -18,6 +18,8 @@ const filterOption = (input, option) =>
   
 const Receive = () => {
 
+    const authToken=localStorage.getItem("token");
+    
     const [showTable, setShowTable] = useState(true);
     const selectedHubId = localStorage.getItem("selectedHubID");
     const [searchQuery, setSearchQuery] = useState('');
@@ -33,13 +35,17 @@ const Receive = () => {
     const [totalChallanData, setTotalChallanData] = useState(100)
 
     const getTableData = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
             const searchData = searchQuery ? searchQuery : null;
-            const response = searchData ? await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`)
-                : await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`);
-            // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
-            // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
-
+            const response = searchData ? await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb)
+                : await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb);
+            
             let allreceive;
             if (response.data.dispatchData.length == 0) {
                 allreceive = response.data.disptachData
@@ -424,8 +430,14 @@ const Receive = () => {
     
         const [deliveryLocation, setDeliveryLocations] = useState([]);
         const fetchMaterials = async () => {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${authToken}`
+                }
+              }
             try {
-                const response = await API.get(`get-material/${selectedHubId}`);
+                const response = await API.get(`get-material/${selectedHubId}`,headersOb);
                 if (response.status === 201) {
                     setMaterials(response.data.materials);
                 }
@@ -435,8 +447,14 @@ const Receive = () => {
         };
         // Function to fetch LoadLocations from the API
         const fetchLoadLocations = async () => {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${authToken}`
+                }
+              }
             try {
-                const response = await API.get(`get-load-location/${selectedHubId}`);
+                const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
                 if (response.status == 201) {
                     setloadLocations(response.data.materials);
                 } else {
@@ -449,8 +467,14 @@ const Receive = () => {
         };
         // Function to fetch DeliveryLocations from the API
         const fetchDeliveryLocations = async () => {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${authToken}`
+                }
+              }
             try {
-                const response = await API.get(`get-delivery-location/${selectedHubId}`);
+                const response = await API.get(`get-delivery-location/${selectedHubId}`,headersOb);
                 setDeliveryLocations(response.data.materials);
             } catch (error) {
                 console.error('Error fetching materials:', error);
@@ -458,8 +482,14 @@ const Receive = () => {
         };
         const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
         const fetchVehicleDetails = async () => {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${authToken}`
+                }
+              }
             try {
-                const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+                const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
                 let truckDetails;
                 if (response.data.truck == 0) {
                     truckDetails = response.data.truck
@@ -494,8 +524,14 @@ const Receive = () => {
         const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
     
         const fetchSelectedVehicleDetails = async (vehicleId) => {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${authToken}`
+                }
+              }
             try {
-                const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+                const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
                 const truckDetails = response.data.truck;
                 if (truckDetails && truckDetails.length > 0) {
                     const selectedVehicle = truckDetails[0];
@@ -567,7 +603,7 @@ const Receive = () => {
       }
 
       const payload = {
-        "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -595,8 +631,14 @@ const Receive = () => {
         "hubId": selectedHubId,
       "shortage": formData.shortage,
       }
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
 
-            API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
+            API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload,headersOb)
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
                     alert("Challan updated successfully")

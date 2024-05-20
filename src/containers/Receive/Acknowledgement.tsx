@@ -17,7 +17,8 @@ const filterOption = (input, option) =>
     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
   
 const Acknowledgement = () => {
-
+    const authToken=localStorage.getItem("token");
+    
     const [showTable, setShowTable] = useState(true);
     const selectedHubId = localStorage.getItem("selectedHubID");
     const [searchQuery, setSearchQuery] = useState('');
@@ -33,10 +34,16 @@ const Acknowledgement = () => {
     const [totalChallanData, setTotalChallanData] = useState(100)
 
     const getTableData = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
             const searchData = searchQuery ? searchQuery : null;
-            const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`)
-                : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`);
+            const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb)
+                : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb);
 
             let allAcknowledgement;
             if (response.data.dispatchData.length == 0) {
@@ -357,9 +364,15 @@ const Acknowledgement = () => {
     };
 
     const handleSaveAndMoveToReceiveChallan = (rowData) => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
             // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
-            API.put(`update-challan-status/${rowData._id}/ACK`, rowData)
+            API.put(`update-challan-status/${rowData._id}/ACK`, rowData,headersOb)
                 .then((response) => {
                     console.log('Challan moved to register successfully:', response.data);
                     alert("Challan moved to register successfully")
@@ -456,8 +469,14 @@ const EditableChallan = ({ editingRow }) => {
 
     const [deliveryLocation, setDeliveryLocations] = useState([]);
     const fetchMaterials = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-material/${selectedHubId}`);
+            const response = await API.get(`get-material/${selectedHubId}`,headersOb);
             if (response.status === 201) {
                 setMaterials(response.data.materials);
             }
@@ -467,8 +486,14 @@ const EditableChallan = ({ editingRow }) => {
     };
     // Function to fetch LoadLocations from the API
     const fetchLoadLocations = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-load-location/${selectedHubId}`);
+            const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
             if (response.status == 201) {
                 setloadLocations(response.data.materials);
             } else {
@@ -481,8 +506,14 @@ const EditableChallan = ({ editingRow }) => {
     };
     // Function to fetch DeliveryLocations from the API
     const fetchDeliveryLocations = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-delivery-location/${selectedHubId}`);
+            const response = await API.get(`get-delivery-location/${selectedHubId}`,headersOb);
             setDeliveryLocations(response.data.materials);
         } catch (error) {
             console.error('Error fetching materials:', error);
@@ -490,8 +521,14 @@ const EditableChallan = ({ editingRow }) => {
     };
     const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
     const fetchVehicleDetails = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+            const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
             let truckDetails;
             if (response.data.truck == 0) {
                 truckDetails = response.data.truck
@@ -526,8 +563,14 @@ const EditableChallan = ({ editingRow }) => {
     const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+            const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
             const truckDetails = response.data.truck;
             if (truckDetails && truckDetails.length > 0) {
                 const selectedVehicle = truckDetails[0];
@@ -627,8 +670,13 @@ const EditableChallan = ({ editingRow }) => {
          "hubId": selectedHubId,
        "shortage": formData.shortage,
        }
- 
-        API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
+       const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+        API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload,headersOb)
             .then((response) => {
                 console.log('Challan updated successfully:', response.data);
                 alert("Challan updated successfully")

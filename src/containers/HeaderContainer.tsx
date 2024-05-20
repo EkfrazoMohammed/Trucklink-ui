@@ -21,6 +21,7 @@ interface RootState {
 }
 
 const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
+  const authToken=localStorage.getItem("token");
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
   const [thirdModalVisible, setThirdModalVisible] = useState(false);
@@ -52,7 +53,13 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   useEffect(() => {
     const fetchHubData = async () => {
-      const response = await API.get("get-hubs");
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
+      const response = await API.get("get-hubs",headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
       } else {
@@ -129,10 +136,13 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
       const payload={
         location:editFormData.location
       }
-      const headers= {
-        "Content-Type": "application/json"
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
       }
-      const response = await API.put(`update-hub/${editFormData.hubId}`, payload,headers)
+      const response = await API.put(`update-hub/${editFormData.hubId}`, payload,headersOb)
       if (response.status == 201) {
         setSecondModalVisible(false);
         showEditConfirmModal();
@@ -154,7 +164,13 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   const handleCreateHub = async () => {
     try {
-      const response = await API.post("create-hub", hubFormData)
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
+      const response = await API.post("create-hub", hubFormData,headersOb)
       if (response.status == 201) {
         setSecondModalVisible(false);
         showConfirmModal();
@@ -179,10 +195,10 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   return (
     <>
-      <div className="flex h-12 pb-4 justify-between items-center border-b-2" >
+      <div className="flex h-12 pb-4 justify-between items-center " >
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex justify-between w-48 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px" }}>
+          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px" }}>
             <div className="flex flex-col">
 
          <span className="flex justify-between" style={{color:"grey",fontSize:".6rem",fontWeight:"600"}}> Select Hub</span> 
@@ -212,7 +228,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
                   </Space>
                 ))}
               </div>
-              <Button type="primary" onClick={showSecondModal}>Create New Hub</Button>
+              <Button type="primary mt-4" onClick={showSecondModal}>Create New Hub</Button>
             </div>
           </Modal>
           {/* Create New Hub Modal */}

@@ -356,12 +356,28 @@ margin: 0 auto;
   color: #000;
 }
 
+
 .ant-tabs-ink-bar {
   height: 10px;
   background: #FCD884 !important;
 }
 
+
 .ant-tabs-tab.ant-tabs-tab-active {
-  border-bottom: 2px solid #FCD884 !important;
+  border-bottom: 5px solid #FCD884 !important;
   z-index: 2;
+  font-weight: 600 !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 260px;
+  margin: .6rem;
+  border: 2px solid #eee !important;
+  border-top: 2px solid #eee !important;
+  padding: 0.4rem;
+  border-radius: 4px;
+  background-color: #fff;
 }

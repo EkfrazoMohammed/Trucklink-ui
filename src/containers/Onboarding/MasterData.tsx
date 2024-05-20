@@ -13,6 +13,7 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
 const MasterData = () => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
+    const authToken=localStorage.getItem("token");
     // State to store the list of materials
     const [materials, setMaterials] = useState([]);
     // State to store the input value for adding material type
@@ -24,8 +25,14 @@ const MasterData = () => {
     const [deliveryLocationName, setDeliveryLocationName] = useState('');
     // Function to fetch materials from the API
     const fetchMaterials = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization":`Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-material/${selectedHubId}`);
+            const response = await API.get(`get-material/${selectedHubId}`,headersOb);
             if (response.status === 201) {
                 setMaterials(response.data.materials);
             }
@@ -35,13 +42,19 @@ const MasterData = () => {
     };
     // Function to handle adding a new material type
     const handleAddMaterial = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization":`Bearer ${authToken}`
+            }
+          }
         try {
             // Post the new material type to the API
             const payload = {
                 "materialType": materialType,
                 "hubId": selectedHubId
             }
-            const response = await API.post('create-material', payload);
+            const response = await API.post('create-material', payload,headersOb);
             if (response.status === 201) {
                 console.log("material added")
             }
@@ -56,8 +69,14 @@ const MasterData = () => {
 
     // Function to fetch materials from the API
     const fetchLoadLocations = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization":`Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-load-location/${selectedHubId}`);
+            const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
             if (response.status == 201) {
                 console.log(response.data.materials)
                 setloadLocations(response.data.materials);
@@ -74,6 +93,12 @@ const MasterData = () => {
     // Function to handle adding a new material type
     const handleAddLoadLocation = async () => {
         try {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization":`Bearer ${authToken}`
+                }
+              }
             const payload =
             {
                 "location": loadLocationName,
@@ -81,7 +106,7 @@ const MasterData = () => {
 
             }
             // Post the new material type to the API
-            const repsonseLoad = await API.post('create-load-location', payload);
+            const repsonseLoad = await API.post('create-load-location', payload,headersOb);
             console.log(repsonseLoad)
             fetchLoadLocations()
             // Clear the input field
@@ -93,8 +118,14 @@ const MasterData = () => {
 
     // Function to fetch materials from the API
     const fetchDeliveryLocations = async () => {
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization":`Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.get(`get-delivery-location/${selectedHubId}`);
+            const response = await API.get(`get-delivery-location/${selectedHubId}`,headersOb);
             setDeliveryLocations(response.data.materials);
         } catch (error) {
             console.error('Error fetching materials:', error);
@@ -105,6 +136,12 @@ const MasterData = () => {
     // Function to handle adding a new material type
     const handleAddDeliveryLocation = async () => {
         try {
+            const headersOb = {
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization":`Bearer ${authToken}`
+                }
+              }
             const payload =
             {
                 "location": deliveryLocationName,
@@ -112,7 +149,7 @@ const MasterData = () => {
 
             }
             // Post the new material type to the API
-            let repsonse = await API.post('create-delivery-location', payload);
+            let repsonse = await API.post('create-delivery-location', payload, headersOb);
             fetchDeliveryLocations()
             // Clear the input field
             setDeliveryLocationName('');
@@ -163,11 +200,14 @@ const MasterData = () => {
               materialType:updatedMaterials.materialType,
         }
         console.log(payload)
-        const headers= {
-            'Content-Type': 'application/json'
-        }
+        const headersOb = {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization":`Bearer ${authToken}`
+            }
+          }
         try {
-            const response = await API.put(`update-material/${updatedMaterials._id}`,payload,headers);
+            const response = await API.put(`update-material/${updatedMaterials._id}`,payload,headersOb);
 console.log(response)
 setmaterialModalVisible(false);
 fetchMaterials();
@@ -213,12 +253,14 @@ const handleUpdateloadLocation = async () => {
          hubId:updatedloadLocation.hubId,
           location:updatedloadLocation.location,
     }
-    console.log(payload)
-    const headers= {
-        'Content-Type': 'application/json'
-    }
+    const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
     try {
-        const response = await API.put(`update-load-location/${updatedloadLocation._id}`,payload,headers);
+        const response = await API.put(`update-load-location/${updatedloadLocation._id}`,payload,headersOb);
 console.log(response)
 setloadLocationModalVisible(false);
 fetchLoadLocations();
@@ -265,12 +307,14 @@ const handleUpdatedeliveryLocation = async () => {
          hubId:updateddeliveryLocation.hubId,
           location:updateddeliveryLocation.location,
     }
-    console.log(payload)
-    const headers= {
-        'Content-Type': 'application/json'
-    }
+    const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
     try {
-        const response = await API.put(`update-delivery-location/${updateddeliveryLocation._id}`,payload,headers);
+        const response = await API.put(`update-delivery-location/${updateddeliveryLocation._id}`,payload,headersOb);
 console.log(response)
 setdeliveryLocationModalVisible(false);
 fetchDeliveryLocations();
@@ -375,11 +419,10 @@ fetchDeliveryLocations();
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
-                                header={<div>Material List</div>}
-
+                               
                                 dataSource={materials}
                                 renderItem={(item) => (
-                                    <List.Item style={{ width: "300px" }}>
+                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
                                         <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.materialType} <a onClick={() => handleOpenMaterialModal(item)}><FormOutlined /></a></p>
                                     </List.Item>
                                 )}
@@ -423,13 +466,9 @@ fetchDeliveryLocations();
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
-                                header={<div>Load Location</div>}
-
                                 dataSource={loadLocation}
                                 renderItem={(item) => (
-                                    <List.Item style={{ width: "300px" }}>
-                                        
-
+                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
                                         <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpenloadLocationModal(item)}><FormOutlined /></a></p>
                                     </List.Item>
                                 )}
@@ -476,14 +515,11 @@ fetchDeliveryLocations();
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "220px" }}
-                                header={<div>Delivery Location</div>}
+                           
 
                                 dataSource={deliveryLocation}
                                 renderItem={(item) => (
-
-                                                                        <List.Item style={{ width: "300px" }}>
-                                        
-
+                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
                                                                         <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpendeliveryLocationModal(item)}><FormOutlined /></a></p>
                                                                     </List.Item>
                                 )}

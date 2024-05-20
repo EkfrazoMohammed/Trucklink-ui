@@ -23,15 +23,14 @@ interface RootState {
 const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
-  // const [thirdModalVisible, setThirdModalVisible] = useState(false);
+  const [thirdModalVisible, setThirdModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [confirmEditModalVisible, setConfirmEditModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  // const [editFormData, setEditFormData] = useState({
-  //   name: '',
-  //   cityCode: '',
-  //   district: '',
-  //   state: ''
-  // });
+  const [editFormData, setEditFormData] = useState({
+    location: "",
+    hubId:""
+  });
   const [hubFormData, setHubFormData] = useState({
     location: ""
   });
@@ -82,13 +81,13 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     setSecondModalVisible(false);
   };
 
-  // const showThirdModal = () => {
-  //   setThirdModalVisible(true);
-  // };
+  const showThirdModal = () => {
+    setThirdModalVisible(true);
+  };
 
-  // const handleThirdCancel = () => {
-  //   setThirdModalVisible(false);
-  // };
+  const handleThirdCancel = () => {
+    setThirdModalVisible(false);
+  };
 
   const showConfirmModal = () => {
     setConfirmModalVisible(true);
@@ -96,6 +95,14 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
 
   const handleCloseAll = () => {
     setConfirmModalVisible(false);
+    setModalVisible(false);
+    setSecondModalVisible(false);
+  }
+  const showEditConfirmModal = () => {
+    setConfirmEditModalVisible(true);
+  };
+  const handleEditCloseAll = () => {
+    setConfirmEditModalVisible(false);
     setModalVisible(false);
     setSecondModalVisible(false);
   }
@@ -109,19 +116,37 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
   };
 
 
-  // const handleEdit = (hubId: string) => {
-  //   const selectedHub = hubData.find((hub: any) => hub._id === hubId);
-  //   if (selectedHub) {
-  //     setEditFormData({
-  //       name: selectedHub.name,
-  //       cityCode: selectedHub.cityCode,
-  //       district: selectedHub.district,
-  //       state: selectedHub.state
-  //     });
-  //     setThirdModalVisible(true);
-  //   }
-  // };
-
+  const handleEdit = (hubData) => {
+      setEditFormData({
+        location:hubData.location,
+        hubId:hubData._id
+      })
+      setThirdModalVisible(true);
+  
+  };
+  const handleUpdateHub = async () => {
+    try {
+      const payload={
+        location:editFormData.location
+      }
+      const headers= {
+        "Content-Type": "application/json"
+      }
+      const response = await API.put(`update-hub/${editFormData.hubId}`, payload,headers)
+      if (response.status == 201) {
+        setSecondModalVisible(false);
+        showEditConfirmModal();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        setErrorMessage("Enter all fields");
+      }
+    } catch (error) {
+      console.error('Error while posting hub data:', error);
+      setErrorMessage("An error occurred while creating the hub.");
+    }
+  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setHubFormData(prevState => ({ ...prevState, [name]: value }));
@@ -145,10 +170,10 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     }
   };
 
-  // const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setEditFormData(prevState => ({ ...prevState, [name]: value }));
-  // };
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prevState => ({ ...prevState, [name]: value }));
+  };
 
   const localDisplay = localStorage.getItem("displayHeader");
 
@@ -179,8 +204,8 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
                         <div className="text-hub">
                           {/* <p>{option.cityCode}</p> */}
                           <p>{option.location}</p>
-                          {/* <div onClick={() => { showThirdModal(); handleEdit(option._id) }} style={{ cursor: "pointer" }}><EditOutlined /></div>  */}
-                          <div style={{ cursor: "pointer" }}><EditOutlined /></div>
+                          <div onClick={() => { showThirdModal(); handleEdit(option) }} style={{ cursor: "pointer" }}><EditOutlined /></div> 
+                          {/* <div style={{ cursor: "pointer" }}><EditOutlined /></div> */}
                         </div>
                       </div>
                     </div>
@@ -195,9 +220,6 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
             {errorMessage && <span style={{ color: "red" }}>{errorMessage}</span>}
             <div>
               <Input size="large" placeholder="Enter Hub Location Name" className='mb-2 p-2' name="location" value={hubFormData.location} onChange={handleInputChange} />
-              {/* <Input size="large" placeholder="Enter City Code" className='mb-2 p-2' name="cityCode" value={hubFormData.cityCode} onChange={handleInputChange} />
-              <Input size="large" placeholder="Enter District" className='mb-2 p-2' name="district" value={hubFormData.district} onChange={handleInputChange} />
-              <Input size="large" placeholder="Enter State" className='mb-2 p-2' name="state" value={hubFormData.state} onChange={handleInputChange} /> */}
               <Space style={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button htmlType="button" onClick={handleSecondCancel}>Cancel</Button>
                 <Button type="primary" htmlType="submit" onClick={handleCreateHub}>Create</Button>
@@ -206,20 +228,20 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
           </Modal>
           <Modal title="Hub created successfully" visible={confirmModalVisible} onOk={handleCloseAll} onCancel={handleCloseAll} />
           {/* Edit Hub Modal */}
-          {/* <Modal title="Edit Hub" visible={thirdModalVisible} onCancel={handleThirdCancel} footer={null}>
+           <Modal title="Edit Hub" visible={thirdModalVisible} onCancel={handleThirdCancel} footer={null}>
             {errorMessage && <span style={{ color: "red" }}>{errorMessage}</span>}
             <div>
-              <Input size="large" placeholder="Enter Hub Location Name" className='mb-2 p-2' name="name" value={editFormData.name} onChange={handleEditInputChange} />
-              <Input size="large" placeholder="Enter City Code" className='mb-2 p-2' name="cityCode" value={editFormData.cityCode} onChange={handleEditInputChange} />
-              <Input size="large" placeholder="Enter District" className='mb-2 p-2' name="district" value={editFormData.district} onChange={handleEditInputChange} />
-              <Input size="large" placeholder="Enter State" className='mb-2 p-2' name="state" value={editFormData.state} onChange={handleEditInputChange} />
+              <Input size="large" placeholder="Edit Hub Location Name" className='mb-2 p-2' name="location" value={editFormData.location} onChange={handleEditInputChange} />
               <Space style={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button htmlType="button" onClick={handleThirdCancel}>Cancel</Button>
-                {/* <Button type="primary" htmlType="submit" onClick={handleUpdateHub}>Update</Button> 
+                 <Button type="primary" htmlType="submit" onClick={handleUpdateHub}>Update</Button> 
               </Space>
             </div>
-          </Modal> */}
-          <Badge size="small" count={1}>
+          </Modal> 
+          <Modal title="Hub Updated successfully" visible={confirmEditModalVisible} onOk={handleEditCloseAll} onCancel={handleEditCloseAll} />
+         
+          {/* Hiding on PRODUCTION */}
+          {/* <Badge size="small" count={1}>
             <Dropdown overlay={
               <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal" dataSource={[{ title: "Pending Acknowledgement", description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement" }]} renderItem={(item) => (
                 <List.Item>
@@ -235,7 +257,7 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
                 </svg>
               </a>
             </Dropdown>
-          </Badge>
+          </Badge> */}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />
             Dhruva

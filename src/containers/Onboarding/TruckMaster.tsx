@@ -530,6 +530,9 @@ const TruckMaster = () => {
         dataIndex: 'truckType',
         key: 'truckType',
         width: 80,
+        render:(_,record)=>{
+          return record.truckType.charAt(0).toUpperCase()+record.truckType.slice(1)
+        }
       },
       {
         title: 'RC Book',

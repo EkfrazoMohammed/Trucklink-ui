@@ -41,10 +41,30 @@ const OnboardingContainer = () => {
     setShowEditForm(true)
   };
   const handleViewClick = (rowData) => {
-    setRowDataForEdit(rowData);
-    setRowDataForView(rowData);
+    console.log(rowData)
+    console.log(rowData._id)
+    try {
+     let res= API.get(`get-owner-details/${rowData._id}`)
+        .then((res)=>{
+          console.log(res.data.ownerDetails)
+          setRowDataForEdit(res.data.ownerDetails[0]);
+    setRowDataForView(res.data.ownerDetails[0]);
     setShowOwnerTable(false);
     setShowEditForm(false)
+        }).catch((err) => {
+          console.log(err)
+        }
+      )
+    }catch(err) {
+      console.log(err)
+      
+    setRowDataForEdit(rowData);
+    setRowDataForView(rowData);
+    setShowOwnerTable(true);
+    setShowEditForm(true)
+
+    }
+
   };
   const handleDeleteClick = async (rowData) => {
     console.log("deleting", rowData._id)
@@ -217,6 +237,8 @@ const OnboardingContainer = () => {
         branchName: ''
       }))
     });
+
+    
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
       const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
@@ -319,40 +341,33 @@ const OnboardingContainer = () => {
         setDistricts([]);
       }
     };
+
+    const handleResetButtonClick=()=>{
+      
+      setFormData({
+        name: '',
+        email: '',
+        phoneNumber: '',
+        countryCode: '',
+        panNumber: '',
+        district: '',
+        state: '',
+        address: selectedHubName,
+        vehicleIds: [],
+        hubId: selectedHubId,
+        bankAccounts: Array.from({ length: 1 }, () => ({
+          accountNumber: '',
+          accountHolderName: '',
+          ifscCode: '',
+          bankName: '',
+          branchName: ''
+        }))
+      });
+    }
     const handleSubmit = (e) => {
       e.preventDefault();
 
-      const oldPayload = {
-
-        "owner_details": {
-          "hubId": "6634de2e2588845228b2dbe4",
-          "name": "raghav456",
-          "email": "raghav456@gmail.com",
-          "phoneNumber": "8950889910",
-          "panNumber": "raghav456",
-          "address": "raghav456",
-          "district": "raghav456",
-          "state": "Assam"
-
-        },
-        "bank_details": [
-          {
-            "accountNumber": "raghav4561234",
-            "accountHolderName": "raghav4561234",
-            "ifscCode": "raghav456",
-            "bankName": "raghav456",
-            "branchName": "raghav456"
-          },
-          {
-            "accountNumber": "raghav4562",
-            "accountHolderName": "raghav4562",
-            "ifscCode": "raghav4562",
-            "bankName": "raghav4562",
-            "branchName": "raghav4562"
-          }
-        ]
-      }
-
+      
       const payload = {
         "owner_details": {
           hubId: selectedHubId,
@@ -374,7 +389,6 @@ const OnboardingContainer = () => {
       };
       const headersOb = {
         headers: {
-
           "Content-Type": "application/json"
         }
       }
@@ -443,16 +457,16 @@ const OnboardingContainer = () => {
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} /></div>
+                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} value={formData.name}/></div>
                 </Col>
                 <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='number' placeholder="Mobile Number*" size="large" name="phoneNumber" onChange={handleOwnerFormChange} /></div>
+                  <div ><Input type='number' placeholder="Mobile Number*" size="large" name="phoneNumber" value={formData.phoneNumber} onChange={handleOwnerFormChange} /></div>
                 </Col>
                 <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='email' placeholder="Email ID" size="large" name="email" onChange={handleOwnerFormChange} /></div>
+                  <div ><Input type='email' placeholder="Email ID" size="large" name="email" value={formData.email} onChange={handleOwnerFormChange} /></div>
                 </Col>
                 <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="PAN Card No" size="large" name="panNumber" onChange={handleOwnerFormChange} /></div>
+                  <div ><Input placeholder="PAN Card No" size="large" name="panNumber" value={formData.panNumber} onChange={handleOwnerFormChange} /></div>
                 </Col>
 
                 <Col className="gutter-row mt-6" span={12}>
@@ -553,9 +567,7 @@ const OnboardingContainer = () => {
             ))}
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
-
-            <Button onClick={() => { setShowOwnerTable(true) }}>Reset</Button>
-
+            <Button onClick={handleResetButtonClick}>Reset</Button>
             <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>
           </div>
 

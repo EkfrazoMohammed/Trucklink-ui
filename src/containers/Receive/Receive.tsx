@@ -151,26 +151,26 @@ const Receive = () => {
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
                 render: (text, record, index: any) => index + 1,
-                width: 80,
+                width: 90,
 
             },
             {
                 title: 'GR Number',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
-                width: 180,
+                width: 100,
             },
             {
                 title: 'GR Date',
                 dataIndex: 'grDate',
                 key: 'grDate',
-                width: 180,
+                width: 140,
             },
             {
                 title: 'Truck Number',
                 dataIndex: 'vehicleNumber',
                 key: 'vehicleNumber',
-                width: 180,
+                width: 140,
             },
             {
                 title: 'From',
@@ -188,31 +188,31 @@ const Receive = () => {
                 title: 'Delivery No',
                 dataIndex: 'deliveryNumber',
                 key: 'deliveryNumber',
-                width: 180,
+                width: 140,
             },
 
             {
                 title: 'Qty',
                 dataIndex: 'quantityInMetricTons',
                 key: 'quantityInMetricTons',
-                width: 90,
+                width: 110,
             },
 
             {
                 title: 'Company Rate',
                 dataIndex: 'rate',
                 key: 'rate',
-                width: 120,
+                width: 110,
             },
             {
                 title: 'Market Rate',
                 dataIndex: 'marketRate',
                 key: 'marketRate',
-                width: 120,
+                width: 110,
             },
             {
                 title: 'Total',
-                width: 120,
+                width: 110,
                 render: (_,record) => {
                     return record.quantityInMetricTons * record.rate
 
@@ -220,16 +220,16 @@ const Receive = () => {
             },
             {
                 title: 'Commission',
-                width: 140,
+                width: 180,
                 render: (_, record) => {
                   return (
                     <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
 
                     <p>
-                      {record.commisionRate == null ?<>0{"%"}</>:<> record.commisionRate{"%"}</>}
+                      {record.commisionRate == null || record.commisionRate == 0 ?<>-</>:<> {`${record.commisionRate} %`}</>}
                     </p>
                     <p>
-                      {`${record.marketRate}`}
+                      {`${record.commisionTotal}`}
                     </p>
                     </div>
                   );
@@ -251,13 +251,13 @@ const Receive = () => {
                 title: 'Bank Transfer',
                 dataIndex: 'bankTransfer',
                 key: 'bankTransfer',
-                width: 180,
+                width: 110,
             },
             {
                 title: 'shortage',
                 dataIndex: 'shortage',
                 key: 'shortage',
-                width: 180,
+                width: 110,
                 render: (_,record) => {
                     return record.shortage
                 },
@@ -323,7 +323,7 @@ const Receive = () => {
                     rowKey="_id"
                     pagination={{
                         position: ['bottomCenter'],
-                        showSizeChanger: false,
+                        showSizeChanger: true,
                         current: currentPage,
                         total: totalChallanData,
                         defaultPageSize: currentPageSize, // Set the default page size
@@ -549,49 +549,53 @@ const Receive = () => {
         const handleSubmit = (e) => {
             e.preventDefault();
             // Calculate commissionTotal based on isMarketRate
-            let commissionTotal = 0;
-            if (formData.isMarketRate) {
-                console.log("isMarketRate", formData.isMarketRate)
-                // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-                commissionTotal = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.marketRate);
-            } else {
-                console.log("isMarketRate", formData.isMarketRate)
-                // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-                const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
-                commissionTotal = commissionTotalInPercentage / 100;
-            }
-    
-            const payload = {
-                "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-                // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
-                "bankTransfer": formData.bankTransfer,
-                "cash": formData.cash,
-                "deliveryLocation": formData.deliveryLocation,
-                "deliveryNumber": formData.deliveryNumber,
-                "diesel": formData.diesel,
-                "grDate": formData.grDate,
-                "grNumber": formData.grNumber,
-                "invoiceProof": null,
-                "loadLocation": formData.loadLocation,
-                "materialType": formData.materialType,
-                "ownerId": formData.ownerId,
-                "ownerName": formData.ownerName,
-                "ownerPhone": formData.ownerPhone,
-                "quantityInMetricTons": formData.quantityInMetricTons,
-                "rate": formData.rate,
-                "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
-                "vehicleBank": formData.vehicleBank,
-                "vehicleId": formData.vehicleId,
-                "vehicleNumber": formData.vehicleNumber,
-                "vehicleType": formData.vehicleType,
-                "commisionRate": formData.commisionRate,
-                "commisionTotal": commissionTotal,
-                "isMarketRate": formData.isMarketRate,
-                "marketRate": formData.marketRate,
-                "hubId": selectedHubId,
-                "shortage":formData.shortage
-            }
-            // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
+             // Calculate commissionTotal based on isMarketRate
+      let commissionTotal = 0;
+      let commisionRate=0
+      if (formData.isMarketRate) {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commisionRate=0;
+      } else {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        commissionTotal = commissionTotalInPercentage / 100;
+        commisionRate=parseFloat(selectedvehicleCommission);
+      
+      }
+
+      const payload = {
+        "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+        "bankTransfer": formData.bankTransfer,
+        "cash": formData.cash,
+        "deliveryLocation": formData.deliveryLocation,
+        "deliveryNumber": formData.deliveryNumber,
+        "diesel": formData.diesel,
+        "grDate": formData.grDate,
+        "grNumber": formData.grNumber,
+        "invoiceProof": null,
+        "loadLocation": formData.loadLocation,
+        "materialType": formData.materialType,
+        "ownerId": formData.ownerId,
+        "ownerName": formData.ownerName,
+        "ownerPhone": formData.ownerPhone,
+        "quantityInMetricTons": formData.quantityInMetricTons,
+        "rate": formData.rate,
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "vehicleBank": formData.vehicleBank,
+        "vehicleId": formData.vehicleId,
+        "vehicleNumber": formData.vehicleNumber,
+        "vehicleType": formData.vehicleType,
+        "commisionRate": commisionRate,
+        "commisionTotal": commissionTotal,
+        "isMarketRate": formData.isMarketRate,
+        "marketRate": formData.marketRate,
+        "hubId": selectedHubId,
+      "shortage": formData.shortage,
+      }
+
             API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
@@ -893,7 +897,7 @@ const Receive = () => {
         <>
             {showTable ? (
           <>
-                <DispatchChallanComponent />
+                {/* <DispatchChallanComponent /> */}
                 <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} />
             </>
             ):(

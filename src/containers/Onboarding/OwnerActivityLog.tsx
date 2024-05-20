@@ -143,7 +143,7 @@ const OwnerActivityLog = () => {
   return (
     <>
 
-      <ActivityLogHeader />
+      {/* <ActivityLogHeader /> */}
       <ActivityLogTable ActivityData={ActivityData} />
 
     </>

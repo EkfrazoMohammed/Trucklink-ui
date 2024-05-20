@@ -31,7 +31,7 @@ const DispatchContainer = () => {
   const [showDispatchTable, setShowDispatchTable] = useState(true);
   const [rowDataForDispatchEdit, setRowDataForDispatchEdit] = useState(null);
   const [editingChallan, setEditingChallan] = useState(false);
- 
+
 
   // Initialize state variables for current page and page size
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,8 +40,8 @@ const DispatchContainer = () => {
 
   const getTableData = async () => {
     try {
-    const searchData = searchQuery ? searchQuery : null;
-  const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
+      const searchData = searchQuery ? searchQuery : null;
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
         : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);
 
       let allChallans;
@@ -70,7 +70,7 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-         <div className='flex gap-2 items-center'>
+        {/* <div className='flex gap-2 items-center'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
@@ -101,9 +101,9 @@ const DispatchContainer = () => {
             ]}
             onChange={(value) => handleChange('vehicleType', value)}
           />
-        </div> 
+        </div>  */}
         <div className='flex gap-2 justify-end'>
-           <Upload>
+          {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
           <Upload>
@@ -111,7 +111,7 @@ const DispatchContainer = () => {
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload> 
+          </Upload>  */}
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -121,7 +121,7 @@ const DispatchContainer = () => {
 
   const CreateChallanForm = () => {
     const selectedHubId = localStorage.getItem("selectedHubID");
-     const [formData, setFormData] = useState(
+    const [formData, setFormData] = useState(
       {
         "balance": '',
         "bankTransfer": '',
@@ -132,13 +132,13 @@ const DispatchContainer = () => {
         "deliveryNumber": '',
         "diesel": '',
         "grDate": null,
-        "grNumber":'',
+        "grNumber": '',
         "invoiceProof": null,
         "loadLocation": '',
-        "materialType":'',
+        "materialType": '',
         "ownerId": '',
         "ownerName": '',
-        "ownerPhone":'',
+        "ownerPhone": '',
         "quantityInMetricTons": '',
         "rate": '',
         "totalExpense": '',
@@ -146,32 +146,32 @@ const DispatchContainer = () => {
         "vehicleId": '',
         "vehicleNumber": '',
         "vehicleType": '',
-        "isMarketRate":false,
+        "isMarketRate": false,
         "marketRate": 0,
-          "hubId":''
-        }
-        
-          
+        "hubId": ''
+      }
+
+
     );
-   
+
     const handleChange = (name, value) => {
       if (name === "isMarketRate") {
         if (!value) {
           setFormData((prevFormData) => ({
             ...prevFormData,
             [name]: value,
-            isMarketRate:false,
+            isMarketRate: false,
             commission: 0,
           }));
-        } else{
+        } else {
           setFormData((prevFormData) => ({
             ...prevFormData,
             [name]: value,
-            isMarketRate:true,
+            isMarketRate: true,
             commission: 0,
           }));
         }
-      }  else {
+      } else {
         // For other fields, update state normally
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -186,168 +186,173 @@ const DispatchContainer = () => {
       const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
       return formattedDate;
     };
- // Function to handle date change
- const handleDateChange = (date, dateString) => {
-  const formattedGrDate = formatDate(dateString);
-console.log(formattedGrDate); // Output: "01/05/2024"
-  // dateString will be in the format 'YYYY-MM-DD'
-  handleChange('grDate', formattedGrDate);
-};
-const [materials, setMaterials] = useState([]);
-const [loadLocation, setloadLocations] = useState([]);
+    // Function to handle date change
+    const handleDateChange = (date, dateString) => {
+      const formattedGrDate = formatDate(dateString);
+      console.log(formattedGrDate); // Output: "01/05/2024"
+      // dateString will be in the format 'YYYY-MM-DD'
+      handleChange('grDate', formattedGrDate);
+    };
+    const [materials, setMaterials] = useState([]);
+    const [loadLocation, setloadLocations] = useState([]);
 
-const [deliveryLocation, setDeliveryLocations] = useState([]);
-const fetchMaterials = async () => {
-  try {
-      const response = await API.get(`get-material/${selectedHubId}`);
-      if (response.status === 201) {
+    const [deliveryLocation, setDeliveryLocations] = useState([]);
+    const fetchMaterials = async () => {
+      try {
+        const response = await API.get(`get-material/${selectedHubId}`);
+        if (response.status === 201) {
           setMaterials(response.data.materials);
+        }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
       }
-  } catch (error) {
-      console.error('Error fetching materials:', error);
-  }
-};
-// Function to fetch LoadLocations from the API
-const fetchLoadLocations = async () => {
-try {
-    const response = await API.get(`get-load-location/${selectedHubId}`);
-    if (response.status == 201) {
-        setloadLocations(response.data.materials);
-    } else {
-        console.log("error in fetchLoadLocations")
-    }
+    };
+    // Function to fetch LoadLocations from the API
+    const fetchLoadLocations = async () => {
+      try {
+        const response = await API.get(`get-load-location/${selectedHubId}`);
+        if (response.status == 201) {
+          setloadLocations(response.data.materials);
+        } else {
+          console.log("error in fetchLoadLocations")
+        }
 
-} catch (error) {
-    console.error('Error fetching materials:', error);
-}
-};
-// Function to fetch DeliveryLocations from the API
-const fetchDeliveryLocations = async () => {
-try {
-    const response = await API.get(`get-delivery-location/${selectedHubId}`);
-    setDeliveryLocations(response.data.materials);
-} catch (error) {
-    console.error('Error fetching materials:', error);
-}
-};
-const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
-const fetchVehicleDetails = async () => {
-try {
-const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
-let truckDetails;
-if (response.data.truck == 0) {
-  truckDetails = response.data.truck
-  setVehicleDetails(truckDetails);
-} else {
-
-  truckDetails = response.data.truck[0].data || "";
-  setVehicleDetails(response.data.truck[0].count);
-
-  if (truckDetails && truckDetails.length > 0) {
-    const arrRes = truckDetails.sort(function (a, b) {
-      a = a.
-        registrationNumber.toLowerCase();
-      b = b.
-        registrationNumber.toLowerCase();
-
-      return a < b ? -1 : a > b ? 1 : 0;
-    });
-
-    setVehicleDetails(arrRes);
-
-    return arrRes;
-  }  
-} 
-}catch (error) {
-console.error('Error fetching vehicle details:', error);
-// Handle error
-}
-};
-const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
-
-const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
-
-const fetchSelectedVehicleDetails = async (vehicleId) => {
-  try {
-    const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
-    const truckDetails = response.data.truck;
-    if (truckDetails && truckDetails.length > 0) {
-      const selectedVehicle = truckDetails[0];
-      // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
-      const ownerId=selectedVehicle.ownerId._id;
-      const ownerName=selectedVehicle.ownerId.name;
-      const ownerPhone=selectedVehicle.ownerId.phoneNumber;
-      const vehicleBank=selectedVehicle.accountId._id;
-      const vehicleId=selectedVehicle._id;
-      const vehicleNumber=selectedVehicle.registrationNumber;
-      const vehicleType=selectedVehicle.truckType;
-      setselectedCommission(selectedVehicle.commission)
-      let commissionRate;
-      if(formData.isMarketRate){
-        console.log('first')
-        commissionRate=formData.marketRate
-      }else{
-        console.log('second')
-        commissionRate=selectedVehicle.commission
-
+      } catch (error) {
+        console.error('Error fetching materials:', error);
       }
-    
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        ownerId,
-        ownerName,
-        ownerPhone,
-        vehicleBank,
-        vehicleId,
-        vehicleNumber,
-        vehicleType,
-        commissionRate
-      }));
-    }
-  } catch (error) {
-    console.error('Error fetching vehicle details:', error);
-    // Handle error
-  }
-};
-useEffect(()=>{
-fetchSelectedVehicleDetails(selectedvehicleId)
-},[formData.vehicleNumber,selectedvehicleId])
-// Fetch materials on component mount
-useEffect(() => {
-fetchMaterials();
-fetchLoadLocations();
-fetchDeliveryLocations();
-fetchVehicleDetails();
-}, [selectedHubId]);
+    };
+    // Function to fetch DeliveryLocations from the API
+    const fetchDeliveryLocations = async () => {
+      try {
+        const response = await API.get(`get-delivery-location/${selectedHubId}`);
+        setDeliveryLocations(response.data.materials);
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+    const fetchVehicleDetails = async () => {
+      try {
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        let truckDetails;
+        if (response.data.truck == 0) {
+          truckDetails = response.data.truck
+          setVehicleDetails(truckDetails);
+        } else {
 
+          truckDetails = response.data.truck[0].data || "";
+          setVehicleDetails(response.data.truck[0].count);
+
+          if (truckDetails && truckDetails.length > 0) {
+            const arrRes = truckDetails.sort(function (a, b) {
+              a = a.
+                registrationNumber.toLowerCase();
+              b = b.
+                registrationNumber.toLowerCase();
+
+              return a < b ? -1 : a > b ? 1 : 0;
+            });
+
+            setVehicleDetails(arrRes);
+
+            return arrRes;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
+    };
+    const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
+
+    const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+
+    const fetchSelectedVehicleDetails = async (vehicleId) => {
+      try {
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const truckDetails = response.data.truck;
+        if (truckDetails && truckDetails.length > 0) {
+          const selectedVehicle = truckDetails[0];
+          // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
+          const ownerId = selectedVehicle.ownerId._id;
+          const ownerName = selectedVehicle.ownerId.name;
+          const ownerPhone = selectedVehicle.ownerId.phoneNumber;
+          const vehicleBank = selectedVehicle.accountId._id;
+          const vehicleId = selectedVehicle._id;
+          const vehicleNumber = selectedVehicle.registrationNumber;
+          const vehicleType = selectedVehicle.truckType;
+          setselectedCommission(selectedVehicle.commission)
+          let commissionRate;
+          if (formData.isMarketRate) {
+            console.log('first')
+            commissionRate = formData.marketRate
+          } else {
+            console.log('second')
+            commissionRate = selectedVehicle.commission
+
+          }
+          console.log(commissionRate)
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            ownerId,
+            ownerName,
+            ownerPhone,
+            vehicleBank,
+            vehicleId,
+            vehicleNumber,
+            vehicleType,
+            commissionRate
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
+    };
+    useEffect(() => {
+      fetchSelectedVehicleDetails(selectedvehicleId)
+    }, [formData.vehicleNumber, selectedvehicleId])
+    // Fetch materials on component mount
+    useEffect(() => {
+      fetchMaterials();
+      fetchLoadLocations();
+      fetchDeliveryLocations();
+      fetchVehicleDetails();
+    }, [selectedHubId]);
+
+    const [data, setData] = useState([]);
     const handleSubmit = (e) => {
       e.preventDefault();
-//       total= quantity * c.rate
-// toggle off = %/total
-// toggal on = total -market rate*quantity
-       // Calculate commissionTotal based on isMarketRate
-  let commissionTotal=0;
-  if (formData.isMarketRate) {
-    console.log("isMarketRate",formData.isMarketRate)
-    // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-    commissionTotal = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.marketRate);
-  } else {
-    console.log("isMarketRate",formData.isMarketRate)
-    // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-    const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
-    commissionTotal =commissionTotalInPercentage / 100;
-  }
+      //       total= quantity * c.rate
+      // toggle off = %/total
+      // toggal on = total -market rate*quantity
+      // Calculate commissionTotal based on isMarketRate
+      let commissionTotal = 0;
+      let commisionRate=0
+      if (formData.isMarketRate) {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commisionRate=0;
+      } else {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        commissionTotal = commissionTotalInPercentage / 100;
+        commisionRate=parseFloat(selectedvehicleCommission);
+      
+      }
 
-      const payload={
-        "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+      const payload = {
+        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
-        "cash": formData.cash,      
+        "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
         "deliveryNumber": formData.deliveryNumber,
         "diesel": formData.diesel,
         "grDate": formData.grDate,
         "grNumber": formData.grNumber,
-        "invoiceProof":null,
+        "invoiceProof": null,
         "loadLocation": formData.loadLocation,
         "materialType": formData.materialType,
         "ownerId": formData.ownerId,
@@ -355,18 +360,18 @@ fetchVehicleDetails();
         "ownerPhone": formData.ownerPhone,
         "quantityInMetricTons": formData.quantityInMetricTons,
         "rate": formData.rate,
-        "totalExpense":parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
         "vehicleBank": formData.vehicleBank,
         "vehicleId": formData.vehicleId,
         "vehicleNumber": formData.vehicleNumber,
         "vehicleType": formData.vehicleType,
-        "commisionRate": formData.commisionRate,
+        "commisionRate": commisionRate,
         "commisionTotal": commissionTotal,
-        "isMarketRate":  formData.isMarketRate,
-          "marketRate": formData.marketRate,
-          "hubId":selectedHubId
-        }
-
+        "isMarketRate": formData.isMarketRate,
+        "marketRate": formData.marketRate,
+        "hubId": selectedHubId
+      }
+      setData(payload)
         if(formData.grDate !== null || formData.grDate !==""){
         API.post('create-dispatch-challan', payload)
         .then((response) => {
@@ -386,12 +391,6 @@ fetchVehicleDetails();
     return (
       <>
         <div className="flex flex-col gap-2">
-          {/* <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Create Challan</h1>
-         
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} />
-
-          </div> */}
           <div className="flex items-center gap-4">
             <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
             <div className="flex flex-col">
@@ -424,20 +423,19 @@ fetchVehicleDetails();
                 />
               </div>
             </div>
-
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
-                  
-                   <Select
-                   name="materialType"
-                   onChange={(value) => handleChange('materialType', value)}
-                   placeholder="Material Type*"
-                   size="large"
-                   style={{ width: '100%' }}
-                   showSearch
-                   optionFilterProp="children"
-                   filterOption={filterOption}
+
+                  <Select
+                    name="materialType"
+                    onChange={(value) => handleChange('materialType', value)}
+                    placeholder="Material Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
                   >
                     {materials.map((v, index) => (
                       <Option key={index} value={v.materialType}>
@@ -459,24 +457,24 @@ fetchVehicleDetails();
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
-                <DatePicker
-                required
-        placeholder="GR Date *"
-        size="large"
-        style={{ width: "100%" }}
-        onChange={handleDateChange} // Call handleDateChange function on date change
-      />
+                  <DatePicker
+                    required
+                    placeholder="GR Date *"
+                    size="large"
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange} // Call handleDateChange function on date change
+                  />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                <Select
-                   name="loadLocation"
-                   onChange={(value) => handleChange('loadLocation', value)}
-                   placeholder="Loaded From*"
-                   size="large"
-                   style={{ width: '100%' }}
-                   showSearch
-                   optionFilterProp="children"
-                   filterOption={filterOption}
+                  <Select
+                    name="loadLocation"
+                    onChange={(value) => handleChange('loadLocation', value)}
+                    placeholder="Loaded From*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
                   >
                     {loadLocation.map((v, index) => (
                       <Option key={index} value={v.location}>
@@ -489,15 +487,15 @@ fetchVehicleDetails();
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
-                <Select
-                   name="deliveryLocation"
-                   onChange={(value) => handleChange('deliveryLocation', value)}
-                   placeholder="Deliver To*"
-                   size="large"
-                   showSearch
-                   optionFilterProp="children"
-                   filterOption={filterOption}
-                   style={{ width: '100%' }}
+                  <Select
+                    name="deliveryLocation"
+                    onChange={(value) => handleChange('deliveryLocation', value)}
+                    placeholder="Deliver To*"
+                    size="large"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                    style={{ width: '100%' }}
                   >
                     {deliveryLocation.map((v, index) => (
                       <Option key={index} value={v.location}>
@@ -519,7 +517,7 @@ fetchVehicleDetails();
                       const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
                       if (selectedVehicle) {
                         console.log(selectedVehicle._id)
-                        setselectedVehicleId(selectedVehicle._id); 
+                        setselectedVehicleId(selectedVehicle._id);
                       }
                       handleChange('vehicleNumber', value);
                     }}
@@ -538,7 +536,7 @@ fetchVehicleDetails();
                     placeholder="Vehicle Type*"
                     size="large"
                     style={{ width: '100%' }}
-                    value={formData.vehicleType}
+                    value={formData.vehicleType ? formData.vehicleType.charAt(0).toUpperCase() + formData.vehicleType.slice(1) : ''}
                     disabled
                   />
 
@@ -547,7 +545,7 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
 
                   <Input
-                  type='number'
+                    type='number'
                     placeholder="Delivery Number*"
                     size="large"
                     name="deliveryNumber"
@@ -558,7 +556,7 @@ fetchVehicleDetails();
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
-                  type='number'
+                    type='number'
                     placeholder="Quantity (M/T)*"
                     size="large"
                     name="quantityInMetricTons"
@@ -578,7 +576,7 @@ fetchVehicleDetails();
                 <Col className="gutter-row mt-6" span={6}>
                   {formData.isMarketRate ? <>
                     <Input
-                    type='number'
+                      type='number'
                       placeholder="Market Rate Rs*"
                       size="large"
                       name="diesel"
@@ -606,7 +604,7 @@ fetchVehicleDetails();
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
-                  type='number'
+                    type='number'
                     placeholder="Diesel*"
                     size="large"
                     name="diesel"
@@ -624,7 +622,7 @@ fetchVehicleDetails();
                 </Col>
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
-                                    type='number'
+                    type='number'
                     placeholder="Bank Transfer*"
                     size="large"
                     name="bankTransfer"
@@ -637,6 +635,7 @@ fetchVehicleDetails();
 
             </div>
           </div>
+     
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
@@ -672,267 +671,277 @@ fetchVehicleDetails();
       console.log(response.data)
     }
   }
-  
-  
+
+
   const EditableChallan = ({ editingRow }) => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
 
     const [formData, setFormData] = useState(
-        {
-            "balance": editingRow.balance,
-            "bankTransfer": editingRow.bankTransfer,
-            "cash": editingRow.cash,
-            "commisionRate": editingRow.commisionRate,
-            "commisionTotal": editingRow.commisionTotal,
-            "deliveryLocation": editingRow.deliveryLocation,
-            "deliveryNumber": editingRow.deliveryNumber,
-            "diesel": editingRow.diesel,
-            "grDate": editingRow.grDate,
-            "grNumber": editingRow.grNumber,
-            "invoiceProof": editingRow.invoiceProof,
-            "loadLocation": editingRow.loadLocation,
-            "materialType": editingRow.materialType,
-            "ownerId": editingRow.ownerId,
-            "ownerName": editingRow.ownerName,
-            "ownerPhone": editingRow.ownerPhone,
-            "quantityInMetricTons": editingRow.quantityInMetricTons,
-            "rate": editingRow.rate,
-            "totalExpense": editingRow.totalExpense,
-            "vehicleBank": editingRow.vehicleBank,
-            "vehicleId": editingRow.vehicleId,
-            "vehicleNumber": editingRow.vehicleNumber,
-            "vehicleType": editingRow.vehicleType,
-            "isMarketRate": editingRow.isMarketRate,
-            "marketRate": editingRow.marketRate,
-            "hubId": selectedHubId,
-            "shortage": editingRow.shortage,
-        }
+      {
+        "balance": editingRow.balance,
+        "bankTransfer": editingRow.bankTransfer,
+        "cash": editingRow.cash,
+        "commisionRate": editingRow.commisionRate,
+        "commisionTotal": editingRow.commisionTotal,
+        "deliveryLocation": editingRow.deliveryLocation,
+        "deliveryNumber": editingRow.deliveryNumber,
+        "diesel": editingRow.diesel,
+        "grDate": editingRow.grDate,
+        "grNumber": editingRow.grNumber,
+        "invoiceProof": editingRow.invoiceProof,
+        "loadLocation": editingRow.loadLocation,
+        "materialType": editingRow.materialType,
+        "ownerId": editingRow.ownerId,
+        "ownerName": editingRow.ownerName,
+        "ownerPhone": editingRow.ownerPhone,
+        "quantityInMetricTons": editingRow.quantityInMetricTons,
+        "rate": editingRow.rate,
+        "totalExpense": editingRow.totalExpense,
+        "vehicleBank": editingRow.vehicleBank,
+        "vehicleId": editingRow.vehicleId,
+        "vehicleNumber": editingRow.vehicleNumber,
+        "vehicleType": editingRow.vehicleType,
+        "isMarketRate": editingRow.isMarketRate,
+        "marketRate": editingRow.marketRate,
+        "hubId": selectedHubId,
+        "shortage": editingRow.shortage,
+      }
 
     );
 
     const handleChange = (name, value) => {
-        if (name === "isMarketRate") {
-            if (!value) {
-                setFormData((prevFormData) => ({
-                    ...prevFormData,
-                    [name]: value,
-                    isMarketRate: false,
-                    commission: selectedvehicleCommission,
-                }));
-            } else {
-                setFormData((prevFormData) => ({
-                    ...prevFormData,
-                    [name]: value,
-                    isMarketRate: true,
-                    commission: 0,
-                }));
-            }
+      if (name === "isMarketRate") {
+        if (!value) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: false,
+            commission: selectedvehicleCommission,
+          }));
         } else {
-            // For other fields, update state normally
-            setFormData((prevFormData) => ({
-                ...prevFormData,
-                [name]: value,
-            }));
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: true,
+            commission: 0,
+          }));
         }
+      } else {
+        // For other fields, update state normally
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+      }
     };
     const formatDate = (dateString) => {
-        // Split the date string by '-'
-        const parts = dateString.split('-');
-        // Rearrange the parts in the required format
-        const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        return formattedDate;
+      // Split the date string by '-'
+      const parts = dateString.split('-');
+      // Rearrange the parts in the required format
+      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return formattedDate;
     };
     // Function to handle date change
     const handleDateChange = (date, dateString) => {
-        const formattedGrDate = formatDate(dateString);
-        handleChange('grDate', formattedGrDate);
+      const formattedGrDate = formatDate(dateString);
+      handleChange('grDate', formattedGrDate);
     };
     const [materials, setMaterials] = useState([]);
     const [loadLocation, setloadLocations] = useState([]);
 
     const [deliveryLocation, setDeliveryLocations] = useState([]);
     const fetchMaterials = async () => {
-        try {
-            const response = await API.get(`get-material/${selectedHubId}`);
-            if (response.status === 201) {
-                setMaterials(response.data.materials);
-            }
-        } catch (error) {
-            console.error('Error fetching materials:', error);
+      try {
+        const response = await API.get(`get-material/${selectedHubId}`);
+        if (response.status === 201) {
+          setMaterials(response.data.materials);
         }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
     };
     // Function to fetch LoadLocations from the API
     const fetchLoadLocations = async () => {
-        try {
-            const response = await API.get(`get-load-location/${selectedHubId}`);
-            if (response.status == 201) {
-                setloadLocations(response.data.materials);
-            } else {
-                console.log("error in fetchLoadLocations")
-            }
-
-        } catch (error) {
-            console.error('Error fetching materials:', error);
+      try {
+        const response = await API.get(`get-load-location/${selectedHubId}`);
+        if (response.status == 201) {
+          setloadLocations(response.data.materials);
+        } else {
+          console.log("error in fetchLoadLocations")
         }
+
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
     };
     // Function to fetch DeliveryLocations from the API
     const fetchDeliveryLocations = async () => {
-        try {
-            const response = await API.get(`get-delivery-location/${selectedHubId}`);
-            setDeliveryLocations(response.data.materials);
-        } catch (error) {
-            console.error('Error fetching materials:', error);
-        }
+      try {
+        const response = await API.get(`get-delivery-location/${selectedHubId}`);
+        setDeliveryLocations(response.data.materials);
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
     };
     const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
     const fetchVehicleDetails = async () => {
-        try {
-            const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
-            let truckDetails;
-            if (response.data.truck == 0) {
-                truckDetails = response.data.truck
-                setVehicleDetails(truckDetails);
-            } else {
+      try {
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        let truckDetails;
+        if (response.data.truck == 0) {
+          truckDetails = response.data.truck
+          setVehicleDetails(truckDetails);
+        } else {
 
-                truckDetails = response.data.truck[0].data || "";
-                setVehicleDetails(response.data.truck[0].count);
+          truckDetails = response.data.truck[0].data || "";
+          setVehicleDetails(response.data.truck[0].count);
 
-                if (truckDetails && truckDetails.length > 0) {
-                    const arrRes = truckDetails.sort(function (a, b) {
-                        a = a.
-                            registrationNumber.toLowerCase();
-                        b = b.
-                            registrationNumber.toLowerCase();
+          if (truckDetails && truckDetails.length > 0) {
+            const arrRes = truckDetails.sort(function (a, b) {
+              a = a.
+                registrationNumber.toLowerCase();
+              b = b.
+                registrationNumber.toLowerCase();
 
-                        return a < b ? -1 : a > b ? 1 : 0;
-                    });
+              return a < b ? -1 : a > b ? 1 : 0;
+            });
 
-                    setVehicleDetails(arrRes);
+            setVehicleDetails(arrRes);
 
-                    return arrRes;
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching vehicle details:', error);
-            // Handle error
+            return arrRes;
+          }
         }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
     };
     const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
 
     const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
-        try {
-            const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
-            const truckDetails = response.data.truck;
-            if (truckDetails && truckDetails.length > 0) {
-                const selectedVehicle = truckDetails[0];
-                // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
-                const ownerId = selectedVehicle.ownerId._id;
-                const ownerName = selectedVehicle.ownerId.name;
-                const ownerPhone = selectedVehicle.ownerId.phoneNumber;
-                const vehicleBank = selectedVehicle.accountId._id;
-                const vehicleId = selectedVehicle._id;
-                const vehicleNumber = selectedVehicle.registrationNumber;
-                const vehicleType = selectedVehicle.truckType;
-                setselectedCommission(selectedVehicle.commission)
-                let commissionRate;
-                if (formData.isMarketRate) {
-                    commissionRate = formData.marketRate
-                } else {
-                    commissionRate = selectedVehicle.commission
+      try {
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const truckDetails = response.data.truck;
+        if (truckDetails && truckDetails.length > 0) {
+          const selectedVehicle = truckDetails[0];
+          // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
+          const ownerId = selectedVehicle.ownerId._id;
+          const ownerName = selectedVehicle.ownerId.name;
+          const ownerPhone = selectedVehicle.ownerId.phoneNumber;
+          const vehicleBank = selectedVehicle.accountId._id;
+          const vehicleId = selectedVehicle._id;
+          const vehicleNumber = selectedVehicle.registrationNumber;
+          const vehicleType = selectedVehicle.truckType;
 
-                }
+          let commissionRate;
+          if (formData.isMarketRate) {
+            commissionRate = formData.marketRate
+          } else {
+            commissionRate = selectedVehicle.commission
 
-                setFormData((prevFormData) => ({
-                    ...prevFormData,
-                    ownerId,
-                    ownerName,
-                    ownerPhone,
-                    vehicleBank,
-                    vehicleId,
-                    vehicleNumber,
-                    vehicleType,
-                    commissionRate
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching vehicle details:', error);
-            // Handle error
+          }
+
+          console.log(commissionRate)
+
+          setselectedCommission(commissionRate)
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            ownerId,
+            ownerName,
+            ownerPhone,
+            vehicleBank,
+            vehicleId,
+            vehicleNumber,
+            vehicleType,
+            commissionRate
+          }));
         }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
     };
     useEffect(() => {
-        fetchSelectedVehicleDetails(selectedvehicleId)
+      fetchSelectedVehicleDetails(selectedvehicleId)
     }, [formData.vehicleNumber, selectedvehicleId])
     // Fetch materials on component mount
     useEffect(() => {
-        fetchMaterials();
-        fetchLoadLocations();
-        fetchDeliveryLocations();
-        fetchVehicleDetails();
+      fetchMaterials();
+      fetchLoadLocations();
+      fetchDeliveryLocations();
+      fetchVehicleDetails();
     }, [selectedHubId]);
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        // Calculate commissionTotal based on isMarketRate
-        let commissionTotal = 0;
-        if (formData.isMarketRate) {
-            commissionTotal = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.marketRate);
-        } else {
-           const commissionTotalInPercentage = parseFloat(formData.quantityInMetricTons) * parseFloat(selectedvehicleCommission);
-            commissionTotal = commissionTotalInPercentage / 100;
-        }
+      e.preventDefault();
+      // Calculate commissionTotal based on isMarketRate
+      let commissionTotal = 0;
+      let commisionRate=0
+      if (formData.isMarketRate) {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commisionRate=0;
+      } else {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        commissionTotal = commissionTotalInPercentage / 100;
+        commisionRate=parseFloat(selectedvehicleCommission);
+      
+      }
 
-        const payload = {
-            "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-            // "balance": (parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
-            "bankTransfer": formData.bankTransfer,
-            "cash": formData.cash,
-            "deliveryLocation": formData.deliveryLocation,
-            "deliveryNumber": formData.deliveryNumber,
-            "diesel": formData.diesel,
-            "grDate": formData.grDate,
-            "grNumber": formData.grNumber,
-            "invoiceProof": null,
-            "loadLocation": formData.loadLocation,
-            "materialType": formData.materialType,
-            "ownerId": formData.ownerId,
-            "ownerName": formData.ownerName,
-            "ownerPhone": formData.ownerPhone,
-            "quantityInMetricTons": formData.quantityInMetricTons,
-            "rate": formData.rate,
-            "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
-            "vehicleBank": formData.vehicleBank,
-            "vehicleId": formData.vehicleId,
-            "vehicleNumber": formData.vehicleNumber,
-            "vehicleType": formData.vehicleType,
-            "commisionRate": formData.commisionRate,
-            "commisionTotal": commissionTotal,
-            "isMarketRate": formData.isMarketRate,
-            "marketRate": formData.marketRate,
-            "hubId": selectedHubId,
-            "shortage":formData.shortage,
-        }
-        // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
-        API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
-            .then((response) => {
-                console.log('Challan updated successfully:', response.data);
-                alert("Challan updated successfully")
-                window.location.reload(); // Reload the page or perform any necessary action
-            })
-            .catch((error) => {
-                alert("error occurred")
-                console.error('Error adding truck data:', error);
-            });
+      const payload = {
+        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        "bankTransfer": formData.bankTransfer,
+        "cash": formData.cash,
+        "deliveryLocation": formData.deliveryLocation,
+        "deliveryNumber": formData.deliveryNumber,
+        "diesel": formData.diesel,
+        "grDate": formData.grDate,
+        "grNumber": formData.grNumber,
+        "invoiceProof": null,
+        "loadLocation": formData.loadLocation,
+        "materialType": formData.materialType,
+        "ownerId": formData.ownerId,
+        "ownerName": formData.ownerName,
+        "ownerPhone": formData.ownerPhone,
+        "quantityInMetricTons": formData.quantityInMetricTons,
+        "rate": formData.rate,
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "vehicleBank": formData.vehicleBank,
+        "vehicleId": formData.vehicleId,
+        "vehicleNumber": formData.vehicleNumber,
+        "vehicleType": formData.vehicleType,
+        "commisionRate": commisionRate,
+        "commisionTotal": commissionTotal,
+        "isMarketRate": formData.isMarketRate,
+        "marketRate": formData.marketRate,
+        "hubId": selectedHubId,
+      "shortage": formData.shortage,
+      }
+
+      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
+        .then((response) => {
+          console.log('Challan updated successfully:', response.data);
+          alert("Challan updated successfully")
+          window.location.reload(); // Reload the page or perform any necessary action
+        })
+        .catch((error) => {
+          alert("error occurred")
+          console.error('Error adding truck data:', error);
+        });
 
     };
 
     return (
-        <>
-            <div className="flex flex-col gap-2">
-             
-                <div className="flex items-center gap-4">
+      <>
+        <div className="flex flex-col gap-2">
+
+          <div className="flex items-center gap-4">
             <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
@@ -949,258 +958,258 @@ fetchVehicleDetails();
             </div>
           </div>
 
-                <div className="flex flex-col gap-1">
-                    <div className="flex gap-1 justify-between">
-                        <div>
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-1 justify-between">
+              <div>
 
-                            <div className="text-md font-semibold">Challan Details</div>
-                            <div className="text-md font-normal">Enter Challan Details</div>
-                        </div>
-                        <div className='flex gap-2'>
-                            Market Rate
-                            <Switch
-                                defaultChecked={formData.isMarketRate}
-                                name="isMarketRate"
-                                onChange={(checked) => handleChange('isMarketRate', checked)}
-                            />
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                            <Col className="gutter-row mt-6" span={6}>
-
-                                <Select
-                                    name="materialType"
-                                    onChange={(value) => handleChange('materialType', value)}
-                                    placeholder="Material Type*"
-                                    size="large"
-                                    value={formData.materialType}
-                                    style={{ width: '100%' }}
-                                >
-                                    {materials.map((v, index) => (
-                                        <Option key={index} value={v.materialType}>
-                                            {`${v.materialType}`}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-                                <Input
-                                    type="text"
-                                    name="grNumber"
-                                    placeholder="grNumber*"
-                                    size="large"
-                                    value={formData.grNumber}
-                                    style={{ width: '100%' }}
-
-                                    onChange={(e) => handleChange('grNumber', e.target.value)}
-                                />
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-
-                                <DatePicker
-                                    required
-                                    placeholder="GR Date"
-                                    size="large"
-                                    style={{ width: "100%" }}
-                                    onChange={handleDateChange} // Call handleDateChange function on date change
-                                />
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-
-                                <Select
-                                    name="loadLocation"
-                                    onChange={(value) => handleChange('loadLocation', value)}
-                                    placeholder="Loaded From*"
-                                    size="large"
-                                    value={formData.loadLocation}
-                                    style={{ width: '100%' }}
-                                >
-                                    {loadLocation.map((v, index) => (
-                                        <Option key={index} value={v.location}>
-                                            {`${v.location}`}
-                                        </Option>
-                                    ))}
-                                </Select>
-
-                            </Col>
-                        </Row>
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                            <Col className="gutter-row mt-6" span={6}>
-                                <Select
-                                    name="deliveryLocation"
-                                    onChange={(value) => handleChange('deliveryLocation', value)}
-                                    placeholder="Deliver To*"
-                                    size="large"
-                                    value={formData.deliveryLocation}
-                                    style={{ width: '100%' }}
-                                >
-                                    {deliveryLocation.map((v, index) => (
-                                        <Option key={index} value={v.location}>
-                                            {`${v.location}`}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-                                <Select
-                                    name="vehicleNumber"
-                                    placeholder="Vehicle Number*"
-                                    size="large"
-                                    value={formData.vehicleNumber}
-                                    style={{ width: '100%' }}
-                                    onChange={(value) => {
-                                        const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
-                                        if (selectedVehicle) {
-                                            console.log(selectedVehicle._id)
-                                            setselectedVehicleId(selectedVehicle._id);
-                                        }
-                                        handleChange('vehicleNumber', value);
-                                    }}
-                                >
-                                    {vehicleDetails.map((v, index) => (
-                                        <Option key={index} value={v.registrationNumber}>
-                                            {`${v.registrationNumber}`}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-
-                                <Select
-                                    name="vehicleType"
-                                    placeholder="Vehicle Type*"
-                                    size="large"
-                                    style={{ width: '100%' }}
-                                    value={formData.vehicleType}
-                                    disabled
-                                />
-
-
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-
-                                <Input
-                                    placeholder="DeliveryNumber*"
-                                    size="large"
-                                    type='number'
-                                    name="deliveryNumber"
-                                    value={formData.deliveryNumber}
-                                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
-                                />
-                            </Col>
-                        </Row>
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                            <Col className="gutter-row mt-6" span={6}>
-                                <Input
-                                    placeholder="Quantity (M/T)*"
-                                    size="large"
-                                    name="quantityInMetricTons"
-                                    value={formData.quantityInMetricTons}
-                                    onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
-                                />
-                            </Col>
-                            <Col className="gutter-row mt-6" span={6}>
-                                <Input
-                                    placeholder="Company Rate*"
-                                    type='number'
-                                    size="large"
-                                    value={formData.rate}
-                                    name="rate"
-                                    onChange={(e) => handleChange('rate', e.target.value)}
-                                />
-                            </Col>
-
-                            <Col className="gutter-row mt-6" span={6}>
-                                {formData.isMarketRate ? <>
-                                    <Input
-                                        type='number'
-                                        placeholder="Market Rate Rs*"
-                                        size="large"
-                                        name="diesel"
-                                        value={formData.marketRate}
-                                        onChange={(e) => handleChange('marketRate', e.target.value)}
-                                    />
-                                </> : <></>}
-
-                            </Col>
-                        </Row>
-
-
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <div className="flex gap-1 justify-between">
-                        <div>
-
-                            <div className="text-md font-semibold">Load Trip Expense Details</div>
-                            <div className="text-md font-normal">Enter Trip Details</div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                            <Col className="gutter-row mt-2" span={6}>
-                                <Input
-                                    type='number'
-                                    placeholder="Diesel*"
-                                    size="large"
-                                    name="diesel"
-                                    value={formData.diesel}
-                                    onChange={(e) => handleChange('diesel', e.target.value)}
-                                />
-                            </Col>
-                            <Col className="gutter-row mt-2" span={6}>
-                                <Input
-                                    type='number'
-                                    placeholder="Cash*"
-                                    size="large"
-                                    name="cash"
-                                    value={formData.cash}
-                                    onChange={(e) => handleChange('cash', e.target.value)}
-                                />
-                            </Col>
-                            <Col className="gutter-row mt-2" span={6}>
-                                <Input
-                                    type='number'
-                                    placeholder="Bank Transfer*"
-                                    size="large"
-                                    name="bankTransfer"
-                                    value={formData.bankTransfer}
-                                    onChange={(e) => handleChange('bankTransfer', e.target.value)}
-                                />
-
-                            </Col>
-                            <Col className="gutter-row mt-2" span={6}>
-                                <Input
-                                    type='number'
-                                    placeholder="Shortage*"
-                                    size="large"
-                                    name="shortage"
-                                    value={formData.shortage}
-                                    onChange={(e) => handleChange('shortage', e.target.value)}
-                                />
-
-                            </Col>
-                        </Row>
-
-
-                    </div>
-                </div>
-                <div className="flex gap-4 items-center justify-center reset-button-container">
-                    <Button>Reset</Button>
-                    <Button type="primary" className="bg-primary" onClick={handleSubmit}>
-                        Save
-                    </Button>
-                </div>
+                <div className="text-md font-semibold">Challan Details</div>
+                <div className="text-md font-normal">Enter Challan Details</div>
+              </div>
+              <div className='flex gap-2'>
+                Market Rate
+                <Switch
+                  defaultChecked={formData.isMarketRate}
+                  name="isMarketRate"
+                  onChange={(checked) => handleChange('isMarketRate', checked)}
+                />
+              </div>
             </div>
-        </>
-    );
-};
+            <div className="flex flex-col gap-1">
 
-  const DispatchTable = ({ onEditTruckClick,onDeleteTruckClick}) => {
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="materialType"
+                    onChange={(value) => handleChange('materialType', value)}
+                    placeholder="Material Type*"
+                    size="large"
+                    value={formData.materialType}
+                    style={{ width: '100%' }}
+                  >
+                    {materials.map((v, index) => (
+                      <Option key={index} value={v.materialType}>
+                        {`${v.materialType}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    type="text"
+                    name="grNumber"
+                    placeholder="grNumber*"
+                    size="large"
+                    value={formData.grNumber}
+                    style={{ width: '100%' }}
+
+                    onChange={(e) => handleChange('grNumber', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <DatePicker
+                    required
+                    placeholder="GR Date"
+                    size="large"
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange} // Call handleDateChange function on date change
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="loadLocation"
+                    onChange={(value) => handleChange('loadLocation', value)}
+                    placeholder="Loaded From*"
+                    size="large"
+                    value={formData.loadLocation}
+                    style={{ width: '100%' }}
+                  >
+                    {loadLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="deliveryLocation"
+                    onChange={(value) => handleChange('deliveryLocation', value)}
+                    placeholder="Deliver To*"
+                    size="large"
+                    value={formData.deliveryLocation}
+                    style={{ width: '100%' }}
+                  >
+                    {deliveryLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="vehicleNumber"
+                    placeholder="Vehicle Number*"
+                    size="large"
+                    value={formData.vehicleNumber}
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                      const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
+                      if (selectedVehicle) {
+                        console.log(selectedVehicle._id)
+                        setselectedVehicleId(selectedVehicle._id);
+                      }
+                      handleChange('vehicleNumber', value);
+                    }}
+                  >
+                    {vehicleDetails.map((v, index) => (
+                      <Option key={index} value={v.registrationNumber}>
+                        {`${v.registrationNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="vehicleType"
+                    placeholder="Vehicle Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    value={formData.vehicleType}
+                    disabled
+                  />
+
+
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    placeholder="DeliveryNumber*"
+                    size="large"
+                    type='number'
+                    name="deliveryNumber"
+                    value={formData.deliveryNumber}
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Quantity (M/T)*"
+                    size="large"
+                    name="quantityInMetricTons"
+                    value={formData.quantityInMetricTons}
+                    onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Company Rate*"
+                    type='number'
+                    size="large"
+                    value={formData.rate}
+                    name="rate"
+                    onChange={(e) => handleChange('rate', e.target.value)}
+                  />
+                </Col>
+
+                <Col className="gutter-row mt-6" span={6}>
+                  {formData.isMarketRate ? <>
+                    <Input
+                      type='number'
+                      placeholder="Market Rate Rs*"
+                      size="large"
+                      name="diesel"
+                      value={formData.marketRate}
+                      onChange={(e) => handleChange('marketRate', e.target.value)}
+                    />
+                  </> : <></>}
+
+                </Col>
+              </Row>
+
+
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-1 justify-between">
+              <div>
+
+                <div className="text-md font-semibold">Load Trip Expense Details</div>
+                <div className="text-md font-normal">Enter Trip Details</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Diesel*"
+                    size="large"
+                    name="diesel"
+                    value={formData.diesel}
+                    onChange={(e) => handleChange('diesel', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Cash*"
+                    size="large"
+                    name="cash"
+                    value={formData.cash}
+                    onChange={(e) => handleChange('cash', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Bank Transfer*"
+                    size="large"
+                    name="bankTransfer"
+                    value={formData.bankTransfer}
+                    onChange={(e) => handleChange('bankTransfer', e.target.value)}
+                  />
+
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Shortage*"
+                    size="large"
+                    name="shortage"
+                    value={formData.shortage}
+                    onChange={(e) => handleChange('shortage', e.target.value)}
+                  />
+
+                </Col>
+              </Row>
+
+
+            </div>
+          </div>
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const DispatchTable = ({ onEditTruckClick, onDeleteTruckClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -1319,30 +1328,7 @@ fetchVehicleDetails();
         key: 'marketRate',
         width: 150,
       },
-      // {
-      //   title: 'Commission Total',
-      //   dataIndex: 'commisionTotal',
-      //   key: 'commisionTotal',
-      //   width: 120,
-      // },
-      // {
-      //   title: 'Total Expense',
-      //   dataIndex: 'totalExpense',
-      //   key: 'totalExpense',
-      //   width: 120,
-      // },
-      // {
-      //   title: 'Shortage',
-      //   dataIndex: 'shortage',
-      //   key: 'shortage',
-      //   width: 100,
-      // },
-      // {
-      //   title: 'Balance',
-      //   dataIndex: 'balance',
-      //   key: 'balance',
-      //   width: 100,
-      // },
+     
       {
         title: 'Diesel',
         dataIndex: 'diesel',
@@ -1434,7 +1420,7 @@ fetchVehicleDetails();
       //   width: 150,
       // },
     ];
-     const changePagination = async (pageNumber, pageSize) => {
+    const changePagination = async (pageNumber, pageSize) => {
       try {
         setCurrentPage(pageNumber);
         setCurrentPageSize(pageSize);
@@ -1465,7 +1451,7 @@ fetchVehicleDetails();
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],
-            showSizeChanger: false,
+            showSizeChanger: true,
             current: currentPage,
             total: totalDispatchData,
             defaultPageSize: currentPageSize, // Set the default page size
@@ -1486,6 +1472,7 @@ fetchVehicleDetails();
         </>
       ) : (
         editingChallan ? (
+    
           <EditableChallan editingRow={rowDataForDispatchEdit} />
         ) : (
           <CreateChallanForm />
@@ -1493,7 +1480,7 @@ fetchVehicleDetails();
       )}
     </>
   );
-  
+
 }
 
 export default DispatchContainer

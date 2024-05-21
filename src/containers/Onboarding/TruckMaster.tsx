@@ -280,7 +280,16 @@ const TruckMaster = () => {
           [name]: value,
           accountId: null,
         }));
-      } else {
+      } 
+      
+      else if(name==="registrationNumber"){
+        const updatedValue = value.toUpperCase();
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: updatedValue,
+          }));
+        }
+      else {
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
@@ -350,12 +359,14 @@ const TruckMaster = () => {
               <div className="text-md font-semibold">Vehicle Information</div>
               <div className="text-md font-normal">Enter Truck Details</div>
             </div>
+            {JSON.stringify(formData, null,2)}
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
                   <Input
                     placeholder="Vehicle Number*"
                     size="large"
+                    value={formData.registrationNumber}
                     name="registrationNumber"
                     onChange={(e) => handleChange('registrationNumber', e.target.value)}
                   />
@@ -478,7 +489,7 @@ const TruckMaster = () => {
   };
 
   const ViewTruckDataRow = ({ filterTruckTableData }) => {
-
+console.log(filterTruckTableData)
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -572,7 +583,7 @@ const TruckMaster = () => {
         key: 'rcBookProof',
         width: 80,
         render: rcBookProof => (
-          rcBookProof ? <Image src={rcBookProof} alt="img" width={50} /> : null
+          rcBookProof ? <Image src={rcBookProof} alt="img" width={80} height={30} /> : null
         )
       },
       {
@@ -1000,7 +1011,16 @@ const TruckMaster = () => {
           [name]: value,
           accountId: null,
         }));
-      } else {
+      } 
+        
+      else if(name==="registrationNumber"){
+        const updatedValue = value.toUpperCase(); // Convert to uppercase 
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: updatedValue,
+        }));
+      }
+      else {
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
@@ -1211,7 +1231,7 @@ const TruckMaster = () => {
               <TransferTruck rowDataForTruckTransfer={rowDataForTruckTransfer} />
             ) : (
               showTruckView ? (
-                <ViewTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
+                <ViewTruckDataRow filterTruckTableData={rowDataForTruckView} />
               ) : (
                 <EditTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
               )

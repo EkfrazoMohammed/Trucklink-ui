@@ -573,7 +573,7 @@ const DispatchContainer = () => {
                   >
                     {vehicleDetails.map((v, index) => (
                       <Option key={index} value={v.registrationNumber}>
-                        {`${v.registrationNumber}`}
+                        {`${v.registrationNumber} -${v.ownerId[0].name} `}
                       </Option>
                     ))}
                   </Select>

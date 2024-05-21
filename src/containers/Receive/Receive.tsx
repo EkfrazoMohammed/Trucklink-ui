@@ -276,9 +276,9 @@ const Receive = () => {
                 render: (_,record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {record.balance}</span>
+                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {(record.balance).toFixed(2)}</span>
                         :
-                        <span style={{color:"red"}}>{record.balance}</span>
+                        <span style={{color:"red"}}>{(record.balance).toFixed(2)}</span>
                         
                     }
                     </p>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Pagination } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col,notification, Row, Pagination } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -24,6 +24,9 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
   (option?.value ?? '').toLowerCase().includes(input.toLowerCase());
 
 const OnboardingContainer = () => {
+  const [api, contextHolder] = notification.useNotification();
+
+
   const selectedHubId = localStorage.getItem("selectedHubID");
   const selectedHubName = localStorage.getItem("selectedHubName");
   const authToken=localStorage.getItem("token");
@@ -147,9 +150,9 @@ const OnboardingContainer = () => {
   const OwnerMaster = () => {
     return (
       <>
+
+       {contextHolder}
         <div className="mytab-content">
-
-
           {showOwnerTable ? (
             <>
               <Owner onAddOwnerClick={handleAddOwnerClick} />
@@ -388,8 +391,6 @@ const OnboardingContainer = () => {
     }
     const handleSubmit = (e) => {
       e.preventDefault();
-
-      
       const payload = {
         "owner_details": {
           hubId: selectedHubId,
@@ -432,7 +433,12 @@ const OnboardingContainer = () => {
           .catch((error) => {
             // Log any errors that occur during the dispatch process
             console.error('Error adding owner data:', error);
-            alert("error occurred")
+            let errorMessage=error.response.data.message;
+            notification.error({
+              message: "error occurred",
+              description: `${errorMessage}`,
+              duration: 2,
+            });
             setTimeout(() => {
               window.location.reload();
             }, 3000)
@@ -589,6 +595,7 @@ const OnboardingContainer = () => {
               </div>
             ))}
           </div>
+          {/* {JSON.stringify(d, null, 2)} */}
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={handleResetButtonClick}>Reset</Button>
             <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>
@@ -1017,6 +1024,35 @@ const OnboardingContainer = () => {
         console.error('Error fetching data:', error);
       }
     };
+    const handlePageSizeChange = async (pageNumber) => {
+     
+      setCurrentPageSize(1);
+      setCurrentPage(pageNumber); // Reset to first page
+      // Call your data fetching function here if needed
+      try {
+      const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        setFilteredOwnerData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    const renderPaginationButtons = () => {
+      const totalPages = Math.ceil(totalOwnerData / currentPageSize);
+      let buttons = [];
+  
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(
+          <Button
+            key={i}
+            type={i === currentPage ? 'primary' : 'default'}
+            onClick={() => handlePageSizeChange(i)}
+          >
+            {i}
+          </Button>
+        );
+      }
+    }
     return (
       <>
         <Table
@@ -1034,7 +1070,42 @@ const OnboardingContainer = () => {
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
-        />
+        /> 
+{/* <Table
+        rowSelection={{}}
+        columns={columns}
+        dataSource={filteredOwnerData}
+        scroll={{ x: 800, y: 310 }}
+        rowKey="_id"
+        pagination={{
+          position: ['bottomCenter'],
+          current: currentPage,
+          total: totalOwnerData,
+          defaultPageSize: currentPageSize,
+          showSizeChanger: false,
+        }}
+      />
+      <div style={{ textAlign: 'center', margin: '20px 0' }}>
+        {renderPaginationButtons()}
+        <Button
+          onClick={() => handlePageSizeChange(10)}
+          type={currentPageSize === 10 ? 'primary' : 'default'}
+        >
+          10
+        </Button>
+        <Button
+          onClick={() => handlePageSizeChange(20)}
+          type={currentPageSize === 20 ? 'primary' : 'default'}
+        >
+          20
+        </Button>
+        <Button
+          onClick={() => handlePageSizeChange(50)}
+          type={currentPageSize === 50 ? 'primary' : 'default'}
+        >
+          50
+        </Button>
+      </div> */}
       </>
     );
   };

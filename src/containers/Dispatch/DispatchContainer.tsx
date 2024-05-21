@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import axios from "axios"
+import moment from 'moment';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
@@ -191,12 +192,16 @@ const DispatchContainer = () => {
       // Split the date string by '-'
       const parts = dateString.split('-');
       // Rearrange the parts in the required format
-      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      // const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
       return formattedDate;
     };
     // Function to handle date change
     const handleDateChange = (date, dateString) => {
+      console.log(dateString);
       const formattedGrDate = formatDate(dateString);
+
+      // const formattedGrDate = dateString;
       console.log(formattedGrDate); // Output: "01/05/2024"
       // dateString will be in the format 'YYYY-MM-DD'
       handleChange('grDate', formattedGrDate);
@@ -500,9 +505,9 @@ const DispatchContainer = () => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                   <DatePicker
                     required
+                    format="DD-MM-YYYY" // Display format
                     placeholder="GR Date *"
                     size="large"
                     style={{ width: "100%" }}
@@ -1097,6 +1102,8 @@ const DispatchContainer = () => {
                     required
                     placeholder="GR Date"
                     size="large"
+                    format="DD-MM-YYYY" // Display format
+                    value={moment()} // Set initial value if needed
                     style={{ width: "100%" }}
                     onChange={handleDateChange} // Call handleDateChange function on date change
                   />

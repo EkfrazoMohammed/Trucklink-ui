@@ -1,146 +1,118 @@
 import { useState, useEffect } from 'react';
-// Assuming states.json is located in the same directory as your component
-import states from '../Onboarding/states.json';
-import {  DatePicker, Table, Input, Select, Space, Button, Upload,  Tooltip, Breadcrumb, Col,  Row } from 'antd';
-
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,PrinterOutlined  } from '@ant-design/icons';
+import { API } from "../../API/apirequest"
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
+import axios from "axios"
+import moment from 'moment';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
-
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch } from '../../redux/store'; // Import RootState and AppDispatch from your Redux store
 import type { DatePickerProps } from 'antd';
 
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
   console.log(date, dateString);
 };
-import { fetchOwnerData, addOwnerDataAccount } from "./../../redux/reducers/onboardingReducer";
-interface RootState {
-  onboarding: {
-    ownerData: [];
-  };
-}
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const DispatchContainer = () => {
-  // Define a custom typed useDispatch hook
-  const useAppDispatch = () => useDispatch<AppDispatch>();
-
-  // Use the custom typed useDispatch hook
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(fetchOwnerData());
-  }, [dispatch]);
-  // Usage in useSelector
-  const ownerData = useSelector((state: RootState) => state.onboarding.ownerData);
-
-
+  const authToken = localStorage.getItem("token");
+  
   const selectedHubId = localStorage.getItem("selectedHubID");
-  const selectedHubName = localStorage.getItem("selectedHubName");
-
-  const filterTruckTableData = ownerData.filter((value) => value.vehicleIds && value.vehicleIds.length > 0 && value.hubId === selectedHubId);
-
-  const [showOwnerTable, setShowOwnerTable] = useState(true);
-
-
-  const handleAddOwnerClick = () => {
-    setRowDataForEdit(null);
-    setShowOwnerTable(false);
-  };
-
-
-  const [rowDataForEdit, setRowDataForEdit] = useState(null);
-  const handleEditClick = (rowData) => {
-    setRowDataForEdit(rowData);
-    setShowOwnerTable(false);
-  };
-  const filterOwnerTableData = ownerData.filter(value => value.hubId === selectedHubId);
-
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredOwnerData, setFilteredOwnerData] = useState(filterOwnerTableData);
-  // Update filteredOwnerData when selectedHubId changes
-  useEffect(() => {
-    // Filter ownerData based on selectedHubId
-    const newFilteredOwnerData = ownerData.filter(value => value.hubId === selectedHubId);
-    setFilteredOwnerData(newFilteredOwnerData);
-  }, [selectedHubId, ownerData]);
-  // Update filtered data when searchQuery or ownerData changes
-  useEffect(() => {
-    const filteredData = filterOwnerTableData.filter(value => {
-      if (searchQuery.length > 0) {
-        return (
-          value.name.includes(searchQuery) || (value.vehicleIds.length > 0 && value.vehicleIds[0].registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-      } else {
-        return true;
+  const [filteredOwnerData, setFilteredOwnerData] = useState([]);
+
+  const [challanData, setchallanData] = useState([]);
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  // Debounce the handleSearch function
+  // const debouncedSearch = debounce(handleSearch, 800); // Adjust the debounce delay as needed
+
+  const [showDispatchTable, setShowDispatchTable] = useState(true);
+  const [rowDataForDispatchEdit, setRowDataForDispatchEdit] = useState(null);
+  const [editingChallan, setEditingChallan] = useState(false);
+
+
+  // Initialize state variables for current page and page size
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(50);
+  const [totalDispatchData, setTotalDispatchData] = useState(100)
+
+  const getTableData = async () => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
       }
-    });
-    setFilteredOwnerData(filteredData);
-  }, [searchQuery, ownerData]);
+    }
+    const data = {};
+    try {
+      const searchData = searchQuery ? searchQuery : null;
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`,data, headersOb)
+        : await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`,data, headersOb);
+
+      let allChallans;
+      if (response.data.disptachData == 0) {
+        allChallans = response.data.disptachData
+        setchallanData(allChallans);
+      } else {
+
+        allChallans = response.data.disptachData[0].data || "";
+        setchallanData(allChallans);
+        setTotalDispatchData(allChallans.length);
 
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+      }
+    } catch (err) {
+      console.log(err)
+
+    }
   };
-  const OwnerMaster = () => {
+  useEffect(() => {
+    getTableData();
+  }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
+
+  // Truck master
+  const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
-      <>
-        {showOwnerTable ? (
-          <>
-            <Owner onAddOwnerClick={handleAddOwnerClick} />
-            <OwnerTable filteredOwnerData={filteredOwnerData} onEditClick={handleEditClick} />
-          </>
-        ) : (
-          rowDataForEdit ? (
-            <ViewOwnerDataRow rowData={rowDataForEdit} />
-          ) : (
-            <TruckOwnerForm />
-          )
-        )}
-      </>
-    );
-  };
+      <div className='flex gap-2 flex-col justify-between p-2'>
 
-
-  const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
-    const handleChange = (value: string) => {
-      console.log(`selected ${value}`);
-    };
-    return (
-
-      <div className='flex flex-col gap-2 justify-between p-2'>
-        <div className='flex gap-2'>
-        <Search placeholder="Search Delivery No / Truck No"  onSearch={handleSearch} style={{ width: 320 }} />
-        <Space>
-    <DatePicker onChange={onChange} placeholder="From Date" />
-    <DatePicker onChange={onChange} placeholder="To Date" />
-    <Select
-      defaultValue="lucy"
-      style={{ width: 200 }}
-      onChange={handleChange}
-   
-      options={[
-        { value: 'jack', label: 'Jack' },
-        { value: 'lucy', label: 'Lucy' },
-        { value: 'Yiminghe', label: 'yiminghe' },
-        { value: 'disabled', label: 'Disabled', disabled: true },
-      ]}
-    />
-     <Select
-      defaultValue="CEMENT"
-      style={{ width: 200 }}
-      onChange={handleChange}
-      options={[
-        { value: 'cement', label: 'CEMENT' },
-        { value: 'gypsum', label: 'GYPSUM' },
-      ]}
-    />
-  </Space>
-  </div>
- 
-        <div className='flex gap-2 justify-end my-4'>
-          <Upload>
+        {/* <div className='flex gap-2 items-center'>
+          <Search
+            placeholder="Search by Vehicle Number"
+            size='large'
+            onSearch={handleSearch}
+            style={{ width: 320 }}
+          />
+          <DatePicker  size='large' onChange={onChange} placeholder='From date' /> -
+          <DatePicker  size='large' onChange={onChange} placeholder='To date' />
+          <Select
+            name="materialType"
+            placeholder="Material Type*"
+            size="large"
+            style={{ width: "20%" }}
+            options={[
+              { value: 'cement', label: 'cement' },
+              { value: 'flyash', label: 'flyash' },
+            ]}
+            onChange={(value) => handleChange('materialType', value)}
+          />
+          <Select
+            name="truckType"
+            placeholder="Truck Type*"
+            size="large"
+            style={{ width: "20%" }}
+            options={[
+              { value: 'open', label: 'Open' },
+              { value: 'bulk', label: 'Bulk' },
+            ]}
+            onChange={(value) => handleChange('vehicleType', value)}
+          />
+        </div>  */}
+        <div className='flex gap-2 justify-end'>
+          {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
           <Upload>
@@ -148,418 +120,1189 @@ const DispatchContainer = () => {
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload>
-
-          <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
+          </Upload>  */}
+          <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
 
     );
   };
-  const TruckOwnerForm = () => {
+
+  const CreateChallanForm = () => {
+    const selectedHubId = localStorage.getItem("selectedHubID");
+    const [formData, setFormData] = useState(
+      {
+        "balance": '',
+        "bankTransfer": '',
+        "cash": '',
+        "commisionRate": '',
+        "commisionTotal": '',
+        "deliveryLocation": '',
+        "deliveryNumber": '',
+        "diesel": '',
+        "grDate": null,
+        "grNumber": '',
+        "invoiceProof": null,
+        "loadLocation": '',
+        "materialType": '',
+        "ownerId": '',
+        "ownerName": '',
+        "ownerPhone": '',
+        "quantityInMetricTons": '',
+        "rate": '',
+        "totalExpense": '',
+        "vehicleBank": '',
+        "vehicleId": '',
+        "vehicleNumber": '',
+        "vehicleType": '',
+        "isMarketRate": false,
+        "marketRate": 0,
+        "hubId": ''
+      }
 
 
-    const dispatch = useDispatch();
-    const [formData, setFormData] = useState({
-      name: '',
-      email: '',
-      phoneNumber: '',
-      countryCode: '',
-      panNumber: '',
-      address: '',
-      district: '',
-      state: '',
-      address: selectedHubName,
+    );
 
-      vehicleIds: [],
-      hubId: selectedHubId,
-      bankAccounts: Array.from({ length: 1 }, () => ({
-        accountNumber: '',
-        accountHolderName: '',
-        ifscCode: '',
-        bankName: '',
-        branchName: ''
-      }))
-    });
-    console.log(formData)
-    const handleOwnerFormChange = (e) => {
-      const { name, value } = e.target;
-      const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: updatedValue,
-      }));
-    };
-
-    const handleBankAccountChange = (index, e) => {
-      const { name, value } = e.target;
-      const updatedBankAccounts = [...formData.bankAccounts];
-      updatedBankAccounts[index][name] = value;
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: updatedBankAccounts
-      }));
-    };
-
-    const handleAddBankAccount = () => {
-      if (formData.bankAccounts.length < 2) { // Check if the current number of bank accounts is less than 2
+    const handleChange = (name, value) => {
+      if (name === "isMarketRate") {
+        if (!value) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: false,
+            commission: 0,
+          }));
+        } else {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: true,
+            commission: 0,
+          }));
+        }
+      } else {
+        // For other fields, update state normally
         setFormData((prevFormData) => ({
           ...prevFormData,
-          bankAccounts: [
-            ...prevFormData.bankAccounts,
-            {
-              accountNumber: '',
-              accountHolderName: '',
-              ifscCode: '',
-              bankName: '',
-              branchName: ''
-            }
-          ]
+          [name]: value,
         }));
-      } else {
-        // You can show a message or take any other action here to inform the user that only two bank accounts are allowed
-        console.log("Only two bank accounts are allowed");
-        alert("Only two bank accounts are allowed")
       }
     };
-
-    const handleRemoveBankAccount = (index) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
-      }));
+    const formatDate = (dateString) => {
+      // Split the date string by '-'
+      const parts = dateString.split('-');
+      // Rearrange the parts in the required format
+      // const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
+      return formattedDate;
     };
-    const [message, setMessage] = useState('');
+    // Function to handle date change
+    const handleDateChange = (date, dateString) => {
+      console.log(dateString);
+      const formattedGrDate = formatDate(dateString);
 
-    // const handleChangeBank = (e) => {
-    //   setIfscCodeValue(e.target.value);
-    //   setBankDetail({});
-    //   setMessage('');
-    // };
-
-    const handleChangeBank = (index, e) => {
-      const { value } = e.target;
-      const updatedBankAccounts = [...formData.bankAccounts];
-      updatedBankAccounts[index].ifscCode = value; // Update the IFSC code value for the specific bank form
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: updatedBankAccounts
-      }));
+      // const formattedGrDate = dateString;
+      console.log(formattedGrDate); // Output: "01/05/2024"
+      // dateString will be in the format 'YYYY-MM-DD'
+      handleChange('grDate', formattedGrDate);
     };
+    const [materials, setMaterials] = useState([]);
+    const [loadLocation, setloadLocations] = useState([]);
 
-    const fetchBankDetails = (index) => {
-      const bankAccount = formData.bankAccounts[index];
-      const { ifscCode } = bankAccount;
-      if (!ifscCode) {
-        setMessage('Please fill IFSC code');
-        return;
+    const [deliveryLocation, setDeliveryLocations] = useState([]);
+    const fetchMaterials = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-material/${selectedHubId}`, headersOb);
+        if (response.status === 201) {
+          setMaterials(response.data.materials);
+        }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
       }
+    };
+    // Function to fetch LoadLocations from the API
+    const fetchLoadLocations = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
+        if (response.status == 201) {
+          setloadLocations(response.data.materials);
+        } else {
+          console.log("error in fetchLoadLocations")
+        }
 
-      fetch(`https://ifsc.razorpay.com/${ifscCode}`)
-        .then(response => response.json())
-        .then(data => {
-          // Update formData state with bank details for the specified bank account
-          setFormData(prevFormData => ({
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    // Function to fetch DeliveryLocations from the API
+    const fetchDeliveryLocations = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
+        setDeliveryLocations(response.data.materials);
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+    const fetchVehicleDetails = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        let truckDetails;
+        if (response.data.truck == 0) {
+          truckDetails = response.data.truck
+          setVehicleDetails(truckDetails);
+        } else {
+
+          truckDetails = response.data.truck[0].data || "";
+          setVehicleDetails(response.data.truck[0].count);
+
+          if (truckDetails && truckDetails.length > 0) {
+            const arrRes = truckDetails.sort(function (a, b) {
+              a = a.
+                registrationNumber.toLowerCase();
+              b = b.
+                registrationNumber.toLowerCase();
+
+              return a < b ? -1 : a > b ? 1 : 0;
+            });
+
+            setVehicleDetails(arrRes);
+
+            return arrRes;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
+    };
+    const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
+
+    const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+
+    const fetchSelectedVehicleDetails = async (vehicleId) => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const truckDetails = response.data.truck;
+        if (truckDetails && truckDetails.length > 0) {
+          const selectedVehicle = truckDetails[0];
+          // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
+          const ownerId = selectedVehicle.ownerId._id;
+          const ownerName = selectedVehicle.ownerId.name;
+          const ownerPhone = selectedVehicle.ownerId.phoneNumber;
+          const vehicleBank = selectedVehicle.accountId._id;
+          const vehicleId = selectedVehicle._id;
+          const vehicleNumber = selectedVehicle.registrationNumber;
+          const vehicleType = selectedVehicle.truckType;
+          setselectedCommission(selectedVehicle.commission)
+          let commissionRate;
+          if (formData.isMarketRate) {
+            console.log('first')
+            commissionRate = formData.marketRate
+          } else {
+            console.log('second')
+            commissionRate = selectedVehicle.commission
+
+          }
+          console.log(commissionRate)
+          setFormData((prevFormData) => ({
             ...prevFormData,
-            bankAccounts: prevFormData.bankAccounts.map((account, i) => {
-              if (i === index) {
-                return {
-                  ...account,
-                  bankName: data.BANK,
-                  branchName: data.BRANCH
-                  // You can add more fields as needed
-                };
-              }
-              return account;
-            })
+            ownerId,
+            ownerName,
+            ownerPhone,
+            vehicleBank,
+            vehicleId,
+            vehicleNumber,
+            vehicleType,
+            commissionRate
           }));
-        })
-        .catch(error => {
-          setMessage('Invalid IFSC code');
-        });
-    };
-
-
-    const [selectedState, setSelectedState] = useState('');
-    const [districts, setDistricts] = useState([]);
-
-    const handleStateChange = (value) => {
-      setSelectedState(value);
-      const selectedStateData = states.find((state) => state.state === value);
-      if (selectedStateData) {
-        setDistricts(selectedStateData.districts);
-      } else {
-        setDistricts([]);
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
       }
     };
+    useEffect(() => {
+      fetchSelectedVehicleDetails(selectedvehicleId)
+    }, [formData.vehicleNumber, selectedvehicleId])
+    // Fetch materials on component mount
+    useEffect(() => {
+      fetchMaterials();
+      fetchLoadLocations();
+      fetchDeliveryLocations();
+      fetchVehicleDetails();
+    }, [selectedHubId]);
 
+    const [data, setData] = useState([]);
     const handleSubmit = (e) => {
       e.preventDefault();
+      //       total= quantity * c.rate
+      // toggle off = %/total
+      // toggal on = total -market rate*quantity
+      // Calculate commissionTotal based on isMarketRate
+      let commissionTotal = 0;
+      let commisionRate = 0
+      if (formData.isMarketRate) {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commisionRate = 0;
+      } else {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        commissionTotal = commissionTotalInPercentage / 100;
+        commisionRate = parseFloat(selectedvehicleCommission);
+
+      }
 
       const payload = {
-        owner: {
-          name: formData.name,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          countryCode: formData.countryCode,
-          panNumber: formData.panNumber,
-          address: formData.address,
-          district: districts[0],
-          state: selectedState,
-          address: selectedHubName,
-          hubId: selectedHubId,
-          vehicleIds: [],
-        },
-        bankAccounts: formData.bankAccounts.slice(0, 2).map((bankAccount) => ({
-          accountNumber: bankAccount.accountNumber,
-          accountHolderName: bankAccount.accountHolderName,
-          ifscCode: bankAccount.ifscCode,
-          bankName: bankAccount.bankName,
-          branchName: bankAccount.branchName,
-        })),
-      };
-
-      dispatch(addOwnerDataAccount(payload))
-        .then((response) => {
-          alert('Owner data added successfully!');
-          window.location.reload();
-          if (response.status === 200 || response.status === 201 || response.message === "Owner and Account created successfully") {
-            alert('Owner data added successfully!');
-            window.location.reload();
-          }
-        })
-        .catch((error) => {
-          // Log any errors that occur during the dispatch process
-          console.error('Error adding owner data:', error);
-          window.location.reload();
-        });
-
+        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+        "bankTransfer": formData.bankTransfer,
+        "cash": formData.cash,
+        "deliveryLocation": formData.deliveryLocation,
+        "deliveryNumber": formData.deliveryNumber,
+        "diesel": formData.diesel,
+        "grDate": formData.grDate,
+        "grNumber": formData.grNumber,
+        "invoiceProof": null,
+        "loadLocation": formData.loadLocation,
+        "materialType": formData.materialType,
+        "ownerId": formData.ownerId,
+        "ownerName": formData.ownerName,
+        "ownerPhone": formData.ownerPhone,
+        "quantityInMetricTons": formData.quantityInMetricTons,
+        "rate": formData.rate,
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "vehicleBank": formData.vehicleBank,
+        "vehicleId": formData.vehicleId,
+        "vehicleNumber": formData.vehicleNumber,
+        "vehicleType": formData.vehicleType,
+        "commisionRate": commisionRate,
+        "commisionTotal": commissionTotal,
+        "isMarketRate": formData.isMarketRate,
+        "marketRate": formData.marketRate,
+        "hubId": selectedHubId
+      }
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+      setData(payload)
+      if (formData.grDate !== null || formData.grDate !== "") {
+        API.post('create-dispatch-challan', payload, headersOb)
+          .then((response) => {
+            console.log('Challan added successfully:', response.data);
+            alert("Challan added successfully")
+            window.location.reload(); // Reload the page or perform any necessary action
+          })
+          .catch((error) => {
+            alert("error occurred")
+            console.error('Error adding truck data:', error);
+          });
+      } else {
+        alert("GR Date is required")
+      }
     };
+
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <h1 className='text-xl font-bold'>Create Truck Owner</h1>
-            <Breadcrumb
-              items={[
-                {
-                  title: 'OnBoarding',
-                },
-                {
-                  title: 'Owner Master',
-                },
-                {
-                  title: 'Create',
-                },
-              ]}
-            />
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowOwnerTable(true) }} />
+          <div className="flex items-center gap-4">
+            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Challan</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'Dispatch',
+                  },
+                  {
+                    title: 'Create Challan',
+                  },
+
+                ]}
+              />
+            </div>
           </div>
           <div className="flex flex-col gap-1">
+            <div className="flex gap-1 justify-between">
+              <div>
+                <div className="text-md font-semibold">Challan Details</div>
+                <div className="text-md font-normal">Enter Challan Details</div>
+              </div>
+              <div className='flex gap-2'>
+                Market Rate
+                <Switch
+                  defaultChecked={formData.isMarketRate}
+                  name="isMarketRate"
+                  onChange={(checked) => handleChange('isMarketRate', checked)}
+                />
+              </div>
+            </div>
             <div className="flex flex-col gap-1">
-              <div className='text-md font-semibold'>Vehicle Owner Information</div>
-              <div className='text-md font-normal'>Enter Truck Registration and Owner Details</div>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
 
+                  <Select
+                    name="materialType"
+                    onChange={(value) => handleChange('materialType', value)}
+                    placeholder="Material Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                  >
+                    {materials.map((v, index) => (
+                      <Option key={index} value={v.materialType}>
+                        {`${v.materialType}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    type="number"
+                    name="grNumber"
+                    placeholder="GR Number"
+                    size="large"
+                    style={{ width: '100%' }}
+
+                    onChange={(e) => handleChange('grNumber', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <DatePicker
+                    required
+                    format="DD-MM-YYYY" // Display format
+                    placeholder="GR Date *"
+                    size="large"
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange} // Call handleDateChange function on date change
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="loadLocation"
+                    onChange={(value) => handleChange('loadLocation', value)}
+                    placeholder="Loaded From*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                  >
+                    {loadLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="deliveryLocation"
+                    onChange={(value) => handleChange('deliveryLocation', value)}
+                    placeholder="Deliver To*"
+                    size="large"
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                    style={{ width: '100%' }}
+                  >
+                    {deliveryLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="vehicleNumber"
+                    placeholder="Vehicle Number*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                    onChange={(value) => {
+                      const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
+                      if (selectedVehicle) {
+                        console.log(selectedVehicle._id)
+                        setselectedVehicleId(selectedVehicle._id);
+                      }
+                      handleChange('vehicleNumber', value);
+                    }}
+                  >
+                    {vehicleDetails.map((v, index) => (
+                      <Option key={index} value={v.registrationNumber}>
+                        {`${v.registrationNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="vehicleType"
+                    placeholder="Vehicle Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    value={formData.vehicleType ? formData.vehicleType.charAt(0).toUpperCase() + formData.vehicleType.slice(1) : ''}
+                    disabled
+                  />
+
+
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    type='number'
+                    placeholder="Delivery Number*"
+                    size="large"
+                    name="deliveryNumber"
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Quantity (M/T)*"
+                    size="large"
+                    name="quantityInMetricTons"
+                    onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Company Rate*"
+                    type='number'
+                    size="large"
+                    name="rate"
+                    onChange={(e) => handleChange('rate', e.target.value)}
+                  />
+                </Col>
+
+                <Col className="gutter-row mt-6" span={6}>
+                  {formData.isMarketRate ? <>
+                    <Input
+                      type='number'
+                      placeholder="Market Rate Rs*"
+                      size="large"
+                      name="diesel"
+                      onChange={(e) => handleChange('marketRate', e.target.value)}
+                    />
+                  </> : <></>}
+
+                </Col>
+              </Row>
+
+
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-1 justify-between">
+              <div>
+
+                <div className="text-md font-semibold">Load Trip Expense Details</div>
+                <div className="text-md font-normal">Enter Trip Details</div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} /></div>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Diesel*"
+                    size="large"
+                    name="diesel"
+                    onChange={(e) => handleChange('diesel', e.target.value)}
+                  />
                 </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='number' placeholder="Mobile Number*" size="large" name="phoneNumber" onChange={handleOwnerFormChange} /></div>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Cash*"
+                    size="large"
+                    name="cash"
+                    onChange={(e) => handleChange('cash', e.target.value)}
+                  />
                 </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='email' placeholder="Email ID" size="large" name="email" onChange={handleOwnerFormChange} /></div>
-                </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="PAN Card No" size="large" name="panNumber" onChange={handleOwnerFormChange} /></div>
-                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Bank Transfer*"
+                    size="large"
+                    name="bankTransfer"
+                    onChange={(e) => handleChange('bankTransfer', e.target.value)}
+                  />
 
-                <Col className="gutter-row mt-6" span={12}>
-                  <div>
-                    Select State : {" "}
-                    <Select
-                      placeholder="Select a state"
-                      value={selectedState}
-                      onChange={handleStateChange}
-                      style={{ width: 360 }}
-                      size='large'
-                    >
-                      {states.map((state) => (
-                        <Option key={state.state} value={state.state}>
-                          {state.state}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div>
-                    Select District : {" "}
-                    <Select
-                      size='large'
-                      placeholder="Districts"
-                      value={districts.length > 0 ? districts[0] : ''} // Ensure that districts represents a single selected district
-                      onChange={(value) => setDistricts([value])} // Wrap the value in an array to represent a single selected district
-                      style={{ width: 360 }}
-                    >
-                      {districts.map((district) => (
-                        <Option key={district} value={district}>
-                          {district}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
                 </Col>
               </Row>
-            </div>
 
+
+            </div>
+          </div>
+
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
+  const handleEditTruckClick = (rowData) => {
+    setRowDataForDispatchEdit(rowData);
+    setShowDispatchTable(false);
+    setEditingChallan(true);
+  };
+  const handleAddTruckClick = () => {
+    setRowDataForDispatchEdit(null);
+    setShowDispatchTable(false);
+    setEditingChallan(false);
+  };
+
+  const handleDeleteTruckClick = async (rowData) => {
+    console.log("deleting", rowData._id)
+    const challanId = rowData._id
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
+    const response = await API.delete(`delete-dispatch-challan/${challanId}`, headersOb);
+    if (response.status === 201) {
+      alert("deleted data")
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } else {
+      alert(`unable to delete data`)
+      console.log(response.data)
+    }
+  }
+
+
+  const EditableChallan = ({ editingRow }) => {
+
+    const selectedHubId = localStorage.getItem("selectedHubID");
+
+    const [formData, setFormData] = useState(
+      {
+        "balance": editingRow.balance,
+        "bankTransfer": editingRow.bankTransfer,
+        "cash": editingRow.cash,
+        "commisionRate": editingRow.commisionRate,
+        "commisionTotal": editingRow.commisionTotal,
+        "deliveryLocation": editingRow.deliveryLocation,
+        "deliveryNumber": editingRow.deliveryNumber,
+        "diesel": editingRow.diesel,
+        "grDate": editingRow.grDate,
+        "grNumber": editingRow.grNumber,
+        "invoiceProof": editingRow.invoiceProof,
+        "loadLocation": editingRow.loadLocation,
+        "materialType": editingRow.materialType,
+        "ownerId": editingRow.ownerId,
+        "ownerName": editingRow.ownerName,
+        "ownerPhone": editingRow.ownerPhone,
+        "quantityInMetricTons": editingRow.quantityInMetricTons,
+        "rate": editingRow.rate,
+        "totalExpense": editingRow.totalExpense,
+        "vehicleBank": editingRow.vehicleBank,
+        "vehicleId": editingRow.vehicleId,
+        "vehicleNumber": editingRow.vehicleNumber,
+        "vehicleType": editingRow.vehicleType,
+        "isMarketRate": editingRow.isMarketRate,
+        "marketRate": editingRow.marketRate,
+        "hubId": selectedHubId,
+        "shortage": editingRow.shortage,
+      }
+
+    );
+
+    const handleChange = (name, value) => {
+      if (name === "isMarketRate") {
+        if (!value) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: false,
+            commission: selectedvehicleCommission,
+          }));
+        } else {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+            isMarketRate: true,
+            commission: 0,
+          }));
+        }
+      } else {
+        // For other fields, update state normally
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+      }
+    };
+    const formatDate = (dateString) => {
+      // Split the date string by '-'
+      const parts = dateString.split('-');
+      // Rearrange the parts in the required format
+      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return formattedDate;
+    };
+    // Function to handle date change
+    const handleDateChange = (date, dateString) => {
+      const formattedGrDate = formatDate(dateString);
+      handleChange('grDate', formattedGrDate);
+    };
+    const [materials, setMaterials] = useState([]);
+    const [loadLocation, setloadLocations] = useState([]);
+
+    const [deliveryLocation, setDeliveryLocations] = useState([]);
+    const fetchMaterials = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-material/${selectedHubId}`, headersOb);
+        if (response.status === 201) {
+          setMaterials(response.data.materials);
+        }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    // Function to fetch LoadLocations from the API
+    const fetchLoadLocations = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
+        if (response.status == 201) {
+          setloadLocations(response.data.materials);
+        } else {
+          console.log("error in fetchLoadLocations")
+        }
+
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    // Function to fetch DeliveryLocations from the API
+    const fetchDeliveryLocations = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
+        setDeliveryLocations(response.data.materials);
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+    const fetchVehicleDetails = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        let truckDetails;
+        if (response.data.truck == 0) {
+          truckDetails = response.data.truck
+          setVehicleDetails(truckDetails);
+        } else {
+
+          truckDetails = response.data.truck[0].data || "";
+          setVehicleDetails(response.data.truck[0].count);
+
+          if (truckDetails && truckDetails.length > 0) {
+            const arrRes = truckDetails.sort(function (a, b) {
+              a = a.
+                registrationNumber.toLowerCase();
+              b = b.
+                registrationNumber.toLowerCase();
+
+              return a < b ? -1 : a > b ? 1 : 0;
+            });
+
+            setVehicleDetails(arrRes);
+
+            return arrRes;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
+    };
+    const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
+
+    const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+
+    const fetchSelectedVehicleDetails = async (vehicleId) => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const truckDetails = response.data.truck;
+        if (truckDetails && truckDetails.length > 0) {
+          const selectedVehicle = truckDetails[0];
+          // const { ownerId, ownerName, ownerPhone, vehicleBank, vehicleId, vehicleNumber, vehicleType } = selectedVehicle;
+          const ownerId = selectedVehicle.ownerId._id;
+          const ownerName = selectedVehicle.ownerId.name;
+          const ownerPhone = selectedVehicle.ownerId.phoneNumber;
+          const vehicleBank = selectedVehicle.accountId._id;
+          const vehicleId = selectedVehicle._id;
+          const vehicleNumber = selectedVehicle.registrationNumber;
+          const vehicleType = selectedVehicle.truckType;
+
+          let commissionRate;
+          if (formData.isMarketRate) {
+            commissionRate = formData.marketRate
+          } else {
+            commissionRate = selectedVehicle.commission
+
+          }
+
+          console.log(commissionRate)
+
+          setselectedCommission(commissionRate)
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            ownerId,
+            ownerName,
+            ownerPhone,
+            vehicleBank,
+            vehicleId,
+            vehicleNumber,
+            vehicleType,
+            commissionRate
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle details:', error);
+        // Handle error
+      }
+    };
+    useEffect(() => {
+      fetchSelectedVehicleDetails(selectedvehicleId)
+    }, [formData.vehicleNumber, selectedvehicleId])
+    // Fetch materials on component mount
+    useEffect(() => {
+      fetchMaterials();
+      fetchLoadLocations();
+      fetchDeliveryLocations();
+      fetchVehicleDetails();
+    }, [selectedHubId]);
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      // Calculate commissionTotal based on isMarketRate
+      let commissionTotal = 0;
+      let commisionRate = 0
+      if (formData.isMarketRate) {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commisionRate = 0;
+      } else {
+        console.log("isMarketRate", formData.isMarketRate)
+        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        commissionTotal = commissionTotalInPercentage / 100;
+        commisionRate = parseFloat(selectedvehicleCommission);
+
+      }
+
+      const payload = {
+        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        "bankTransfer": formData.bankTransfer,
+        "cash": formData.cash,
+        "deliveryLocation": formData.deliveryLocation,
+        "deliveryNumber": formData.deliveryNumber,
+        "diesel": formData.diesel,
+        "grDate": formData.grDate,
+        "grNumber": formData.grNumber,
+        "invoiceProof": null,
+        "loadLocation": formData.loadLocation,
+        "materialType": formData.materialType,
+        "ownerId": formData.ownerId,
+        "ownerName": formData.ownerName,
+        "ownerPhone": formData.ownerPhone,
+        "quantityInMetricTons": formData.quantityInMetricTons,
+        "rate": formData.rate,
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "vehicleBank": formData.vehicleBank,
+        "vehicleId": formData.vehicleId,
+        "vehicleNumber": formData.vehicleNumber,
+        "vehicleType": formData.vehicleType,
+        "commisionRate": commisionRate,
+        "commisionTotal": commissionTotal,
+        "isMarketRate": formData.isMarketRate,
+        "marketRate": formData.marketRate,
+        "hubId": selectedHubId,
+        "shortage": formData.shortage,
+      }
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
+        .then((response) => {
+          console.log('Challan updated successfully:', response.data);
+          alert("Challan updated successfully")
+          window.location.reload(); // Reload the page or perform any necessary action
+        })
+        .catch((error) => {
+          alert("error occurred")
+          console.error('Error adding truck data:', error);
+        });
+
+    };
+
+    return (
+      <>
+        <div className="flex flex-col gap-2">
+
+          <div className="flex items-center gap-4">
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
+              <Breadcrumb
+                items={[
+                  {
+                    title: 'Dispatch',
+                  },
+                  {
+                    title: 'Edit Challan',
+                  },
+                ]}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <div className="flex justify-between">
-
+            <div className="flex gap-1 justify-between">
               <div>
 
-                <div className='text-md font-semibold'>Owner Bank Details</div>
-                <div className='text-md font-normal'>Enter bank details</div>
+                <div className="text-md font-semibold">Challan Details</div>
+                <div className="text-md font-normal">Enter Challan Details</div>
               </div>
-              <Button type="link" onClick={handleAddBankAccount} style={{ color: "#000" }}>+ Add Bank</Button>
+              <div className='flex gap-2'>
+                Market Rate
+                <Switch
+                  defaultChecked={formData.isMarketRate}
+                  name="isMarketRate"
+                  onChange={(checked) => handleChange('isMarketRate', checked)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="materialType"
+                    onChange={(value) => handleChange('materialType', value)}
+                    placeholder="Material Type*"
+                    size="large"
+                    value={formData.materialType}
+                    style={{ width: '100%' }}
+                  >
+                    {materials.map((v, index) => (
+                      <Option key={index} value={v.materialType}>
+                        {`${v.materialType}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    type="text"
+                    name="grNumber"
+                    placeholder="grNumber*"
+                    size="large"
+                    value={formData.grNumber}
+                    style={{ width: '100%' }}
+
+                    onChange={(e) => handleChange('grNumber', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <DatePicker
+                    required
+                    placeholder="GR Date"
+                    size="large"
+                    format="DD-MM-YYYY" // Display format
+                    value={moment()} // Set initial value if needed
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange} // Call handleDateChange function on date change
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="loadLocation"
+                    onChange={(value) => handleChange('loadLocation', value)}
+                    placeholder="Loaded From*"
+                    size="large"
+                    value={formData.loadLocation}
+                    style={{ width: '100%' }}
+                  >
+                    {loadLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="deliveryLocation"
+                    onChange={(value) => handleChange('deliveryLocation', value)}
+                    placeholder="Deliver To*"
+                    size="large"
+                    value={formData.deliveryLocation}
+                    style={{ width: '100%' }}
+                  >
+                    {deliveryLocation.map((v, index) => (
+                      <Option key={index} value={v.location}>
+                        {`${v.location}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    name="vehicleNumber"
+                    placeholder="Vehicle Number*"
+                    size="large"
+                    value={formData.vehicleNumber}
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                      const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
+                      if (selectedVehicle) {
+                        console.log(selectedVehicle._id)
+                        setselectedVehicleId(selectedVehicle._id);
+                      }
+                      handleChange('vehicleNumber', value);
+                    }}
+                  >
+                    {vehicleDetails.map((v, index) => (
+                      <Option key={index} value={v.registrationNumber}>
+                        {`${v.registrationNumber}`}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Select
+                    name="vehicleType"
+                    placeholder="Vehicle Type*"
+                    size="large"
+                    style={{ width: '100%' }}
+                    value={formData.vehicleType}
+                    disabled
+                  />
+
+
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    placeholder="DeliveryNumber*"
+                    size="large"
+                    type='number'
+                    name="deliveryNumber"
+                    value={formData.deliveryNumber}
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Quantity (M/T)*"
+                    size="large"
+                    name="quantityInMetricTons"
+                    value={formData.quantityInMetricTons}
+                    onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Company Rate*"
+                    type='number'
+                    size="large"
+                    value={formData.rate}
+                    name="rate"
+                    onChange={(e) => handleChange('rate', e.target.value)}
+                  />
+                </Col>
+
+                <Col className="gutter-row mt-6" span={6}>
+                  {formData.isMarketRate ? <>
+                    <Input
+                      type='number'
+                      placeholder="Market Rate Rs*"
+                      size="large"
+                      name="diesel"
+                      value={formData.marketRate}
+                      onChange={(e) => handleChange('marketRate', e.target.value)}
+                    />
+                  </> : <></>}
+
+                </Col>
+              </Row>
+
+
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <div className="flex gap-1 justify-between">
+              <div>
+
+                <div className="text-md font-semibold">Load Trip Expense Details</div>
+                <div className="text-md font-normal">Enter Trip Details</div>
+              </div>
             </div>
 
-          
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Diesel*"
+                    size="large"
+                    name="diesel"
+                    value={formData.diesel}
+                    onChange={(e) => handleChange('diesel', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Cash*"
+                    size="large"
+                    name="cash"
+                    value={formData.cash}
+                    onChange={(e) => handleChange('cash', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Bank Transfer*"
+                    size="large"
+                    name="bankTransfer"
+                    value={formData.bankTransfer}
+                    onChange={(e) => handleChange('bankTransfer', e.target.value)}
+                  />
 
-            {formData.bankAccounts.map((bankAccount, index) => (
-              <div className="flex flex-col gap-1 bg-[#f6f6f6] p-4" key={index}>
-                <h1>Bank {index + 1}</h1>
-                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                  <Col className="gutter-row mt-2" span={8}>
+                </Col>
+                <Col className="gutter-row mt-2" span={6}>
+                  <Input
+                    type='number'
+                    placeholder="Shortage*"
+                    size="large"
+                    name="shortage"
+                    value={formData.shortage}
+                    onChange={(e) => handleChange('shortage', e.target.value)}
+                  />
 
-                    <Search
-                      name="ifscCode"
-                      placeholder="Enter IFSC Code"
-                      allowClear
-                      enterButton="Search"
-                      size="large"
-                      value={bankAccount.ifscCode}
-                      onChange={(e) => handleChangeBank(index, e)} // Pass index to handleChangeBank
-                      onSearch={() => fetchBankDetails(index)} // Pass index to fetchBankDetails
-                    />
-                  </Col>
-                  <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
-                  </Col>
-                  <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
-                  </Col>
-                  <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
-                  </Col>
-                  <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} />
-                  </Col>
-                </Row>
-                {formData.bankAccounts.length > 1 && (
-                  <Button onClick={() => handleRemoveBankAccount(index)} style={{ width: 200 }}>Remove Bank Account</Button>
-                )}
-              </div>
-            ))}
+                </Col>
+              </Row>
+
+
+            </div>
           </div>
-          <div className="flex gap-4">
-
-            <Button onClick={() => { setShowOwnerTable(true) }}>Reset</Button>
-
-            <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+              Save
+            </Button>
           </div>
-
         </div>
       </>
     );
   };
 
-
-  const ViewOwnerDataRow = ({ rowData }) => {
-    return (
-      <div className="owner-details">
-        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowOwnerTable(true) }} />
-
-        <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Owner Name</span> {rowData.name}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Email ID</span> {rowData.email}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">PAN CARD No</span> {rowData.name}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">District</span>  {rowData.district}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">State</span> {rowData.state}</p>
-            </Col>
-            <Col className="gutter-row m-1" span={8}>
-              <p className='flex flex-col font-normal'><span className="label text-sm">Address</span> {rowData.address}</p>
-            </Col>
-
-          </Row>
-        </div>
-        <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Owner Bank Details</h2>
-          {rowData.accountIds.map((account, index) => (
-            <div key={index}>
-              <h3>Bank Account {index + 1}</h3>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Account Number:</span> {account.accountNumber}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Account Holder Name:</span> {account.accountHolderName}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Branch Name:</span> {account.branchName}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">IFSC Code:</span> {account.ifscCode}</p>
-                </Col>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Bank Name:</span> {account.bankName}</p>
-                </Col>
-              </Row>
-            </div>
-          ))}
-        </div>
-        <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Vehicle Details</h2>
-          {rowData.vehicleIds.map((vehicle, index) => (
-            <div key={index}>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={8}>
-                  <p className='flex flex-col font-normal'><span className="label text-sm">Vehicle No:</span> {vehicle.registrationNumber}</p>
-                </Col>
-              </Row>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const OwnerTable = ({ filteredOwnerData, onEditClick }) => {
-    useEffect(() => {
-    }, [filteredOwnerData]);
-
+  const DispatchTable = ({ onEditTruckClick, onDeleteTruckClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
     };
@@ -569,72 +1312,267 @@ const DispatchContainer = () => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => index + 1,
+        render: (text, record, index: any) => index + 1,
         width: 80,
+
+        fixed: 'left',
       },
       {
-        title: 'Owner Name',
-        dataIndex: 'name',
-        key: 'name',
-        width: 80,
+        title: 'Material Type',
+        dataIndex: 'materialType',
+        key: 'materialType',
+        width: 120,
       },
       {
-        title: 'District',
-        dataIndex: 'district',
-        key: 'district',
-        width: 60,
+        title: 'GR No',
+        dataIndex: 'grNumber',
+        key: 'grNumber',
+        width: 100,
       },
       {
-        title: 'State',
-        dataIndex: 'state',
-        key: 'state',
-        width: 60,
+        title: 'GR Date',
+        dataIndex: 'grDate',
+        key: 'grDate',
+        width: 120,
       },
       {
-        title: 'Email ID',
-        dataIndex: 'email',
-        key: 'email',
+        title: 'Load Location',
+        dataIndex: 'loadLocation',
+        key: 'loadLocation',
+        width: 150,
+      },
+      {
+        title: 'Delivery Location',
+        dataIndex: 'deliveryLocation',
+        key: 'deliveryLocation',
+        width: 150,
+      },
+      {
+        title: 'Vehicle Number',
+        dataIndex: 'vehicleNumber',
+        key: 'vehicleNumber',
+        width: 160,
+      },
+      // {
+      //   title: 'Owner Name',
+      //   dataIndex: 'ownerName',
+      //   key: 'ownerName',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Owner Phone',
+      //   dataIndex: 'ownerPhone',
+      //   key: 'ownerPhone',
+      //   width: 120,
+      // },
+      {
+        title: 'Vehicle Type',
+        dataIndex: 'vehicleType',
+        key: 'vehicleType',
+        width: 120,
+      },
+      {
+        title: 'Delivery Number',
+        dataIndex: 'deliveryNumber',
+        key: 'deliveryNumber',
+        width: 120,
+      },
+      // {
+      //   title: 'Invoice Proof',
+      //   dataIndex: 'invoiceProof',
+      //   key: 'invoiceProof',
+      //   width: 120,
+      //   render: invoiceProof => <Image src={invoiceProof} alt="Invoice Proof" width={50} />
+      // },
+      {
+        title: 'Quantity',
+        dataIndex: 'quantityInMetricTons',
+        key: 'quantityInMetricTons',
+        width: 100,
+      },
+      // {
+      //   title: 'Rate',
+      //   dataIndex: 'rate',
+      //   key: 'rate',
+      //   width: 100,
+      // },
+      {
+        title: 'Company Rate',
+        dataIndex: 'rate',
+        key: 'rate',
+        width: 150,
+      },
+      // {
+      //   title: 'Market Rate',
+      //   dataIndex: 'isMarketRate',
+      //   key: 'isMarketRate',
+      //   width: 120,
+      //   render: isMarketRate => (isMarketRate ? 'Yes' : 'No')
+      // },
+      {
+        title: 'Market Rate',
+        dataIndex: 'marketRate',
+        key: 'marketRate',
+        width: 150,
+      },
+
+      {
+        title: 'Diesel',
+        dataIndex: 'diesel',
+        key: 'diesel',
+        width: 100,
+      },
+      {
+        title: 'Cash',
+        dataIndex: 'cash',
+        key: 'cash',
+        width: 100,
+      },
+      {
+        title: 'Bank Transfer',
+        dataIndex: 'bankTransfer',
+        key: 'bankTransfer',
         width: 120,
       },
       {
         title: 'Action',
         key: 'action',
-        width: 60,
-        render: (record) => (
+        width: 80,
+        fixed: 'right',
+        render: (record: unknown) => (
           <Space size="middle">
-            <Tooltip placement="top" title="Preview"><a onClick={() => onEditClick(record)}><EyeOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Edit"><a onClick={() => onEditClick(record)}><FormOutlined /></a></Tooltip>
-            <Tooltip placement="top" title="Delete"><a><DeleteOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
+            <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>
         ),
       },
+      // {
+      //   title: 'Recovery',
+      //   dataIndex: 'recovery',
+      //   key: 'recovery',
+      //   width: 100,
+      // },
+      // {
+      //   title: 'Outstanding',
+      //   dataIndex: 'outstanding',
+      //   key: 'outstanding',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Acknowledged',
+      //   dataIndex: 'isAcknowledged',
+      //   key: 'isAcknowledged',
+      //   width: 120,
+      //   render: isAcknowledged => (isAcknowledged ? 'Yes' : 'No')
+      // },
+      // {
+      //   title: 'Received',
+      //   dataIndex: 'isReceived',
+      //   key: 'isReceived',
+      //   width: 100,
+      //   render: isReceived => (isReceived ? 'Yes' : 'No')
+      // },
+
+      // {
+      //   title: 'Material Type',
+      //   dataIndex: 'materialType',
+      //   key: 'materialType',
+      //   width: 120,
+      // },
+
+
+      // {
+      //   title: 'Vehicle ID',
+      //   dataIndex: 'vehicleId',
+      //   key: 'vehicleId',
+      //   width: 120,
+      // },
+      // {
+      //   title: 'Vehicle Bank',
+      //   dataIndex: 'vehicleBank',
+      //   key: 'vehicleBank',
+      //   width: 120,
+      // },
+
+      // {
+      //   title: 'Created At',
+      //   dataIndex: 'createdAt',
+      //   key: 'createdAt',
+      //   width: 150,
+      // },
+      // {
+      //   title: 'Modified At',
+      //   dataIndex: 'modifiedAt',
+      //   key: 'modifiedAt',
+      //   width: 150,
+      // },
     ];
+    const changePagination = async (pageNumber, pageSize) => {
+      try {
+        setCurrentPage(pageNumber);
+        setCurrentPageSize(pageSize);
+        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        setchallanData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-
+    const changePaginationAll = async (pageNumber, pageSize) => {
+      try {
+        setCurrentPage(pageNumber);
+        setCurrentPageSize(pageSize);
+        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        setchallanData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
     return (
       <>
-
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={filteredOwnerData}
+          dataSource={challanData}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
+          pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: true,
+            current: currentPage,
+            total: totalDispatchData,
+            defaultPageSize: currentPageSize, // Set the default page size
+            onChange: changePagination,
+            onShowSizeChange: changePaginationAll,
+          }}
         />
       </>
     );
   };
+
   return (
-    <div>
-      <OwnerMaster />
-    </div>
-  )
+    <>
+      {showDispatchTable ? (
+        <>
+          <Truck onAddTruckClick={handleAddTruckClick} />
+          <DispatchTable onEditTruckClick={handleEditTruckClick} onDeleteTruckClick={handleDeleteTruckClick} />
+        </>
+      ) : (
+        editingChallan ? (
+
+          <EditableChallan editingRow={rowDataForDispatchEdit} />
+        ) : (
+          <CreateChallanForm />
+        )
+      )}
+    </>
+  );
+
 }
 
 export default DispatchContainer

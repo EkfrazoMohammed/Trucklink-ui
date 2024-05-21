@@ -1,13 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import {API} from "../../API/apirequest";
 
-
+// interface HubData {
+//   _id?: string;
+//   name: string;
+//   cityCode: string;
+//   district: string;
+//   state: string;
+// }
 interface HubData {
   _id?: string;
-  name: string;
-  cityCode: string;
-  district: string;
-  state: string;
+  location: string;
+
 }
 
 interface PostHubResponse {
@@ -26,8 +30,8 @@ interface UpdateHubDataPayload {
 
 // Async thunk action for fetching hub data
 export const fetchHubData = createAsyncThunk("hub/fetchHubData", async () => {
-  const response = await axios.get(
-    "https://trucklinkuatnew.thestorywallcafe.com/api/hubs"
+  const response = await API.get(
+    "get-hubs"
   );
   return (response as FetchHubDataResponse).data;
 });
@@ -36,8 +40,8 @@ export const fetchHubData = createAsyncThunk("hub/fetchHubData", async () => {
 export const postHubData = createAsyncThunk(
   "hub/postHubData",
   async (hubData: HubData) => {
-    const response = await axios.post<PostHubResponse>(
-      "https://trucklinkuatnew.thestorywallcafe.com/api/hubs",
+    const response = await API.post<PostHubResponse>(
+      "create-hub",
       hubData
     );
     return response.data;
@@ -48,8 +52,8 @@ export const postHubData = createAsyncThunk(
 export const updateHubData = createAsyncThunk(
   "hub/updateHubData",
   async (hubData: UpdateHubDataPayload) => {
-    const response = await axios.put(
-      `https://trucklinkuatnew.thestorywallcafe.com/hubs/${hubData.id}`,
+    const response = await API.put(
+      `hubs/${hubData.id}`,
       hubData
     );
     return (response.data as HubData);

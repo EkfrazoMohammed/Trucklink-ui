@@ -58,7 +58,13 @@ const TruckMaster = () => {
     console.log("deleting", rowData._id)
     const vehicleId = rowData._id
     const oldOwnerId = rowData.ownerId[0]._id;
-    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`);
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
+    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`,headersOb);
     if (response.status === 201) {
       alert("deleted data")
       setTimeout(() => {
@@ -75,6 +81,12 @@ const TruckMaster = () => {
   const [currentPageSize, setCurrentPageSize] = useState(50);
   const [totalTruckData, setTotalTruckData] = useState(100)
   const getOwnerData = async (page, limit, selectedHubID) => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
     try {
 
       const pages = page;
@@ -85,7 +97,7 @@ const TruckMaster = () => {
       // this.setState({loading: true});
       // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
       //   : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-      const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
         ownerDetails = response.data.ownerDetails
@@ -201,9 +213,11 @@ const TruckMaster = () => {
       try {
         const formData = new FormData();
         formData.append("file", file);
+       
         const config = {
           headers: {
-            "content-type": "multipart/form-data",
+            "content-type": "multipart/form-data",  
+            "Authorization": `Bearer ${authToken}`
           },
         };
         const response = await API.post(
@@ -228,6 +242,12 @@ const TruckMaster = () => {
 
     };
     const handleChange = (name, value) => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
       if (name === 'isCommission' && value === true) {
         setFormData(prevFormData => ({
           ...prevFormData,
@@ -246,7 +266,7 @@ const TruckMaster = () => {
       }
 
       else if (name === "ownerId") {
-        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
           .then((res) => {
             console.log(res)
 
@@ -281,7 +301,13 @@ const TruckMaster = () => {
         marketRate: formData.marketRate,
         isMarketRate: formData.isMarketRate
       };
-      API.post('create-vehicle', payload)
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+      API.post('create-vehicle', payload,headersOb)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
@@ -687,8 +713,14 @@ const TruckMaster = () => {
       }));
     };
     const handleChange = (name, value) => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
       if (name === "ownerId") {
-        API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
+        API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
           .then((res) => {
             const newOwneraccountId = res.data.ownerDetails[0].accountIds[0]._id;
             const phoneNumber = res.data.ownerDetails[0].phoneNumber
@@ -723,11 +755,13 @@ const TruckMaster = () => {
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
       const url = `update-vehicle-ownership-details/${vehicleId}/${oldOwnerId}`
 
-      const headers = {
-        "Content-Type": "application/json",
-
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
       }
-      API.put(url, formData, headers)
+      API.put(url, formData, headersOb)
         .then((response) => {
           console.log('Truck transfered successfully:', response.data);
           alert("Owner Transfered successfully")
@@ -902,9 +936,11 @@ const TruckMaster = () => {
         formData.append("file", file);
         const config = {
           headers: {
-            "content-type": "multipart/form-data",
-          },
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          }
         };
+        
         const response = await API.post(
           `rc-upload`,
           formData,
@@ -927,6 +963,12 @@ const TruckMaster = () => {
 
     };
     const handleChange = (name, value) => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
       if (name === 'isCommission' && value === true) {
         setFormData(prevFormData => ({
           ...prevFormData,
@@ -946,7 +988,7 @@ const TruckMaster = () => {
       }
 
       else if (name === "ownerId") {
-        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`)
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
           .then((res) => {
             setBankdata(res.data.ownerDetails[0]['accountIds'])
           })
@@ -982,11 +1024,14 @@ const TruckMaster = () => {
       const vehicleId = filterTruckTableData._id;
       const oldOwnerId = filterTruckTableData.ownerId[0]._id;
       const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
-      const headers = {
-        "Content-Type": "application/json",
-      };
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
 
-      API.put(url, payload, headers)
+      API.put(url, payload, headersOb)
         .then((response) => {
           alert("Truck data updated successfully");
           window.location.reload();

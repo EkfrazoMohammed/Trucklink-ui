@@ -104,7 +104,6 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
                  }}/>
 
                <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto truck-top-logo-close' /> 
-           
                                </div>
                  </>
               : 

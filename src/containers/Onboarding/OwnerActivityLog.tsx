@@ -4,7 +4,13 @@ const { Search } = Input;
 import { API } from "../../API/apirequest"
 
 const OwnerActivityLog = () => {
-
+  const authToken=localStorage.getItem("token");
+  const headersOb = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization":`Bearer ${authToken}`
+    }
+  }
 
   const ActivityLogHeader = () => {
     return (
@@ -24,7 +30,7 @@ const OwnerActivityLog = () => {
 
   const [ActivityData, setActivityData] = useState([])
   const getActivityDetails = async () => {
-    await API.get("get-all-logs")
+    await API.get("get-all-logs",headersOb)
       .then((res) => {
         setActivityData(res.data.logsDetails);
       }).catch((err) => {

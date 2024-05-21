@@ -9,7 +9,13 @@ import backbutton_logo from "../../assets/backbutton.png"
 
 
 const OwnerTransferLog = () => {
-
+  const authToken=localStorage.getItem("token");
+  const headersOb = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization":`Bearer ${authToken}`
+    }
+  }
   const [searchQuery, setSearchQuery] = useState('');
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -49,7 +55,7 @@ const OwnerTransferLog = () => {
   };
   const [transferData, setTransferData] = useState([])
   const getTransferDetails = async () => {
-    let response = await API.get("get-all-users-logs")
+    let response = await API.get("get-all-users-logs",headersOb)
       .then((res) => {
         if (res.status == 201) {
           setTransferData(res.data.ownerDetails);

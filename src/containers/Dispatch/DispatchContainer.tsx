@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import axios from "axios"
+import moment from 'moment';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
@@ -15,7 +16,8 @@ const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const DispatchContainer = () => {
-
+  const authToken = localStorage.getItem("token");
+  
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -39,10 +41,17 @@ const DispatchContainer = () => {
   const [totalDispatchData, setTotalDispatchData] = useState(100)
 
   const getTableData = async () => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
+    const data = {};
     try {
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`)
-        : await API.post(`get-challan-data?page=1&limit=50&hubId=${selectedHubId}`);
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`,data, headersOb)
+        : await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`,data, headersOb);
 
       let allChallans;
       if (response.data.disptachData == 0) {
@@ -183,12 +192,16 @@ const DispatchContainer = () => {
       // Split the date string by '-'
       const parts = dateString.split('-');
       // Rearrange the parts in the required format
-      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      // const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
       return formattedDate;
     };
     // Function to handle date change
     const handleDateChange = (date, dateString) => {
+      console.log(dateString);
       const formattedGrDate = formatDate(dateString);
+
+      // const formattedGrDate = dateString;
       console.log(formattedGrDate); // Output: "01/05/2024"
       // dateString will be in the format 'YYYY-MM-DD'
       handleChange('grDate', formattedGrDate);
@@ -199,7 +212,13 @@ const DispatchContainer = () => {
     const [deliveryLocation, setDeliveryLocations] = useState([]);
     const fetchMaterials = async () => {
       try {
-        const response = await API.get(`get-material/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-material/${selectedHubId}`, headersOb);
         if (response.status === 201) {
           setMaterials(response.data.materials);
         }
@@ -210,7 +229,13 @@ const DispatchContainer = () => {
     // Function to fetch LoadLocations from the API
     const fetchLoadLocations = async () => {
       try {
-        const response = await API.get(`get-load-location/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
         if (response.status == 201) {
           setloadLocations(response.data.materials);
         } else {
@@ -224,7 +249,13 @@ const DispatchContainer = () => {
     // Function to fetch DeliveryLocations from the API
     const fetchDeliveryLocations = async () => {
       try {
-        const response = await API.get(`get-delivery-location/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
         setDeliveryLocations(response.data.materials);
       } catch (error) {
         console.error('Error fetching materials:', error);
@@ -233,7 +264,13 @@ const DispatchContainer = () => {
     const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
     const fetchVehicleDetails = async () => {
       try {
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -269,7 +306,13 @@ const DispatchContainer = () => {
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
       try {
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -328,23 +371,23 @@ const DispatchContainer = () => {
       // toggal on = total -market rate*quantity
       // Calculate commissionTotal based on isMarketRate
       let commissionTotal = 0;
-      let commisionRate=0
+      let commisionRate = 0
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
         commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commisionRate=0;
+        commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
         commissionTotal = commissionTotalInPercentage / 100;
-        commisionRate=parseFloat(selectedvehicleCommission);
-      
+        commisionRate = parseFloat(selectedvehicleCommission);
+
       }
 
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -371,19 +414,25 @@ const DispatchContainer = () => {
         "marketRate": formData.marketRate,
         "hubId": selectedHubId
       }
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
       setData(payload)
-        if(formData.grDate !== null || formData.grDate !==""){
-        API.post('create-dispatch-challan', payload)
-        .then((response) => {
-          console.log('Challan added successfully:', response.data);
-          alert("Challan added successfully")
-          window.location.reload(); // Reload the page or perform any necessary action
-        })
-        .catch((error) => {
-          alert("error occurred")
-          console.error('Error adding truck data:', error);
-        });
-      }else{
+      if (formData.grDate !== null || formData.grDate !== "") {
+        API.post('create-dispatch-challan', payload, headersOb)
+          .then((response) => {
+            console.log('Challan added successfully:', response.data);
+            alert("Challan added successfully")
+            window.location.reload(); // Reload the page or perform any necessary action
+          })
+          .catch((error) => {
+            alert("error occurred")
+            console.error('Error adding truck data:', error);
+          });
+      } else {
         alert("GR Date is required")
       }
     };
@@ -456,9 +505,9 @@ const DispatchContainer = () => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                   <DatePicker
                     required
+                    format="DD-MM-YYYY" // Display format
                     placeholder="GR Date *"
                     size="large"
                     style={{ width: "100%" }}
@@ -635,7 +684,7 @@ const DispatchContainer = () => {
 
             </div>
           </div>
-     
+
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
@@ -660,7 +709,13 @@ const DispatchContainer = () => {
   const handleDeleteTruckClick = async (rowData) => {
     console.log("deleting", rowData._id)
     const challanId = rowData._id
-    const response = await API.delete(`delete-dispatch-challan/${challanId}`);
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
+    const response = await API.delete(`delete-dispatch-challan/${challanId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
       setTimeout(() => {
@@ -753,7 +808,13 @@ const DispatchContainer = () => {
     const [deliveryLocation, setDeliveryLocations] = useState([]);
     const fetchMaterials = async () => {
       try {
-        const response = await API.get(`get-material/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-material/${selectedHubId}`, headersOb);
         if (response.status === 201) {
           setMaterials(response.data.materials);
         }
@@ -764,7 +825,13 @@ const DispatchContainer = () => {
     // Function to fetch LoadLocations from the API
     const fetchLoadLocations = async () => {
       try {
-        const response = await API.get(`get-load-location/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
         if (response.status == 201) {
           setloadLocations(response.data.materials);
         } else {
@@ -778,7 +845,13 @@ const DispatchContainer = () => {
     // Function to fetch DeliveryLocations from the API
     const fetchDeliveryLocations = async () => {
       try {
-        const response = await API.get(`get-delivery-location/${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
         setDeliveryLocations(response.data.materials);
       } catch (error) {
         console.error('Error fetching materials:', error);
@@ -787,7 +860,13 @@ const DispatchContainer = () => {
     const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
     const fetchVehicleDetails = async () => {
       try {
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -823,7 +902,13 @@ const DispatchContainer = () => {
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
       try {
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`);
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -879,23 +964,23 @@ const DispatchContainer = () => {
       e.preventDefault();
       // Calculate commissionTotal based on isMarketRate
       let commissionTotal = 0;
-      let commisionRate=0
+      let commisionRate = 0
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
         commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commisionRate=0;
+        commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
         commissionTotal = commissionTotalInPercentage / 100;
-        commisionRate=parseFloat(selectedvehicleCommission);
-      
+        commisionRate = parseFloat(selectedvehicleCommission);
+
       }
 
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -921,10 +1006,15 @@ const DispatchContainer = () => {
         "isMarketRate": formData.isMarketRate,
         "marketRate": formData.marketRate,
         "hubId": selectedHubId,
-      "shortage": formData.shortage,
+        "shortage": formData.shortage,
       }
-
-      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload)
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
         .then((response) => {
           console.log('Challan updated successfully:', response.data);
           alert("Challan updated successfully")
@@ -1012,6 +1102,8 @@ const DispatchContainer = () => {
                     required
                     placeholder="GR Date"
                     size="large"
+                    format="DD-MM-YYYY" // Display format
+                    value={moment()} // Set initial value if needed
                     style={{ width: "100%" }}
                     onChange={handleDateChange} // Call handleDateChange function on date change
                   />
@@ -1328,7 +1420,7 @@ const DispatchContainer = () => {
         key: 'marketRate',
         width: 150,
       },
-     
+
       {
         title: 'Diesel',
         dataIndex: 'diesel',
@@ -1472,7 +1564,7 @@ const DispatchContainer = () => {
         </>
       ) : (
         editingChallan ? (
-    
+
           <EditableChallan editingRow={rowDataForDispatchEdit} />
         ) : (
           <CreateChallanForm />

@@ -107,7 +107,6 @@ const OwnerActivityLog = () => {
         key: 'logoutTime',
         width: 80,
         render: (text, record) => {
-          console.log(record)
           const date = new Date(record.logoutTime);
           const options = {
             year: 'numeric',
@@ -149,7 +148,7 @@ const OwnerActivityLog = () => {
   return (
     <>
 
-      {/* <ActivityLogHeader /> */}
+      <ActivityLogHeader />
       <ActivityLogTable ActivityData={ActivityData} />
 
     </>

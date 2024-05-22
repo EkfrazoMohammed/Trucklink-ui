@@ -291,9 +291,9 @@ const Acknowledgement = () => {
                 render: (_,record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {record.balance}</span>
+                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {(record.balance).toFixed(2)}</span>
                         :
-                        <span style={{color:"red"}}>{record.balance}</span>
+                        <span style={{color:"red"}}>{(record.balance).toFixed(2)}</span>
                         
                     }
                     </p>
@@ -424,6 +424,43 @@ const EditableChallan = ({ editingRow }) => {
         }
 
     );
+
+
+    const onResetClick=()=>{
+console.log('reset clicked')
+    setFormData(
+        {
+            "balance": editingRow.balance,
+            "bankTransfer": editingRow.bankTransfer,
+            "cash": editingRow.cash,
+            "commisionRate": editingRow.commisionRate,
+            "commisionTotal": editingRow.commisionTotal,
+            "deliveryLocation": editingRow.deliveryLocation,
+            "deliveryNumber": editingRow.deliveryNumber,
+            "diesel": editingRow.diesel,
+            "grDate": editingRow.grDate,
+            "grNumber": editingRow.grNumber,
+            "invoiceProof": editingRow.invoiceProof,
+            "loadLocation": editingRow.loadLocation,
+            "materialType": editingRow.materialType,
+            "ownerId": editingRow.ownerId,
+            "ownerName": editingRow.ownerName,
+            "ownerPhone": editingRow.ownerPhone,
+            "quantityInMetricTons": editingRow.quantityInMetricTons,
+            "rate": editingRow.rate,
+            "totalExpense": editingRow.totalExpense,
+            "vehicleBank": editingRow.vehicleBank,
+            "vehicleId": editingRow.vehicleId,
+            "vehicleNumber": editingRow.vehicleNumber,
+            "vehicleType": editingRow.vehicleType,
+            "isMarketRate": editingRow.isMarketRate,
+            "marketRate": editingRow.marketRate,
+            "hubId": selectedHubId,
+            "shortage": editingRow.shortage,
+        }
+
+    );
+}
 
     const handleChange = (name, value) => {
         if (name === "isMarketRate") {
@@ -963,7 +1000,7 @@ const EditableChallan = ({ editingRow }) => {
                     </div>
                 </div>
                 <div className="flex gap-4 items-center justify-center reset-button-container">
-                    <Button>Reset</Button>
+                    <Button onClick={onResetClick}>Reset</Button>
                     <Button type="primary" className="bg-primary" onClick={handleSubmit}>
                         Save
                     </Button>
@@ -977,7 +1014,7 @@ return (
     <>
         {showTable ? (
             <>
-                {/* <DispatchChallanComponent /> */}
+                <DispatchChallanComponent />
                 <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} onSaveAndMoveToReceive={handleSaveAndMoveToReceiveChallan} />
             </>
         ) : (

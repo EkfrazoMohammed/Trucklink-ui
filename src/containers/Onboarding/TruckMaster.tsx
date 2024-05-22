@@ -13,7 +13,7 @@ const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const TruckMaster = () => {
-  const authToken=localStorage.getItem("token");
+  const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -64,7 +64,7 @@ const TruckMaster = () => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`,headersOb);
+    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
       setTimeout(() => {
@@ -97,7 +97,7 @@ const TruckMaster = () => {
       // this.setState({loading: true});
       // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
       //   : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-      const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
+      const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
         ownerDetails = response.data.ownerDetails
@@ -126,7 +126,7 @@ const TruckMaster = () => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
-        "Authorization":`Bearer ${authToken}`
+        "Authorization": `Bearer ${authToken}`
       }
     }
     try {
@@ -137,8 +137,8 @@ const TruckMaster = () => {
       const searchData = searchQuery ? searchQuery : null;
 
 
-      const response = searchData ? await API.get(`get-vehicle-details?searchVehicleNumber=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
-        : await API.get(`get-vehicle-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb);
+      const response = searchData ? await API.get(`get-vehicle-details?searchVehicleNumber=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
+        : await API.get(`get-vehicle-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb);
 
       let truckDetails;
       if (response.data.truck == 0) {
@@ -179,7 +179,7 @@ const TruckMaster = () => {
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     return (
-<div className='flex gap-2 justify-between  py-3'>
+      <div className='flex gap-2 justify-between  py-3'>
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
@@ -207,16 +207,31 @@ const TruckMaster = () => {
       marketRate: '',
       isMarketRate: false,
     });
+
+    const onResetClick = () => {
+      console.log('reset clicked')
+      setFormData({
+        registrationNumber: '',
+        commission: 0,
+        ownerId: '',
+        accountId: null,
+        vehicleType: '',
+        rcBookProof: null,
+        isCommission: true,
+        marketRate: '',
+        isMarketRate: false,
+      });
+    }
     const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
         const formData = new FormData();
         formData.append("file", file);
-       
+
         const config = {
           headers: {
-            "content-type": "multipart/form-data",  
+            "content-type": "multipart/form-data",
             "Authorization": `Bearer ${authToken}`
           },
         };
@@ -266,7 +281,7 @@ const TruckMaster = () => {
       }
 
       else if (name === "ownerId") {
-        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
             console.log(res)
 
@@ -280,7 +295,16 @@ const TruckMaster = () => {
           [name]: value,
           accountId: null,
         }));
-      } else {
+      }
+
+      else if (name === "registrationNumber") {
+        const updatedValue = value.toUpperCase();
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: updatedValue,
+        }));
+      }
+      else {
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
@@ -307,7 +331,7 @@ const TruckMaster = () => {
           "Authorization": `Bearer ${authToken}`
         }
       }
-      API.post('create-vehicle', payload,headersOb)
+      API.post('create-vehicle', payload, headersOb)
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
@@ -356,6 +380,7 @@ const TruckMaster = () => {
                   <Input
                     placeholder="Vehicle Number*"
                     size="large"
+                    value={formData.registrationNumber}
                     name="registrationNumber"
                     onChange={(e) => handleChange('registrationNumber', e.target.value)}
                   />
@@ -419,7 +444,7 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{width:"110px"}} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
@@ -467,7 +492,7 @@ const TruckMaster = () => {
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
 
-            <Button>Reset</Button>
+            <Button onClick={onResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>
@@ -478,11 +503,11 @@ const TruckMaster = () => {
   };
 
   const ViewTruckDataRow = ({ filterTruckTableData }) => {
-
+    console.log(filterTruckTableData)
     return (
       <>
         <div className="flex flex-col gap-2">
-        
+
           <div className="flex items-center gap-4">
             <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /> </div>
             <div className="flex flex-col">
@@ -562,8 +587,8 @@ const TruckMaster = () => {
         dataIndex: 'truckType',
         key: 'truckType',
         width: 80,
-        render:(_,record)=>{
-          return record.truckType.charAt(0).toUpperCase()+record.truckType.slice(1)
+        render: (_, record) => {
+          return record.truckType.charAt(0).toUpperCase() + record.truckType.slice(1)
         }
       },
       {
@@ -572,7 +597,7 @@ const TruckMaster = () => {
         key: 'rcBookProof',
         width: 80,
         render: rcBookProof => (
-          rcBookProof ? <Image src={rcBookProof} alt="img" width={50} /> : null
+          rcBookProof ? <Image src={rcBookProof} alt="img" width={80} height={30} /> : null
         )
       },
       {
@@ -627,7 +652,7 @@ const TruckMaster = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-           dataSource={filteredTruckData}
+          dataSource={filteredTruckData}
           scroll={{ x: 800, y: 320 }}
           rowKey="_id"
           pagination={{
@@ -655,12 +680,22 @@ const TruckMaster = () => {
       phoneNumber: "",
       ownerTransferDate: "",
       ownerTransferToDate: "",
-      // // change here
-      // transferDate: "2024-04-30T10:33:29.917Z",
-      // userId: "663a0e76e1d51550194c9320",
-
     });
-    // Assuming filteredOwnerData is the filtered array of owner data
+
+    const handleResetClick = () =>{
+console.log('reset clicked')
+setFormData({
+  ownerId: '',
+  accountId: '',
+  registrationNumber: rowDataForTruckTransfer.registrationNumber,
+  commission: rowDataForTruckTransfer.commission,
+  truckType: rowDataForTruckTransfer.truckType,
+  rcBookProof: rowDataForTruckTransfer.rcBookProof,
+  phoneNumber: "",
+  ownerTransferDate: "",
+  ownerTransferToDate: "",
+});
+    }
     const filteredOptions = filteredOwnerData.filter(owner => owner._id !== rowDataForTruckTransfer.ownerId[0]._id);
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
@@ -720,7 +755,7 @@ const TruckMaster = () => {
         }
       }
       if (name === "ownerId") {
-        API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
+        API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
             const newOwneraccountId = res.data.ownerDetails[0].accountIds[0]._id;
             const phoneNumber = res.data.ownerDetails[0].phoneNumber
@@ -776,7 +811,7 @@ const TruckMaster = () => {
     return (
       <>
         <div className="flex flex-col gap-2">
-          
+
           <div className="flex items-center gap-4">
             <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /></div>
             <div className="flex flex-col">
@@ -867,7 +902,7 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large"  style={{width:"170px"}} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "170px" }} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
@@ -903,12 +938,12 @@ const TruckMaster = () => {
             </Row>
           </div>
           <div className="flex gap-4">
-          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <div className="flex gap-4 items-center justify-center reset-button-container">
 
-            <Button >Reset</Button>
-            <Button type="primary" className="bg-primary" onClick={handleSubmitTransfer}>
-              Save
-            </Button>
+              <Button onClick={handleResetClick}>Reset</Button>
+              <Button type="primary" className="bg-primary" onClick={handleSubmitTransfer}>
+                Save
+              </Button>
             </div>
           </div>
         </div>
@@ -920,7 +955,6 @@ const TruckMaster = () => {
     const [formData, setFormData] = useState({
       registrationNumber: filterTruckTableData.registrationNumber,
       commission: filterTruckTableData.commission,
-      // ownerId:filterTruckTableData.ownerId[0]._id,
       ownerId: '',
       accountId: null,
       vehicleType: filterTruckTableData.truckType,
@@ -929,6 +963,21 @@ const TruckMaster = () => {
       marketRate: filterTruckTableData.marketRate,
       isMarketRate: filterTruckTableData.isMarketRate,
     });
+
+    const handleResetClick = () => {
+      console.log('reset clicked')
+     setFormData({
+        registrationNumber: filterTruckTableData.registrationNumber,
+        commission: filterTruckTableData.commission,
+        ownerId: '',
+        accountId: null,
+        vehicleType: filterTruckTableData.truckType,
+        rcBookProof: null,
+        isCommission: filterTruckTableData.isCommission,
+        marketRate: filterTruckTableData.marketRate,
+        isMarketRate: filterTruckTableData.isMarketRate,
+      });
+    }
     const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
       try {
@@ -940,7 +989,7 @@ const TruckMaster = () => {
             "Authorization": `Bearer ${authToken}`
           }
         };
-        
+
         const response = await API.post(
           `rc-upload`,
           formData,
@@ -988,7 +1037,7 @@ const TruckMaster = () => {
       }
 
       else if (name === "ownerId") {
-        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`,headersOb)
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
             setBankdata(res.data.ownerDetails[0]['accountIds'])
           })
@@ -1000,7 +1049,16 @@ const TruckMaster = () => {
           [name]: value,
           accountId: null,
         }));
-      } else {
+      }
+
+      else if (name === "registrationNumber") {
+        const updatedValue = value.toUpperCase(); // Convert to uppercase 
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: updatedValue,
+        }));
+      }
+      else {
         setFormData((prevFormData) => ({
           ...prevFormData,
           [name]: value,
@@ -1046,9 +1104,9 @@ const TruckMaster = () => {
     return (
       <>
         <div className="flex flex-col gap-2">
-          
+
           <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)}  /> </div>
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /> </div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Truck Details</h1>
               <Breadcrumb
@@ -1141,7 +1199,7 @@ const TruckMaster = () => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{width:"110px"}} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button>
                     </Upload>
                   </div>
                 </Col>
@@ -1188,7 +1246,7 @@ const TruckMaster = () => {
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
 
-            <Button>Reset</Button>
+            <Button onClick={handleResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>
@@ -1211,7 +1269,7 @@ const TruckMaster = () => {
               <TransferTruck rowDataForTruckTransfer={rowDataForTruckTransfer} />
             ) : (
               showTruckView ? (
-                <ViewTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
+                <ViewTruckDataRow filterTruckTableData={rowDataForTruckView} />
               ) : (
                 <EditTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
               )

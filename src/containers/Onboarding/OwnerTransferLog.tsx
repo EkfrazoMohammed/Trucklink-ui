@@ -72,10 +72,8 @@ const OwnerTransferLog = () => {
     getTransferDetails()
   }, [])
   const TransferLogTable = ({ transferData }) => {
-    console.log(transferData)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
-    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
     };
 
@@ -175,7 +173,7 @@ const OwnerTransferLog = () => {
   return (
     <>
 
-      {/* <TransferLogHeader /> */}
+      <TransferLogHeader />
       <TransferLogTable transferData={transferData} />
 
     </>

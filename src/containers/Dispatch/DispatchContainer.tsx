@@ -465,8 +465,12 @@ const DispatchContainer = () => {
             window.location.reload(); // Reload the page or perform any necessary action
           })
           .catch((error) => {
-            alert("error occurred")
-            console.error('Error adding truck data:', error);
+            if(error.response.data.message =='This Delivery Number already exists'){
+              alert("This Delivery Number already exists")
+            }else{
+              alert("error occurred")        
+            }
+            console.error('Error adding truck data:', error.response);
           });
       } else {
         alert("GR Date is required")

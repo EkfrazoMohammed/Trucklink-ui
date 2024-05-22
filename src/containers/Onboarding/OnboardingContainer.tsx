@@ -12,9 +12,7 @@ import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
 import OwnerActivityLog from './OwnerActivityLog';
-const onChange = (key: string) => {
-  console.log(key);
-};
+
 const onSearch = (value: string) => {
   console.log('search:', value);
 };
@@ -24,6 +22,18 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
   (option?.value ?? '').toLowerCase().includes(input.toLowerCase());
 
 const OnboardingContainer = () => {
+  const [activeTabKey, setActiveTabKey] = useState('1');
+
+  useEffect(() => {
+    const savedTabKey = localStorage.getItem('activeTabKey');
+    if (savedTabKey) {
+      setActiveTabKey(savedTabKey);
+    }
+  }, []);
+  const handleTabChange = (key) => {
+    setActiveTabKey(key);
+    localStorage.setItem('activeTabKey', key);
+  };
   const [api, contextHolder] = notification.useNotification();
 
 
@@ -1110,7 +1120,8 @@ const OnboardingContainer = () => {
   };
   return (
     <>
-      <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+      {/* <Tabs defaultActiveKey="1" items={items} onChange={onChange} /> */}
+      <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
     </>
   );
 };

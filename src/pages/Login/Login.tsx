@@ -122,6 +122,7 @@ const Login = () => {
           localStorage.setItem("userDetails", JSON.stringify(res.data.userDetails))
           localStorage.setItem("token", res.data.token)
           localStorage.setItem("loginData", JSON.stringify(res.data.userDetails))
+          localStorage.setItem('selectedMenuItem','1')
           navigate("/dashboard");
         }
         else {

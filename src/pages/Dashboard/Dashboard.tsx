@@ -44,31 +44,12 @@ const Dashboard: React.FC = () => {
   console.log(dataFromChild)
 
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState('1');
+  const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
   const [title, setTitle] = useState('Dashboard');
-  // Usage in useSelector
-const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub);
+
   const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
-  useEffect(() => {
-    // Function to navigate to the selected menu item after selecting a hub
-    const navigateToMenu = () => {
-      if (selectedHubRedux !== "") {
-        setSelectedMenuItem('2'); // Set the menu item key for Onboarding
-        setTitle('Onboarding'); // Update the title to reflect the selected menu item
-      }
-    };
-
-    navigateToMenu(); // Call navigateToMenu when component mounts or selectedHubRedux changes
-  }, [selectedHubRedux]);
-
-  const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
-    setSelectedMenuItem(menuItemKey);
-    setTitle(menuTitle);
-  };
-
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
-
 
   const items = [
     { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
@@ -80,15 +61,23 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
     { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
   ];
 
+  const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
+    setSelectedMenuItem(menuItemKey);
+    setTitle(menuTitle);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('selectedMenuItem', selectedMenuItem); // Store the selected menu item key in localStorage
+  }, [selectedMenuItem]);
+
   // Logout function
   const handleLogout = () => {
     console.log("Logout clicked");
-    
-    setLogoutModalVisible(false);
-    // navigate("/")
-    localStorage.removeItem('token');
-    localStorage.clear();
 
+    setLogoutModalVisible(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
+    localStorage.clear();
     window.location.replace("/");
   };
   return (
@@ -131,7 +120,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
                 }
        
           </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]} >
+        <Menu theme="dark" defaultSelectedKeys={[selectedMenuItem]} mode="inline"  selectedKeys={[selectedMenuItem]} >
           {items.map(item => (
             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)}>
               {item.label}

@@ -16,7 +16,7 @@ const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 const filterOption = (input, option) =>
     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
   
-const Receive = () => {
+const Receive = ({onData,showTabs,setShowTabs}) => {
 
     const authToken=localStorage.getItem("token");
     
@@ -346,6 +346,8 @@ const Receive = () => {
     const handleEditChallanClick = (rowData) => {
         setEditingRow(rowData);
             setShowTable(false);
+            onData('none')
+        setShowTabs(false); // Set showTabs to false when adding owner
     };
 
     
@@ -685,13 +687,17 @@ const Receive = () => {
                 });
     
         };
-    
+        const goBack = () => {
+            setShowTable(true)
+            onData('flex')
+            setShowTabs(true); // Set showTabs to false when adding owner
+        }
         return (
             <>
                 <div className="flex flex-col gap-2">
                 
 <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTable(true)} /></div>
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
               <Breadcrumb

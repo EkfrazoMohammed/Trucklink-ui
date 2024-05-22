@@ -15,7 +15,7 @@ const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
-const DispatchContainer = () => {
+const DispatchContainer = ({onData}) =>{
   const authToken = localStorage.getItem("token");
   
   const selectedHubId = localStorage.getItem("selectedHubID");
@@ -476,12 +476,16 @@ const DispatchContainer = () => {
         alert("GR Date is required")
       }
     };
+    const goBack = () => {
+      setShowDispatchTable(true)
+      onData('flex')
+  }
 
     return (
       <>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
-            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Challan</h1>
               <Breadcrumb
@@ -751,11 +755,14 @@ const DispatchContainer = () => {
     setRowDataForDispatchEdit(rowData);
     setShowDispatchTable(false);
     setEditingChallan(true);
+    onData('none')
+
   };
   const handleAddTruckClick = () => {
     setRowDataForDispatchEdit(null);
     setShowDispatchTable(false);
     setEditingChallan(false);
+    onData('none')
   };
 
   const handleDeleteTruckClick = async (rowData) => {
@@ -1114,12 +1121,16 @@ const DispatchContainer = () => {
 
     };
 
+    const goBack = () => {
+      onData('flex')
+      setShowDispatchTable(true)
+    }
     return (
       <>
         <div className="flex flex-col gap-2">
 
           <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowDispatchTable(true)} /></div>
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
               <Breadcrumb

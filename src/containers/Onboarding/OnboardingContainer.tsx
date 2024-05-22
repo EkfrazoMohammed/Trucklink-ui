@@ -21,7 +21,7 @@ const onSearch = (value: string) => {
 const filterOption = (input: string, option?: { label: string; value: string }) =>
   (option?.value ?? '').toLowerCase().includes(input.toLowerCase());
 
-const OnboardingContainer = () => {
+const OnboardingContainer = ({onData}) => {
   const [activeTabKey, setActiveTabKey] = useState('1');
 
   useEffect(() => {
@@ -44,66 +44,7 @@ const OnboardingContainer = () => {
   const [rowDataForEdit, setRowDataForEdit] = useState(null);
   const [rowDataForView, setRowDataForView] = useState(null);
 
-  const handleAddOwnerClick = () => {
-    setRowDataForEdit(null);
-    setShowOwnerTable(false);
-    localStorage.setItem("displayHeader", "none");
-  };
-  const handleEditClick = (rowData) => {
-    setRowDataForEdit(rowData);
-    setShowOwnerTable(false);
-    setShowEditForm(true)
-  };
-  const handleViewClick = (rowData) => {
-    const headersOb = {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization":`Bearer ${authToken}`
-      }
-    }
-    try {
-     let res= API.get(`get-owner-details/${rowData._id}`,headersOb)
-        .then((res)=>{
-          console.log(res.data.ownerDetails)
-          setRowDataForEdit(res.data.ownerDetails[0]);
-    setRowDataForView(res.data.ownerDetails[0]);
-    setShowOwnerTable(false);
-    setShowEditForm(false)
-        }).catch((err) => {
-          console.log(err)
-        }
-      )
-    }catch(err) {
-      console.log(err)
-      
-    setRowDataForEdit(rowData);
-    setRowDataForView(rowData);
-    setShowOwnerTable(true);
-    setShowEditForm(true)
-
-    }
-
-  };
-  const handleDeleteClick = async (rowData) => {
-    const headersOb = {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization":`Bearer ${authToken}`
-      }
-    }
-    const response = await API.delete(`delete-owner-details/${rowData._id}`,headersOb);
-    console.log(response)
-    if (response.status === 201) {
-      alert("deleted data")
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
-    } else {
-      alert(`unable to delete data`)
-      console.log(response.data)
-
-    }
-  }
+  
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -157,7 +98,74 @@ const OnboardingContainer = () => {
     }
   };
   const [showEditForm, setShowEditForm] = useState(false)
-  const OwnerMaster = () => {
+  const OwnerMaster = ({ showTabs, setShowTabs }) => {
+    const handleAddOwnerClick = () => {
+      setRowDataForEdit(null);
+      setShowOwnerTable(false);
+      setShowTabs(false); // Set showTabs to false when adding owner
+      onData("none");
+    };
+    const handleEditClick = (rowData) => {
+      setRowDataForEdit(rowData);
+      setShowOwnerTable(false);
+      setShowEditForm(true)
+      setShowTabs(false); // Set showTabs to false when adding owner
+      onData("none");
+    };
+    const handleViewClick = (rowData) => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
+      try {
+       let res= API.get(`get-owner-details/${rowData._id}`,headersOb)
+          .then((res)=>{
+            console.log(res.data.ownerDetails)
+            setRowDataForEdit(res.data.ownerDetails[0]);
+            setRowDataForView(res.data.ownerDetails[0]);
+            setShowOwnerTable(false);
+            setShowEditForm(false)
+            setShowTabs(false); // Set showTabs to false when adding owner
+            onData("none");
+          }).catch((err) => {
+            console.log(err)
+          }
+        )
+      }catch(err) {
+        console.log(err)
+        
+      setRowDataForEdit(rowData);
+      setRowDataForView(rowData);
+      setShowOwnerTable(true);
+      setShowEditForm(true)
+      setShowTabs(true); // Set showTabs to true when not - viewing owner
+      onData("none");
+  
+      }
+  
+    };
+    const handleDeleteClick = async (rowData) => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
+      const response = await API.delete(`delete-owner-details/${rowData._id}`,headersOb);
+      console.log(response)
+      if (response.status === 201) {
+        alert("deleted data")
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        alert(`unable to delete data`)
+        console.log(response.data)
+  
+      }
+    }
     return (
       <>
 
@@ -203,9 +211,14 @@ const OnboardingContainer = () => {
 
 
   const ViewOwnerDataRow = ({ rowData }) => {
+
+    const goBack = () => {
+      setShowOwnerTable(true) 
+      setShowTabs(true);
+    }
     return (
       <div className="owner-details">
-        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowOwnerTable(true) }} />
+        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -461,10 +474,12 @@ const OnboardingContainer = () => {
       }
 
     };
-
+    
     const goBack = () => {
       setShowOwnerTable(true)
       localStorage.setItem("displayHeader", "flex");
+      onData("flex");
+      setShowTabs(true);
     }
     return (
       <>
@@ -792,7 +807,11 @@ const OnboardingContainer = () => {
     const goBack = () => {
       setShowOwnerTable(true)
       localStorage.setItem("displayHeader", "flex");
+      onData("flex");
+      setShowTabs(true);
     }
+
+
     return (
       <>
         <div className="flex flex-col gap-4">
@@ -921,33 +940,7 @@ const OnboardingContainer = () => {
     );
   };
 
-  const items: TabsProps['items'] = [
-    {
-      key: '1',
-      label: 'Owner Master',
-      children: <OwnerMaster />,
-    },
-    {
-      key: '2',
-      label: 'Truck Master',
-      children: <TruckMaster />,
-    },
-    {
-      key: '3',
-      label: 'Master Data',
-      children: <MasterData />,
-    },
-    {
-      key: '4',
-      label: 'Owner Transfer Log',
-      children: <OwnerTransferLog />,
-    },
-    {
-      key: '5',
-      label: 'Activity Log',
-      children: <OwnerActivityLog />,
-    }
-  ];
+ 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(50);
   useEffect(() => {
@@ -1118,10 +1111,44 @@ const OnboardingContainer = () => {
       </>
     );
   };
+
+
+  const [showTabs, setShowTabs] = useState(true);
+  
+  const items: TabsProps['items'] = [
+    {
+      key: '1',
+      label: `Owner Master`,
+      children: <OwnerMaster showTabs={showTabs} setShowTabs={setShowTabs} />,
+    },
+    {
+      key: '2',
+      label: 'Truck Master',
+      children: <TruckMaster onData={onData} showTabs={showTabs} setShowTabs={setShowTabs}/>,
+    },
+    {
+      key: '3',
+      label: 'Master Data',
+      children: <MasterData />,
+    },
+    {
+      key: '4',
+      label: 'Owner Transfer Log',
+      children: <OwnerTransferLog />,
+    },
+    {
+      key: '5',
+      label: 'Activity Log',
+      children: <OwnerActivityLog />,
+    }
+  ];
+  
   return (
     <>
-      {/* <Tabs defaultActiveKey="1" items={items} onChange={onChange} /> */}
-      <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
+  
+      <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
+        <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
+      </div>
     </>
   );
 };

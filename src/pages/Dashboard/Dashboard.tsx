@@ -36,7 +36,13 @@ interface RootState {
 
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
+  const [dataFromChild, setDataFromChild] = useState('');
+
+  const handleDataFromChild = (childData) => {
+    setDataFromChild(childData);
+  };
+  console.log(dataFromChild)
+
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('1');
   const [title, setTitle] = useState('Dashboard');
@@ -63,12 +69,13 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
 
+
   const items = [
     { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer /> },
-    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer /> },
-    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer /> },
-    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer /> },
+    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
+    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
+    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
+    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
     { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
     { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
   ];
@@ -162,7 +169,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
               boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <HeaderContainer title={title} />
+            <HeaderContainer title={title} dataFromChild={dataFromChild}/>
             {items.map(item => (
               <React.Fragment key={item.key}>
                 {selectedMenuItem === item.key && (

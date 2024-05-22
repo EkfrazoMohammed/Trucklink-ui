@@ -309,3 +309,11 @@ align-items: center;
   height: auto;
   
 }
+
+.onboarding-tabs-hidden .ant-tabs-nav {
+  display: none !important;
+}
+
+.receive-tabs-hidden .ant-tabs-nav {
+  display: none !important;
+}

@@ -12,7 +12,7 @@ import axios from 'axios';
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
-const TruckMaster = () => {
+const TruckMaster = ({onData,showTabs,setShowTabs}) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,12 +30,16 @@ const TruckMaster = () => {
   const [rowDataForTruckView, setRowDataForTruckView] = useState(null);
   const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
   const handleEditTruckClick = (rowData) => {
+    onData('none')
+    setShowTabs(false); // Set showTabs to false when adding owner
     setRowDataForTruckEdit(rowData);
     setShowTruckTable(false);
     setShowTransferForm(false);
     setShowTruckView(false)
   };
   const handleViewTruckClick = (rowData) => {
+    onData('none')
+    setShowTabs(false); // Set showTabs to false when adding owner
     setRowDataForTruckEdit(rowData);
     setRowDataForTruckView(rowData)
     setShowTruckTable(false);
@@ -43,11 +47,15 @@ const TruckMaster = () => {
     setShowTruckView(true)
   };
   const handleAddTruckClick = () => {
+    onData('none')
+    setShowTabs(false); // Set showTabs to false when adding owner
     setRowDataForTruckEdit(null);
     setShowTruckTable(false);
   };
 
   const handleTransferTruckClick = (rowData) => {
+    onData('none')
+    setShowTabs(false); // Set showTabs to false when adding owner
     setShowTransferForm(true);
     setRowDataForTruckTransfer(rowData)
     setRowDataForTruckEdit(rowData);
@@ -361,12 +369,18 @@ const TruckMaster = () => {
         });
     };
 
+    const goBack = () => {
+      setShowTruckTable(true)
+      onData('flex')
+      setShowTabs(true); // Set showTabs to false when adding owner
+    }
+
     return (
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-bold">Create Truck</h1>
-            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} />
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
 
           </div>
           <div className="flex flex-col gap-1">
@@ -503,13 +517,18 @@ const TruckMaster = () => {
   };
 
   const ViewTruckDataRow = ({ filterTruckTableData }) => {
-    console.log(filterTruckTableData)
+    const goBack = () => {
+      setShowTruckTable(true)
+      onData('flex')
+      setShowTabs(true); // Set showTabs to false when adding owner
+    }
+
     return (
       <>
         <div className="flex flex-col gap-2">
 
           <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /> </div>
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>View Truck Details</h1>
               <Breadcrumb
@@ -807,13 +826,18 @@ setFormData({
           alert("error occurred")
         });
     };
+    const goBack = () => {
+      setShowTruckTable(true)
+      onData('flex')
+      setShowTabs(true); // Set showTabs to false when adding owner
+    }
 
     return (
       <>
         <div className="flex flex-col gap-2">
 
           <div className="flex items-center gap-4">
-            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /></div>
+            <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Transfer Truck</h1>
               <Breadcrumb
@@ -1100,13 +1124,18 @@ setFormData({
         });
     };
 
+    const goBack = () => {
+      setShowTruckTable(true)
+      onData('flex')
+      setShowTabs(true); // Set showTabs to false when adding owner
+    }
 
     return (
       <>
         <div className="flex flex-col gap-2">
 
           <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => setShowTruckTable(true)} /> </div>
+            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Truck Details</h1>
               <Breadcrumb

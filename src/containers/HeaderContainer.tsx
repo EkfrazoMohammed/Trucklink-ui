@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store'; // Import RootState and AppDispatch from your Redux store
 import axios from "axios"
@@ -20,7 +20,7 @@ interface RootState {
   };
 }
 
-const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
+const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ title,dataFromChild }) => {
   const authToken=localStorage.getItem("token");
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
@@ -191,14 +191,14 @@ const HeaderContainer: React.FC<{ title: string }> = ({ title }) => {
     setEditFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const localDisplay = localStorage.getItem("displayHeader");
+  
 
   return (
     <>
-      <div className="flex h-12 pb-4 justify-between items-center " >
+      <div className="flex h-12 pb-4 justify-between items-center " style={{display:`${dataFromChild}`}}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px" }}>
+          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px",borderRadius:"4px" }}>
             <div className="flex flex-col">
 
          <span className="flex justify-between" style={{color:"grey",fontSize:".6rem",fontWeight:"600"}}> Select Hub</span> 

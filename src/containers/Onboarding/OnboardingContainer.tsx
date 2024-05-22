@@ -595,7 +595,6 @@ const OnboardingContainer = () => {
               </div>
             ))}
           </div>
-          {/* {JSON.stringify(d, null, 2)} */}
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={handleResetButtonClick}>Reset</Button>
             <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>

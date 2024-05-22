@@ -79,7 +79,7 @@ const DispatchContainer = () => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-        {/* <div className='flex gap-2 items-center'>
+     <div className='flex gap-2 items-center'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
@@ -110,9 +110,9 @@ const DispatchContainer = () => {
             ]}
             onChange={(value) => handleChange('vehicleType', value)}
           />
-        </div>  */}
+        </div>  
         <div className='flex gap-2 justify-end'>
-          {/* <Upload>
+         <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
           <Upload>
@@ -120,7 +120,7 @@ const DispatchContainer = () => {
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload>  */}
+          </Upload>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -133,28 +133,28 @@ const DispatchContainer = () => {
     const [formData, setFormData] = useState(
       {
         "balance": '',
-        "bankTransfer": '',
-        "cash": '',
+        "bankTransfer": null,
+        "cash": null,
         "commisionRate": '',
         "commisionTotal": '',
-        "deliveryLocation": '',
-        "deliveryNumber": '',
-        "diesel": '',
+        "deliveryLocation": null,
+        "deliveryNumber": null,
+        "diesel": null,
         "grDate": null,
-        "grNumber": '',
+        "grNumber": null,
         "invoiceProof": null,
-        "loadLocation": '',
-        "materialType": '',
-        "ownerId": '',
+        "loadLocation": null,
+        "materialType": null,
+        "ownerId": null,
         "ownerName": '',
         "ownerPhone": '',
-        "quantityInMetricTons": '',
-        "rate": '',
+        "quantityInMetricTons": null,
+        "rate": null,
         "totalExpense": '',
         "vehicleBank": '',
-        "vehicleId": '',
-        "vehicleNumber": '',
-        "vehicleType": '',
+        "vehicleId": null,
+        "vehicleNumber": null,
+        "vehicleType": null,
         "isMarketRate": false,
         "marketRate": 0,
         "hubId": ''
@@ -163,6 +163,42 @@ const DispatchContainer = () => {
 
     );
 
+
+    const onResetClick = () => {
+      console.log('reset clicked')
+      setFormData(
+        {
+          "balance": '',
+          "bankTransfer": null,
+          "cash": null,
+          "commisionRate": '',
+          "commisionTotal": '',
+          "deliveryLocation": null,
+          "deliveryNumber": null,
+          "diesel": null,
+          "grDate": null,
+          "grNumber": null,
+          "invoiceProof": null,
+          "loadLocation": null,
+          "materialType": null,
+          "ownerId": null,
+          "ownerName": '',
+          "ownerPhone": '',
+          "quantityInMetricTons": null,
+          "rate": null,
+          "totalExpense": '',
+          "vehicleBank": '',
+          "vehicleId": null,
+          "vehicleNumber": null,
+          "vehicleType": null,
+          "isMarketRate": false,
+          "marketRate": 0,
+          "hubId": ''
+        }
+  
+  
+      );
+    }
     const handleChange = (name, value) => {
       if (name === "isMarketRate") {
         if (!value) {
@@ -484,6 +520,8 @@ const DispatchContainer = () => {
                     style={{ width: '100%' }}
                     showSearch
                     optionFilterProp="children"
+                    value={formData.materialType}
+                    
                     filterOption={filterOption}
                   >
                     {materials.map((v, index) => (
@@ -500,6 +538,7 @@ const DispatchContainer = () => {
                     placeholder="GR Number"
                     size="large"
                     style={{ width: '100%' }}
+                    value={formData.grNumber}
 
                     onChange={(e) => handleChange('grNumber', e.target.value)}
                   />
@@ -522,6 +561,7 @@ const DispatchContainer = () => {
                     size="large"
                     style={{ width: '100%' }}
                     showSearch
+                    value={formData.loadLocation}
                     optionFilterProp="children"
                     filterOption={filterOption}
                   >
@@ -542,6 +582,7 @@ const DispatchContainer = () => {
                     placeholder="Deliver To*"
                     size="large"
                     showSearch
+                    value={formData.deliveryLocation}
                     optionFilterProp="children"
                     filterOption={filterOption}
                     style={{ width: '100%' }}
@@ -584,6 +625,7 @@ const DispatchContainer = () => {
                     name="vehicleType"
                     placeholder="Vehicle Type*"
                     size="large"
+                    value={formData.vehicleType}
                     style={{ width: '100%' }}
                     value={formData.vehicleType ? formData.vehicleType.charAt(0).toUpperCase() + formData.vehicleType.slice(1) : ''}
                     disabled
@@ -597,6 +639,7 @@ const DispatchContainer = () => {
                     type='number'
                     placeholder="Delivery Number*"
                     size="large"
+                    value={formData.deliveryNumber}
                     name="deliveryNumber"
                     onChange={(e) => handleChange('deliveryNumber', e.target.value)}
                   />
@@ -608,6 +651,7 @@ const DispatchContainer = () => {
                     type='number'
                     placeholder="Quantity (M/T)*"
                     size="large"
+                    value={formData.quantityInMetricTons}
                     name="quantityInMetricTons"
                     onChange={(e) => handleChange('quantityInMetricTons', e.target.value)}
                   />
@@ -617,6 +661,7 @@ const DispatchContainer = () => {
                     placeholder="Company Rate*"
                     type='number'
                     size="large"
+                    value={formData.rate}
                     name="rate"
                     onChange={(e) => handleChange('rate', e.target.value)}
                   />
@@ -656,6 +701,7 @@ const DispatchContainer = () => {
                     type='number'
                     placeholder="Diesel*"
                     size="large"
+                    value={formData.diesel}
                     name="diesel"
                     onChange={(e) => handleChange('diesel', e.target.value)}
                   />
@@ -665,6 +711,7 @@ const DispatchContainer = () => {
                     type='number'
                     placeholder="Cash*"
                     size="large"
+                    value={formData.cash}
                     name="cash"
                     onChange={(e) => handleChange('cash', e.target.value)}
                   />
@@ -674,6 +721,7 @@ const DispatchContainer = () => {
                     type='number'
                     placeholder="Bank Transfer*"
                     size="large"
+                    value={formData.bankTransfer}
                     name="bankTransfer"
                     onChange={(e) => handleChange('bankTransfer', e.target.value)}
                   />
@@ -686,7 +734,7 @@ const DispatchContainer = () => {
           </div>
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button>Reset</Button>
+            <Button onClick={onResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>
@@ -765,6 +813,41 @@ const DispatchContainer = () => {
 
     );
 
+    const handleResetClick=()=>{
+      console.log('reset clicked')
+     setFormData(
+        {
+          "balance": editingRow.balance,
+          "bankTransfer": editingRow.bankTransfer,
+          "cash": editingRow.cash,
+          "commisionRate": editingRow.commisionRate,
+          "commisionTotal": editingRow.commisionTotal,
+          "deliveryLocation": editingRow.deliveryLocation,
+          "deliveryNumber": editingRow.deliveryNumber,
+          "diesel": editingRow.diesel,
+          "grDate": editingRow.grDate,
+          "grNumber": editingRow.grNumber,
+          "invoiceProof": editingRow.invoiceProof,
+          "loadLocation": editingRow.loadLocation,
+          "materialType": editingRow.materialType,
+          "ownerId": editingRow.ownerId,
+          "ownerName": editingRow.ownerName,
+          "ownerPhone": editingRow.ownerPhone,
+          "quantityInMetricTons": editingRow.quantityInMetricTons,
+          "rate": editingRow.rate,
+          "totalExpense": editingRow.totalExpense,
+          "vehicleBank": editingRow.vehicleBank,
+          "vehicleId": editingRow.vehicleId,
+          "vehicleNumber": editingRow.vehicleNumber,
+          "vehicleType": editingRow.vehicleType,
+          "isMarketRate": editingRow.isMarketRate,
+          "marketRate": editingRow.marketRate,
+          "hubId": selectedHubId,
+          "shortage": editingRow.shortage,
+        }
+  
+      );
+    }
     const handleChange = (name, value) => {
       if (name === "isMarketRate") {
         if (!value) {
@@ -1291,7 +1374,7 @@ const DispatchContainer = () => {
             </div>
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button>Reset</Button>
+            <Button onClick={handleResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>

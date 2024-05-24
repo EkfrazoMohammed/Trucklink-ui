@@ -120,6 +120,7 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
     localStorage.setItem("selectedHubName", value);
     localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
+    window.location.reload();
   };
 
 

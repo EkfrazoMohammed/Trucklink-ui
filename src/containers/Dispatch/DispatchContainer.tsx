@@ -79,7 +79,7 @@ const DispatchContainer = ({onData}) =>{
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
 
-     <div className='flex gap-2 items-center'>
+     {/* <div className='flex gap-2 items-center'>
           <Search
             placeholder="Search by Vehicle Number"
             size='large'
@@ -110,9 +110,9 @@ const DispatchContainer = ({onData}) =>{
             ]}
             onChange={(value) => handleChange('vehicleType', value)}
           />
-        </div>  
+        </div>   */}
         <div className='flex gap-2 justify-end'>
-         <Upload>
+         {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload>
           <Upload>
@@ -120,7 +120,7 @@ const DispatchContainer = ({onData}) =>{
           </Upload>
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
-          </Upload>
+          </Upload> */}
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -132,7 +132,7 @@ const DispatchContainer = ({onData}) =>{
     const selectedHubId = localStorage.getItem("selectedHubID");
     const [formData, setFormData] = useState(
       {
-        "balance": '',
+        "balance": 0,
         "bankTransfer": null,
         "cash": null,
         "commisionRate": '',
@@ -157,6 +157,7 @@ const DispatchContainer = ({onData}) =>{
         "vehicleType": null,
         "isMarketRate": false,
         "marketRate": 0,
+        "shortage": 0,
         "hubId": ''
       }
 
@@ -168,7 +169,7 @@ const DispatchContainer = ({onData}) =>{
       console.log('reset clicked')
       setFormData(
         {
-          "balance": '',
+          "balance": 0,
           "bankTransfer": null,
           "cash": null,
           "commisionRate": '',
@@ -193,6 +194,7 @@ const DispatchContainer = ({onData}) =>{
           "vehicleType": null,
           "isMarketRate": false,
           "marketRate": 0,
+          "shortage":0,
           "hubId": ''
         }
   
@@ -338,7 +340,7 @@ const DispatchContainer = ({onData}) =>{
     };
     const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
 
-    const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+    const [selectedvehicleCommission, setselectedCommission] = useState(0); // State to store vehicle details
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
       try {
@@ -364,7 +366,7 @@ const DispatchContainer = ({onData}) =>{
           let commissionRate;
           if (formData.isMarketRate) {
             console.log('first')
-            commissionRate = formData.marketRate
+            commissionRate = 0
           } else {
             console.log('second')
             commissionRate = selectedVehicle.commission
@@ -411,10 +413,13 @@ const DispatchContainer = ({onData}) =>{
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commisionRate = 0;
+        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
+        // commisionRate = 0;
+        
+        commisionRate = parseFloat(selectedvehicleCommission);
       } else {
         console.log("isMarketRate", formData.isMarketRate)
+        
         // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
         const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
         commissionTotal = commissionTotalInPercentage / 100;
@@ -423,7 +428,8 @@ const DispatchContainer = ({onData}) =>{
       }
 
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) -(commissionTotal)- (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        // "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -517,6 +523,8 @@ const DispatchContainer = ({onData}) =>{
               </div>
             </div>
             <div className="flex flex-col gap-1">
+              {/* {JSON.stringify(selectedvehicleCommission, null,2)}
+                {JSON.stringify(data, null,2)} */}
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
 
@@ -823,6 +831,8 @@ const DispatchContainer = ({onData}) =>{
       }
 
     );
+    const [a,setA]=useState(null)
+
 
     const handleResetClick=()=>{
       console.log('reset clicked')
@@ -866,7 +876,7 @@ const DispatchContainer = ({onData}) =>{
             ...prevFormData,
             [name]: value,
             isMarketRate: false,
-            commission: selectedvehicleCommission,
+            commission: editingRow.commisionRate,
           }));
         } else {
           setFormData((prevFormData) => ({
@@ -992,7 +1002,7 @@ const DispatchContainer = ({onData}) =>{
     };
     const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
 
-    const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
+    const [selectedvehicleCommission, setselectedCommission] = useState(0); // State to store vehicle details
 
     const fetchSelectedVehicleDetails = async (vehicleId) => {
       try {
@@ -1017,7 +1027,7 @@ const DispatchContainer = ({onData}) =>{
 
           let commissionRate;
           if (formData.isMarketRate) {
-            commissionRate = formData.marketRate
+            commissionRate = 0
           } else {
             commissionRate = selectedVehicle.commission
 
@@ -1046,6 +1056,9 @@ const DispatchContainer = ({onData}) =>{
     useEffect(() => {
       fetchSelectedVehicleDetails(selectedvehicleId)
     }, [formData.vehicleNumber, selectedvehicleId])
+    useEffect(() => {
+      fetchSelectedVehicleDetails(editingRow.vehicleId)
+    }, [formData.isMarketRate])
     // Fetch materials on component mount
     useEffect(() => {
       fetchMaterials();
@@ -1062,7 +1075,7 @@ const DispatchContainer = ({onData}) =>{
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
         commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
@@ -1074,7 +1087,7 @@ const DispatchContainer = ({onData}) =>{
       }
 
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        "balance": ((parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) -(commissionTotal)- (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage))),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -1090,7 +1103,7 @@ const DispatchContainer = ({onData}) =>{
         "ownerPhone": formData.ownerPhone,
         "quantityInMetricTons": formData.quantityInMetricTons,
         "rate": formData.rate,
-        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
         "vehicleBank": formData.vehicleBank,
         "vehicleId": formData.vehicleId,
         "vehicleNumber": formData.vehicleNumber,
@@ -1102,12 +1115,15 @@ const DispatchContainer = ({onData}) =>{
         "hubId": selectedHubId,
         "shortage": formData.shortage,
       }
+
+      setA(payload)
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${authToken}`
         }
       }
+      
       API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
         .then((response) => {
           console.log('Challan updated successfully:', response.data);
@@ -1163,6 +1179,8 @@ const DispatchContainer = ({onData}) =>{
               </div>
             </div>
             <div className="flex flex-col gap-1">
+            {/* {JSON.stringify(selectedvehicleCommission, null,2)}
+              {JSON.stringify(a, null,2)} */}
 
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>

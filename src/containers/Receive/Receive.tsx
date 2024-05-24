@@ -228,15 +228,26 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 title: 'Commission',
                 width: 180,
                 render: (_, record) => {
+                    console.log(record)
                   return (
                     <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
-
-                    <p>
-                      {record.commisionRate == null || record.commisionRate == 0 ?<>-</>:<> {`${record.commisionRate} %`}</>}
-                    </p>
+                      
+                        {record.isMarketRate ?   <>
+                        <p>-</p>
                     <p>
                       {`${record.commisionTotal}`}
                     </p>
+                        </>
+                        :
+                        <><p>  
+                      {record.commisionRate == null || record.commisionRate == 0 ?<>-</>:<> {`${record.commisionRate} %`}</>}
+                    </p>
+                    <p>
+                      -
+                    </p>
+                        </>
+                    }
+                    
                     </div>
                   );
                 }
@@ -276,9 +287,9 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 render: (_,record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {(record.balance).toFixed(2)}</span>
+                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {(record.balance)}</span>
                         :
-                        <span style={{color:"red"}}>{(record.balance).toFixed(2)}</span>
+                        <span style={{color:"red"}}>{(record.balance)}</span>
                         
                     }
                     </p>
@@ -628,7 +639,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
         commisionRate=0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
@@ -640,7 +651,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
       }
 
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (commissionTotal) -(parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,
@@ -980,7 +991,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         <>
             {showTable ? (
           <>
-                <DispatchChallanComponent />
+                {/* <DispatchChallanComponent /> */}
                 <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} />
             </>
             ):(

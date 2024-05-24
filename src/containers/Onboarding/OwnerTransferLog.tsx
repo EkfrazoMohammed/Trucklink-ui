@@ -173,7 +173,7 @@ const OwnerTransferLog = () => {
   return (
     <>
 
-      <TransferLogHeader />
+      {/* <TransferLogHeader /> */}
       <TransferLogTable transferData={transferData} />
 
     </>

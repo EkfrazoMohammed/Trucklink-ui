@@ -20,7 +20,6 @@ const ReceiveContainer = ({onData}) => {
     }
   ];
   const [activeTabKey, setActiveTabKey] = useState('1');
-
   useEffect(() => {
     const savedTabKey = localStorage.getItem('activeTabKey');
     if (savedTabKey) {
@@ -36,10 +35,9 @@ const ReceiveContainer = ({onData}) => {
     <>
     
     <div className={showTabs ? '' : 'receive-tabs-hidden'}>
-        <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
+        <Tabs  activeKey={activeTabKey} items={items} onChange={handleTabChange} />
       </div>
 
-      {/* <Tabs defaultActiveKey="1" items={items} /> */}
     </>
   );
 };

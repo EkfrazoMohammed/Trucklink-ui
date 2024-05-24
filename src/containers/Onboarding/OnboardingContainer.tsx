@@ -119,7 +119,9 @@ const OnboardingContainer = ({onData}) => {
           "Authorization":`Bearer ${authToken}`
         }
       }
-      try {
+      try { 
+        const dispatcher =API.get(`/get-challan-data/${rowData._id}`,headersOb)
+        console.log(dispatcher)
        let res= API.get(`get-owner-details/${rowData._id}`,headersOb)
           .then((res)=>{
             console.log(res.data.ownerDetails)
@@ -195,7 +197,7 @@ const OnboardingContainer = ({onData}) => {
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
     return (
       <div className='flex gap-2 justify-between  py-3'>
-        <Search placeholder="Search by Owner Name / Truck no" size='large' onSearch={handleSearch} onChange={onChangeSearch} style={{ width: 320 }} />
+        <Search placeholder="Search by Owner Name" size='large' onSearch={handleSearch} onChange={onChangeSearch} style={{ width: 320 }} />
         <div className='flex gap-2'>
           <Upload>
             <Button icon={<UploadOutlined />}></Button>
@@ -211,16 +213,72 @@ const OnboardingContainer = ({onData}) => {
 
 
   const ViewOwnerDataRow = ({ rowData }) => {
+    const [dispatchDetails,setDispatchDetails]=useState(null);
 
+    const getDispatchDetails = () => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":`Bearer ${authToken}`
+        }
+      }
+      try { 
+        const dispatcher =API.get(`/get-challan-data/${rowData._id}`,headersOb)
+        .then(res=>{
+          if(res.status==201){
+            // console.log(res.data.dispatchData)
+            setDispatchDetails(res.data.dispatchData)
+          }else{
+            console.log('error')
+          }
+        })
+        .catch(err=>{
+          console.log(err)
+        }) 
+       
+    }catch(err) {
+      console.log(err)
+    }}
+    useEffect(()=>{
+
+      getDispatchDetails()
+    },[])
+    
+    const aggregateDispatchData = (data) => {
+      if (!data) return {};
+      const aggregatedData = {};
+  
+      data.forEach((dispatch) => {
+        const { vehicleNumber, createdAt } = dispatch;
+        if (!aggregatedData[vehicleNumber]) {
+          aggregatedData[vehicleNumber] = {
+            totalTrips: 0,
+            lastTrip: null
+          };
+        }
+  
+        aggregatedData[vehicleNumber].totalTrips += 1;
+        if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
+          aggregatedData[vehicleNumber].lastTrip = createdAt;
+        }
+      });
+  
+      return aggregatedData;
+    };
+  
+    const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
+  
     const goBack = () => {
       setShowOwnerTable(true) 
       setShowTabs(true);
+      onData('flex')
     }
     return (
       <div className="owner-details">
         <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
+        
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
             <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
@@ -237,31 +295,68 @@ const OnboardingContainer = ({onData}) => {
             <div key={index}>
               <h3>Bank Account {index + 1}</h3>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code:</span> {account.ifscCode}</p> </Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name:</span> {account.bankName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name:</span> {account.branchName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number:</span> {account.accountNumber}</p> </Col>
-                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name:</span> {account.accountHolderName}</p> </Col>
+                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code</span> {account.ifscCode}</p> </Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name</span> {account.bankName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name</span> {account.branchName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number</span> {account.accountNumber}</p> </Col>
+                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
               </Row>
             </div>
           ))}
         </div>
-        <div className="section mx-2 my-4">
+        {/* <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Details</h2>
           {rowData.vehicleIds.map((vehicle, index) => (
             <div key={index}>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row m-1 flex items-center gap-2" span={5}>
-                  <p>{index}</p>
+                  <p>{index + 1}</p>
                    <p className='flex flex-col font-normal m-2'>
-                    <span className="label text-sm">Vehicle No:</span>
+                    <span className="label text-sm">Vehicle No</span>
+                     {vehicle.registrationNumber}
+                     </p>
+
+                     <p className='flex flex-col font-normal m-2'>
+                    <span className="label text-sm">Total trips</span>
+                     {vehicle.registrationNumber}
+                     </p>
+                     <p className='flex flex-col font-normal m-2'>
+                    <span className="label text-sm">Last trip</span>
                      {vehicle.registrationNumber}
                      </p>
                 </Col>
               </Row>
             </div>
           ))}
-        </div>
+        </div> */}
+        <div className="section mx-2 my-4">
+        <h2 className="font-semibold text-md">Vehicle Details</h2>
+        {rowData.vehicleIds.map((vehicle, index) => {
+          const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: 'N/A', lastTrip: 'N/A' };
+
+          return (
+            <div key={index}>
+              <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
+                <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
+                  <p>{index + 1}</p>
+                  <p className="flex flex-col w-100 font-normal m-2">
+                    <span className="label text-sm">Vehicle No</span>
+                    {vehicle.registrationNumber}
+                  </p>
+                  <p className="flex flex-col w-100 font-normal m-2">
+                    <span className="label text-sm">Total trips</span>
+                    {dispatchData.totalTrips}
+                  </p>
+                  <p className="flex flex-col  w-100 font-normal m-2">
+                    <span className="label text-sm">Last trip</span>
+                    {dispatchData.lastTrip}
+                  </p>
+                </Col>
+              </Row>
+            </div>
+          );
+        })}
+      </div>
       </div>
     );
   };
@@ -942,7 +1037,7 @@ const OnboardingContainer = ({onData}) => {
 
  
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
   useEffect(() => {
     getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
   }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
@@ -972,6 +1067,9 @@ const OnboardingContainer = ({onData}) => {
         dataIndex: 'name',
         key: 'name',
         width: "auto",
+        render: (_, record) => {
+          return record.name.charAt(0).toUpperCase() + record.name.slice(1)
+        }
       },
       {
         title: 'District',
@@ -1028,7 +1126,7 @@ const OnboardingContainer = ({onData}) => {
     };
     const handlePageSizeChange = async (pageNumber) => {
      
-      setCurrentPageSize(1);
+      setCurrentPageSize(pageNumber);
       setCurrentPage(pageNumber); // Reset to first page
       // Call your data fetching function here if needed
       try {
@@ -1057,6 +1155,37 @@ const OnboardingContainer = ({onData}) => {
     }
     return (
       <>
+      <div style={{ textAlign: 'right', margin: '10px' }}>
+        {renderPaginationButtons()}
+        <Button
+  onClick={() => handlePageSizeChange(10)}
+  // type={currentPageSize === 10 ? 'primary' : 'default'}
+  style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff',color: currentPageSize === 10 ? '#fff' : '#000' }}
+>
+  10
+</Button>
+
+        <Button
+          onClick={() => handlePageSizeChange(25)}
+          // type={currentPageSize === 20 ? 'primary' : 'default'}
+          style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff',color: currentPageSize === 25 ? '#fff' : '#000' }}
+        >
+          20
+        </Button>
+        <Button
+          onClick={() => handlePageSizeChange(50)}
+          style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff',color: currentPageSize === 50 ? '#fff' : '#000' }}
+        >
+          50
+        </Button>
+
+        <Button
+          onClick={() => handlePageSizeChange(100)}
+          style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff',color: currentPageSize === 100 ? '#fff' : '#000' }}
+        >
+          100
+        </Button>
+      </div>
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -1068,46 +1197,12 @@ const OnboardingContainer = ({onData}) => {
             current: currentPage,
             total: totalOwnerData,
             defaultPageSize: currentPageSize,
-            showSizeChanger: true,
+            showSizeChanger: false,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
         /> 
-{/* <Table
-        rowSelection={{}}
-        columns={columns}
-        dataSource={filteredOwnerData}
-        scroll={{ x: 800, y: 310 }}
-        rowKey="_id"
-        pagination={{
-          position: ['bottomCenter'],
-          current: currentPage,
-          total: totalOwnerData,
-          defaultPageSize: currentPageSize,
-          showSizeChanger: false,
-        }}
-      />
-      <div style={{ textAlign: 'center', margin: '20px 0' }}>
-        {renderPaginationButtons()}
-        <Button
-          onClick={() => handlePageSizeChange(10)}
-          type={currentPageSize === 10 ? 'primary' : 'default'}
-        >
-          10
-        </Button>
-        <Button
-          onClick={() => handlePageSizeChange(20)}
-          type={currentPageSize === 20 ? 'primary' : 'default'}
-        >
-          20
-        </Button>
-        <Button
-          onClick={() => handlePageSizeChange(50)}
-          type={currentPageSize === 50 ? 'primary' : 'default'}
-        >
-          50
-        </Button>
-      </div> */}
+ 
       </>
     );
   };

@@ -214,6 +214,7 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
       isCommission: true,
       marketRate: '',
       isMarketRate: false,
+      hubId:selectedHubId,
     });
 
     const onResetClick = () => {
@@ -230,9 +231,11 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         isMarketRate: false,
       });
     }
+    const [fileName,setFileName] = useState("");
     const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
+    
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -248,6 +251,7 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
           formData,
           config
         );
+        setFileName(file.name)
         const { rcBookProof } = response.data;
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -331,7 +335,8 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         registrationNumber: formData.registrationNumber,
         truckType: formData.vehicleType,
         marketRate: formData.marketRate,
-        isMarketRate: formData.isMarketRate
+        isMarketRate: formData.isMarketRate,
+        hubId:selectedHubId,
       };
       const headersOb = {
         headers: {
@@ -458,8 +463,9 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
                     </Upload>
+                    {fileName}
                   </div>
                 </Col>
 
@@ -599,7 +605,7 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         title: 'Vehicle Number',
         dataIndex: 'registrationNumber',
         key: 'registrationNumber',
-        width: 80,
+        width: 60,
       },
       {
         title: 'Vehicle Type',
@@ -614,9 +620,9 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         title: 'RC Book',
         dataIndex: 'rcBookProof',
         key: 'rcBookProof',
-        width: 80,
+        width: 40,
         render: rcBookProof => (
-          rcBookProof ? <Image src={rcBookProof} alt="img" width={80} height={30} /> : null
+          rcBookProof ? <Image src={rcBookProof} alt="img" width={40} height={40} style={{objectFit:"cover",border:"1px solid #eee",margin:"0 auto"}} /> : null
         )
       },
       {
@@ -699,6 +705,7 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
       phoneNumber: "",
       ownerTransferDate: "",
       ownerTransferToDate: "",
+      hubId:selectedHubId
     });
 
     const handleResetClick = () =>{
@@ -716,6 +723,7 @@ setFormData({
 });
     }
     const filteredOptions = filteredOwnerData.filter(owner => owner._id !== rowDataForTruckTransfer.ownerId[0]._id);
+    const [fileName,setFileName] = useState("");
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
@@ -732,6 +740,7 @@ setFormData({
           config
         );
         const { rcBookProof } = response.data;
+        setFileName(file.name)
         setFormData((prevFormData) => ({
           ...prevFormData,
           rcBookProof: rcBookProof,
@@ -815,16 +824,15 @@ setFormData({
           "Authorization": `Bearer ${authToken}`
         }
       }
-      API.put(url, formData, headersOb)
-        .then((response) => {
-          console.log('Truck transfered successfully:', response.data);
+     const res= API.put(url, formData, headersOb)
+     if(res.status==201){
+          console.log('Truck transfered successfully:', res.data);
           alert("Owner Transfered successfully")
           window.location.reload();
-        })
-        .catch((error) => {
-          console.error('Error adding truck data:', error);
+    }else{
+          console.error('Error adding truck data:', res);
           alert("error occurred")
-        });
+        };
     };
     const goBack = () => {
       setShowTruckTable(true)
@@ -917,8 +925,8 @@ setFormData({
                     onChange={onDateChangeTransferToDate}
                   />
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
-                  <div className='flex items-center  gap-4'>
+                <Col className="gutter-row mt-6" span={8}>
+                  <div className='flex items-center gap-4'>
                     RC Book* : {' '}
                     <Upload
                       name="rcBook"
@@ -926,10 +934,12 @@ setFormData({
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "170px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
                     </Upload>
+                    {fileName}
                   </div>
                 </Col>
+               
 
 
               </Row>
@@ -1101,7 +1111,8 @@ setFormData({
         registrationNumber: formData.registrationNumber,
         truckType: formData.vehicleType,
         marketRate: formData.marketRate,
-        isMarketRate: formData.isMarketRate
+        isMarketRate: formData.isMarketRate,
+     
       };
       const vehicleId = filterTruckTableData._id;
       const oldOwnerId = filterTruckTableData.ownerId[0]._id;
@@ -1113,15 +1124,17 @@ setFormData({
         }
       }
 
-      API.put(url, payload, headersOb)
-        .then((response) => {
-          alert("Truck data updated successfully");
+      localStorage.setItem("pay", JSON.stringify(payload))
+      
+      const res=API.put(url, payload, headersOb)
+      if(res.statusCode === 201) {
+       alert("Truck data updated successfully");
           window.location.reload();
-        })
-        .catch((error) => {
-          console.error('Error updating truck data:', error);
+        }else{
+          
+          console.error('Error updating truck data:', res);
           alert("An error occurred while updating truck data");
-        });
+        }
     };
 
     const goBack = () => {

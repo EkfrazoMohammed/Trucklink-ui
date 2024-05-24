@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col,notification, Row, Pagination } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -21,7 +21,7 @@ const onSearch = (value: string) => {
 const filterOption = (input: string, option?: { label: string; value: string }) =>
   (option?.value ?? '').toLowerCase().includes(input.toLowerCase());
 
-const OnboardingContainer = ({onData}) => {
+const OnboardingContainer = ({ onData }) => {
   const [activeTabKey, setActiveTabKey] = useState('1');
 
   useEffect(() => {
@@ -39,12 +39,12 @@ const OnboardingContainer = ({onData}) => {
 
   const selectedHubId = localStorage.getItem("selectedHubID");
   const selectedHubName = localStorage.getItem("selectedHubName");
-  const authToken=localStorage.getItem("token");
+  const authToken = localStorage.getItem("token");
   const [showOwnerTable, setShowOwnerTable] = useState(true);
   const [rowDataForEdit, setRowDataForEdit] = useState(null);
   const [rowDataForView, setRowDataForView] = useState(null);
 
-  
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
@@ -68,15 +68,15 @@ const OnboardingContainer = ({onData}) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
-        "Authorization":`Bearer ${authToken}`
+        "Authorization": `Bearer ${authToken}`
       }
     }
     try {
       const pages = page;
       const limitData = 600;
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
-        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,headersOb)
+      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
+        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
         ownerDetails = response.data.ownerDetails
@@ -116,14 +116,14 @@ const OnboardingContainer = ({onData}) => {
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      try { 
-        const dispatcher =API.get(`/get-challan-data/${rowData._id}`,headersOb)
+      try {
+        const dispatcher = API.get(`/get-challan-data/${rowData._id}`, headersOb)
         console.log(dispatcher)
-       let res= API.get(`get-owner-details/${rowData._id}`,headersOb)
-          .then((res)=>{
+        let res = API.get(`get-owner-details/${rowData._id}`, headersOb)
+          .then((res) => {
             console.log(res.data.ownerDetails)
             setRowDataForEdit(res.data.ownerDetails[0]);
             setRowDataForView(res.data.ownerDetails[0]);
@@ -134,28 +134,28 @@ const OnboardingContainer = ({onData}) => {
           }).catch((err) => {
             console.log(err)
           }
-        )
-      }catch(err) {
+          )
+      } catch (err) {
         console.log(err)
-        
-      setRowDataForEdit(rowData);
-      setRowDataForView(rowData);
-      setShowOwnerTable(true);
-      setShowEditForm(true)
-      setShowTabs(true); // Set showTabs to true when not - viewing owner
-      onData("none");
-  
+
+        setRowDataForEdit(rowData);
+        setRowDataForView(rowData);
+        setShowOwnerTable(true);
+        setShowEditForm(true)
+        setShowTabs(true); // Set showTabs to true when not - viewing owner
+        onData("none");
+
       }
-  
+
     };
     const handleDeleteClick = async (rowData) => {
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      const response = await API.delete(`delete-owner-details/${rowData._id}`,headersOb);
+      const response = await API.delete(`delete-owner-details/${rowData._id}`, headersOb);
       console.log(response)
       if (response.status === 201) {
         alert("deleted data")
@@ -165,13 +165,13 @@ const OnboardingContainer = ({onData}) => {
       } else {
         alert(`unable to delete data`)
         console.log(response.data)
-  
+
       }
     }
     return (
       <>
 
-       {contextHolder}
+        {contextHolder}
         <div className="mytab-content">
           {showOwnerTable ? (
             <>
@@ -213,41 +213,42 @@ const OnboardingContainer = ({onData}) => {
 
 
   const ViewOwnerDataRow = ({ rowData }) => {
-    const [dispatchDetails,setDispatchDetails]=useState(null);
+    const [dispatchDetails, setDispatchDetails] = useState(null);
 
     const getDispatchDetails = () => {
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      try { 
-        const dispatcher =API.get(`/get-challan-data/${rowData._id}`,headersOb)
-        .then(res=>{
-          if(res.status==201){
-            // console.log(res.data.dispatchData)
-            setDispatchDetails(res.data.dispatchData)
-          }else{
-            console.log('error')
-          }
-        })
-        .catch(err=>{
-          console.log(err)
-        }) 
-       
-    }catch(err) {
-      console.log(err)
-    }}
-    useEffect(()=>{
+      try {
+        const dispatcher = API.get(`/get-challan-data/${rowData._id}`, headersOb)
+          .then(res => {
+            if (res.status == 201) {
+              // console.log(res.data.dispatchData)
+              setDispatchDetails(res.data.dispatchData)
+            } else {
+              console.log('error')
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+
+      } catch (err) {
+        console.log(err)
+      }
+    }
+    useEffect(() => {
 
       getDispatchDetails()
-    },[])
-    
+    }, [])
+
     const aggregateDispatchData = (data) => {
       if (!data) return {};
       const aggregatedData = {};
-  
+
       data.forEach((dispatch) => {
         const { vehicleNumber, createdAt } = dispatch;
         if (!aggregatedData[vehicleNumber]) {
@@ -256,20 +257,20 @@ const OnboardingContainer = ({onData}) => {
             lastTrip: null
           };
         }
-  
+
         aggregatedData[vehicleNumber].totalTrips += 1;
         if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
           aggregatedData[vehicleNumber].lastTrip = createdAt;
         }
       });
-  
+
       return aggregatedData;
     };
-  
+
     const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
-  
+
     const goBack = () => {
-      setShowOwnerTable(true) 
+      setShowOwnerTable(true)
       setShowTabs(true);
       onData('flex')
     }
@@ -278,7 +279,7 @@ const OnboardingContainer = ({onData}) => {
         <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
-        
+
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
             <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
@@ -330,33 +331,33 @@ const OnboardingContainer = ({onData}) => {
           ))}
         </div> */}
         <div className="section mx-2 my-4">
-        <h2 className="font-semibold text-md">Vehicle Details</h2>
-        {rowData.vehicleIds.map((vehicle, index) => {
-          const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: 'N/A', lastTrip: 'N/A' };
+          <h2 className="font-semibold text-md">Vehicle Details</h2>
+          {rowData.vehicleIds.map((vehicle, index) => {
+            const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: 'N/A', lastTrip: 'N/A' };
 
-          return (
-            <div key={index}>
-              <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
-                <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
-                  <p>{index + 1}</p>
-                  <p className="flex flex-col w-100 font-normal m-2">
-                    <span className="label text-sm">Vehicle No</span>
-                    {vehicle.registrationNumber}
-                  </p>
-                  <p className="flex flex-col w-100 font-normal m-2">
-                    <span className="label text-sm">Total trips</span>
-                    {dispatchData.totalTrips}
-                  </p>
-                  <p className="flex flex-col  w-100 font-normal m-2">
-                    <span className="label text-sm">Last trip</span>
-                    {dispatchData.lastTrip}
-                  </p>
-                </Col>
-              </Row>
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <div key={index}>
+                <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
+                  <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
+                    <p>{index + 1}</p>
+                    <p className="flex flex-col w-100 font-normal m-2">
+                      <span className="label text-sm">Vehicle No</span>
+                      {vehicle.registrationNumber}
+                    </p>
+                    <p className="flex flex-col w-100 font-normal m-2">
+                      <span className="label text-sm">Total trips</span>
+                      {dispatchData.totalTrips}
+                    </p>
+                    <p className="flex flex-col  w-100 font-normal m-2">
+                      <span className="label text-sm">Last trip</span>
+                      {dispatchData.lastTrip}
+                    </p>
+                  </Col>
+                </Row>
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -381,7 +382,7 @@ const OnboardingContainer = ({onData}) => {
       }))
     });
 
-    
+
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
       const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
@@ -485,8 +486,8 @@ const OnboardingContainer = ({onData}) => {
       }
     };
 
-    const handleResetButtonClick=()=>{
-      
+    const handleResetButtonClick = () => {
+
       setFormData({
         name: '',
         email: '',
@@ -526,16 +527,18 @@ const OnboardingContainer = ({onData}) => {
           ifscCode: bankAccount.ifscCode,
           bankName: bankAccount.bankName,
           branchName: bankAccount.branchName,
+          hubId: selectedHubId
         })),
       };
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      const postData = async () => {
 
+      localStorage.setItem("prod-owner", JSON.stringify(payload))
+      const postData = async () => {
         await API.post("create-owner", payload, headersOb)
           .then((response) => {
             console.log(response)
@@ -551,7 +554,7 @@ const OnboardingContainer = ({onData}) => {
           .catch((error) => {
             // Log any errors that occur during the dispatch process
             console.error('Error adding owner data:', error);
-            let errorMessage=error.response.data.message;
+            let errorMessage = error.response.data.message;
             notification.error({
               message: "error occurred",
               description: `${errorMessage}`,
@@ -569,7 +572,7 @@ const OnboardingContainer = ({onData}) => {
       }
 
     };
-    
+
     const goBack = () => {
       setShowOwnerTable(true)
       localStorage.setItem("displayHeader", "flex");
@@ -606,7 +609,7 @@ const OnboardingContainer = ({onData}) => {
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} value={formData.name}/></div>
+                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} value={formData.name} /></div>
                 </Col>
                 <Col className="gutter-row mt-6" span={12}>
                   <div ><Input type='number' placeholder="Mobile Number*" size="large" name="phoneNumber" value={formData.phoneNumber} onChange={handleOwnerFormChange} /></div>
@@ -860,11 +863,12 @@ const OnboardingContainer = ({onData}) => {
         address: selectedHubName,
         district: formData.district,
         state: formData.state,
+        
       };
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
       const postData = async () => {
@@ -1035,7 +1039,7 @@ const OnboardingContainer = ({onData}) => {
     );
   };
 
- 
+
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
   useEffect(() => {
@@ -1125,12 +1129,12 @@ const OnboardingContainer = ({onData}) => {
       }
     };
     const handlePageSizeChange = async (pageNumber) => {
-     
+
       setCurrentPageSize(pageNumber);
       setCurrentPage(pageNumber); // Reset to first page
       // Call your data fetching function here if needed
       try {
-      const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
         setFilteredOwnerData(newData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -1140,7 +1144,7 @@ const OnboardingContainer = ({onData}) => {
     const renderPaginationButtons = () => {
       const totalPages = Math.ceil(totalOwnerData / currentPageSize);
       let buttons = [];
-  
+
       for (let i = 1; i <= totalPages; i++) {
         buttons.push(
           <Button
@@ -1155,37 +1159,7 @@ const OnboardingContainer = ({onData}) => {
     }
     return (
       <>
-      <div style={{ textAlign: 'right', margin: '10px' }}>
-        {renderPaginationButtons()}
-        <Button
-  onClick={() => handlePageSizeChange(10)}
-  // type={currentPageSize === 10 ? 'primary' : 'default'}
-  style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff',color: currentPageSize === 10 ? '#fff' : '#000' }}
->
-  10
-</Button>
-
-        <Button
-          onClick={() => handlePageSizeChange(25)}
-          // type={currentPageSize === 20 ? 'primary' : 'default'}
-          style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff',color: currentPageSize === 25 ? '#fff' : '#000' }}
-        >
-          20
-        </Button>
-        <Button
-          onClick={() => handlePageSizeChange(50)}
-          style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff',color: currentPageSize === 50 ? '#fff' : '#000' }}
-        >
-          50
-        </Button>
-
-        <Button
-          onClick={() => handlePageSizeChange(100)}
-          style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff',color: currentPageSize === 100 ? '#fff' : '#000' }}
-        >
-          100
-        </Button>
-      </div>
+        
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -1197,19 +1171,47 @@ const OnboardingContainer = ({onData}) => {
             current: currentPage,
             total: totalOwnerData,
             defaultPageSize: currentPageSize,
-            showSizeChanger: false,
+            showSizeChanger: true,
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
-        /> 
- 
+        />
+
       </>
     );
   };
+{/* <div style={{ textAlign: 'right', margin: '10px' }}>
+          {renderPaginationButtons()}
+          <Button
+            onClick={() => handlePageSizeChange(10)}
+            style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
+          >
+            10
+          </Button>
 
+          <Button
+            onClick={() => handlePageSizeChange(25)}
+            style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
+          >
+            20
+          </Button>
+          <Button
+            onClick={() => handlePageSizeChange(50)}
+            style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
+          >
+            50
+          </Button>
+
+          <Button
+            onClick={() => handlePageSizeChange(100)}
+            style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
+          >
+            100
+          </Button>
+        </div> */}
 
   const [showTabs, setShowTabs] = useState(true);
-  
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -1219,7 +1221,7 @@ const OnboardingContainer = ({onData}) => {
     {
       key: '2',
       label: 'Truck Master',
-      children: <TruckMaster onData={onData} showTabs={showTabs} setShowTabs={setShowTabs}/>,
+      children: <TruckMaster onData={onData} showTabs={showTabs} setShowTabs={setShowTabs} />,
     },
     {
       key: '3',
@@ -1237,10 +1239,10 @@ const OnboardingContainer = ({onData}) => {
       children: <OwnerActivityLog />,
     }
   ];
-  
+
   return (
     <>
-  
+
       <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
         <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
       </div>

@@ -344,3 +344,7 @@ align-items: center;
 .receive-tabs-hidden .ant-tabs-nav {
   display: none !important;
 }
+:where(.css-11xg00t).ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #000 !important;
+  text-shadow: 0 0 0.25px currentcolor;
+}

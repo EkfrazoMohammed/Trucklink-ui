@@ -1562,7 +1562,7 @@ const DispatchContainer = ({onData}) =>{
         fixed: 'right',
         render: (record: unknown) => (
           <Space size="middle">
-            <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
+            {/* <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip> */}
             <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>
         ),

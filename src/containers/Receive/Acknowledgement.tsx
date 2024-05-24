@@ -233,7 +233,7 @@ const Acknowledgement = ({onData,showTabs,setShowTabs}) => {
                 title: 'Total',
                 width: 110,
                 render: (_,record) => {
-                    return record.quantityInMetricTons * record.rate
+                    return (record.quantityInMetricTons * record.rate).toFixed(2);
                 }
             },
             {

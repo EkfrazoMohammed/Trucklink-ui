@@ -413,8 +413,9 @@ const DispatchContainer = ({onData}) =>{
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
+        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
         // commisionRate = 0;
+        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
         
         commisionRate = parseFloat(selectedvehicleCommission);
       } else {
@@ -1075,7 +1076,9 @@ const DispatchContainer = ({onData}) =>{
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+      
         commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)

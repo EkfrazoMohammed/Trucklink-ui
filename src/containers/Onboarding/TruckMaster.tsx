@@ -75,9 +75,8 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
     const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      setTimeout(() => {
         window.location.reload()
-      }, 1000)
+     
     } else {
       alert(`unable to delete data`)
       console.log(response.data)
@@ -608,6 +607,16 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         width: 60,
       },
       {
+        title: 'Owner Name',
+        dataIndex: 'name',
+        key: 'name',
+        width: 60,
+        render:(_,record)=>{
+        
+          return record?.ownerId[0]?.name.charAt(0).toUpperCase() + record?.ownerId[0]?.name.slice(1)
+        }
+      },
+      {
         title: 'Vehicle Type',
         dataIndex: 'truckType',
         key: 'truckType',
@@ -731,8 +740,9 @@ setFormData({
         formData.append("file", file);
         const config = {
           headers: {
-            "content-type": "multipart/form-data",
-          },
+            "Content-Type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          }
         };
         const response = await API.post(
           `rc-upload`,
@@ -825,14 +835,20 @@ setFormData({
         }
       }
      const res= API.put(url, formData, headersOb)
-     if(res.status==201){
-          console.log('Truck transfered successfully:', res.data);
-          alert("Owner Transfered successfully")
-          window.location.reload();
-    }else{
-          console.error('Error adding truck data:', res);
-          alert("error occurred")
-        };
+     .then((res)=>{
+       if(res.status==201){
+            console.log('Truck transfered successfully:', res.data);
+            alert("Owner Transfered successfully")
+            window.location.reload();
+      }else{
+            console.error('Error adding truck data:', res);
+           
+       alert("error occurred")
+          }
+     }).catch(err=>{
+       console.log(err)
+       alert("error occurred")
+     })
     };
     const goBack = () => {
       setShowTruckTable(true)
@@ -986,10 +1002,13 @@ setFormData({
   };
 
   const EditTruckDataRow = ({ filterTruckTableData }) => {
+    const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}` ;
+    const initialOwnerId = `${filterTruckTableData.ownerId[0]._id}` ;
+
     const [formData, setFormData] = useState({
       registrationNumber: filterTruckTableData.registrationNumber,
       commission: filterTruckTableData.commission,
-      ownerId: '',
+      ownerId: initialOwnerId,
       accountId: null,
       vehicleType: filterTruckTableData.truckType,
       rcBookProof: null,
@@ -1003,7 +1022,8 @@ setFormData({
      setFormData({
         registrationNumber: filterTruckTableData.registrationNumber,
         commission: filterTruckTableData.commission,
-        ownerId: '',
+        // ownerId: '',
+        ownerId: initialOwnerId,
         accountId: null,
         vehicleType: filterTruckTableData.truckType,
         rcBookProof: null,
@@ -1100,20 +1120,20 @@ setFormData({
       }
     };
 
+    const payload = {
+      hubId: selectedHubId,
+      accountId: formData.accountId,
+      commission: formData.commission,
+      ownerId: formData.ownerId,
+      rcBookProof: formData.rcBookProof,
+      registrationNumber: formData.registrationNumber,
+      truckType: formData.vehicleType,
+      marketRate: formData.marketRate,
+      isMarketRate: formData.isMarketRate,
+   
+    };
     const handleSubmit = (e) => {
       e.preventDefault();
-      const payload = {
-        hubId: selectedHubId,
-        accountId: formData.accountId,
-        commission: formData.commission,
-        ownerId: formData.ownerId,
-        rcBookProof: formData.rcBookProof,
-        registrationNumber: formData.registrationNumber,
-        truckType: formData.vehicleType,
-        marketRate: formData.marketRate,
-        isMarketRate: formData.isMarketRate,
-     
-      };
       const vehicleId = filterTruckTableData._id;
       const oldOwnerId = filterTruckTableData.ownerId[0]._id;
       const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
@@ -1142,7 +1162,8 @@ setFormData({
       onData('flex')
       setShowTabs(true); // Set showTabs to false when adding owner
     }
-
+   
+   
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1173,6 +1194,7 @@ setFormData({
             </div>
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              
                 <Col className="gutter-row mt-6" span={8}>
                   <Input
                     placeholder="Vehicle Number*"
@@ -1197,7 +1219,6 @@ setFormData({
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
-
                   <Select
                     size='large'
                     placeholder="Owner Mobile Number"
@@ -1207,12 +1228,14 @@ setFormData({
                     showSearch
                     optionFilterProp="children"
                     filterOption={filterOption}
+                    value={formData.ownerId ==initialOwnerId ? initialOwnerData :formData.ownerId }
                   >
                     {filteredOwnerData.map((owner, index) => (
                       <Option key={index} value={owner._id}>
                         {`${owner.name} - ${owner.phoneNumber}`}
                       </Option>
                     ))}
+
                   </Select>
 
                 </Col>

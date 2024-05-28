@@ -207,6 +207,7 @@ const MasterData = () => {
             }
           }
         try {
+            localStorage.setItem("mat", JSON.stringify(payload));
             if(updatedMaterials.materialType !== "" && updatedMaterials.materialType !== null){
 
                 const response = await API.put(`update-material/${updatedMaterials._id}`,payload,headersOb);

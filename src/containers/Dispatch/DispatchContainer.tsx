@@ -1477,6 +1477,15 @@ const DispatchContainer = ({onData}) =>{
         key: 'vehicleNumber',
         width: 160,
       },
+      {
+        title: 'Owner Name',
+    
+        width: 110,
+        render: (_, record)=>{
+            return <p>{record.ownerName}</p>
+        }
+
+    },
       // {
       //   title: 'Owner Name',
       //   dataIndex: 'ownerName',
@@ -1565,7 +1574,7 @@ const DispatchContainer = ({onData}) =>{
         fixed: 'right',
         render: (record: unknown) => (
           <Space size="middle">
-            {/* <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip> */}
+            <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>
         ),

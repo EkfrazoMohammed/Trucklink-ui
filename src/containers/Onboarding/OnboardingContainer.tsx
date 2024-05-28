@@ -274,6 +274,25 @@ const OnboardingContainer = ({ onData }) => {
       setShowTabs(true);
       onData('flex')
     }
+
+    const LastTripComponent = ({ dispatchData }) => {
+      const isoDate = dispatchData;
+      const date = new Date(isoDate);
+      let formattedDate
+      if(isoDate == "-"){
+        formattedDate = `-`
+      }else{
+        formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`
+      }
+    
+      
+      return (
+        <p className="flex flex-col w-100 font-normal m-2">
+          <span className="label text-sm">Last trip</span>
+          {formattedDate}
+        </p>
+      );
+    };
     return (
       <div className="owner-details">
         <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
@@ -305,35 +324,11 @@ const OnboardingContainer = ({ onData }) => {
             </div>
           ))}
         </div>
-        {/* <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Vehicle Details</h2>
-          {rowData.vehicleIds.map((vehicle, index) => (
-            <div key={index}>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1 flex items-center gap-2" span={5}>
-                  <p>{index + 1}</p>
-                   <p className='flex flex-col font-normal m-2'>
-                    <span className="label text-sm">Vehicle No</span>
-                     {vehicle.registrationNumber}
-                     </p>
-
-                     <p className='flex flex-col font-normal m-2'>
-                    <span className="label text-sm">Total trips</span>
-                     {vehicle.registrationNumber}
-                     </p>
-                     <p className='flex flex-col font-normal m-2'>
-                    <span className="label text-sm">Last trip</span>
-                     {vehicle.registrationNumber}
-                     </p>
-                </Col>
-              </Row>
-            </div>
-          ))}
-        </div> */}
+   
         <div className="section mx-2 my-4">
           <h2 className="font-semibold text-md">Vehicle Details</h2>
           {rowData.vehicleIds.map((vehicle, index) => {
-            const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: 'N/A', lastTrip: 'N/A' };
+            const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: '-', lastTrip: '-' };
 
             return (
               <div key={index}>
@@ -348,10 +343,8 @@ const OnboardingContainer = ({ onData }) => {
                       <span className="label text-sm">Total trips</span>
                       {dispatchData.totalTrips}
                     </p>
-                    <p className="flex flex-col  w-100 font-normal m-2">
-                      <span className="label text-sm">Last trip</span>
-                      {dispatchData.lastTrip}
-                    </p>
+                    
+                    <LastTripComponent dispatchData={dispatchData.lastTrip} />
                   </Col>
                 </Row>
               </div>
@@ -361,6 +354,168 @@ const OnboardingContainer = ({ onData }) => {
       </div>
     );
   };
+
+  // const ViewOwnerDataRow = ({ rowData }) => {
+  //   const [dispatchDetails, setDispatchDetails] = useState(null);
+  
+  //   const getDispatchDetails = () => {
+  //     const headersOb = {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${authToken}`
+  //       }
+  //     }
+  //     try {
+  //       API.get(`/get-challan-data/${rowData._id}`, headersOb)
+  //         .then(res => {
+  //           if (res.status === 201) {
+  //             setDispatchDetails(res.data.dispatchData);
+  //           } else {
+  //             console.log('error');
+  //           }
+  //         })
+  //         .catch(err => {
+  //           console.log(err);
+  //         });
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  
+  //   useEffect(() => {
+  //     getDispatchDetails();
+  //   }, []);
+  
+  //   const aggregateDispatchData = (data) => {
+  //     if (!data) return {};
+  //     const aggregatedData = {};
+  
+  //     data.forEach((dispatch) => {
+  //       const { vehicleNumber, createdAt } = dispatch;
+  //       if (!aggregatedData[vehicleNumber]) {
+  //         aggregatedData[vehicleNumber] = {
+  //           totalTrips: 0,
+  //           lastTrip: null
+  //         };
+  //       }
+  
+  //       aggregatedData[vehicleNumber].totalTrips += 1;
+  //       if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
+  //         aggregatedData[vehicleNumber].lastTrip = createdAt;
+  //       }
+  //     });
+  
+  //     return aggregatedData;
+  //   };
+  
+  //   const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
+  
+  //   const goBack = () => {
+  //     setShowOwnerTable(true);
+  //     setShowTabs(true);
+  //     onData('flex');
+  //   };
+  
+  
+  //   const LastTripComponent = ({ dispatchData }) => {
+  //     if (!dispatchData) return <p className="flex flex-col w-100 font-normal m-2"><span className="label text-sm">Last trip</span> - </p>;
+  
+  //     const isoDate = dispatchData;
+  //     const date = new Date(isoDate);
+  //     const formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
+  
+  //     return (
+  //       <p className="flex flex-col w-100 font-normal m-2">
+  //         <span className="label text-sm">Last trip</span>
+  //         {formattedDate}
+  //       </p>
+  //     );
+  //   }
+  
+  //   return (
+  //     <div className="owner-details">
+  //       <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
+  //       <div className="section mx-2 my-4">
+  //         <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
+  //         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
+  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
+  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowData.email}</p></Col>
+  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowData.panNumber}</p></Col>
+  //           <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowData.district}</p></Col>
+  //           <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowData.state}</p> </Col>
+  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Address</span> {rowData.address}</p></Col>
+  //         </Row>
+  //       </div>
+  //       <div className="section mx-2 my-4">
+  //         <h2 className='font-semibold text-md'>Owner Bank Details</h2>
+  //         {rowData.accountIds.map((account, index) => (
+  //           <div key={index}>
+  //             <h3>Bank Account {index + 1}</h3>
+  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+  //               <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code</span> {account.ifscCode}</p> </Col>
+  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name</span> {account.bankName}</p></Col>
+  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name</span> {account.branchName}</p></Col>
+  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number</span> {account.accountNumber}</p> </Col>
+  //               <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
+  //             </Row>
+  //           </div>
+  //         ))}
+  //       </div>
+  //       <div className="section mx-2 my-4">
+  //         <h2 className="font-semibold text-md">Vehicle Details</h2>
+  //         {rowData.vehicleIds.length === 0 && rowData.oldVehicleDetails.length > 0 ? (
+  //           rowData.oldVehicleDetails.map((vehicle, index) => {
+  //             const dispatchData = aggregatedDispatchData[vehicle.vehicleNumber] || { totalTrips: '-', lastTrip: '-' };
+  
+  //             return (
+  //               <div key={index}>
+  //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
+  //                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
+  //                     <p>{index + 1}</p>
+  //                     <p className="flex flex-col w-100 font-normal m-2">
+  //                       <span className="label text-sm">Vehicle No</span>
+  //                       {vehicle.vehicleNumber}
+  //                     </p>
+  //                     <p className="flex flex-col w-100 font-normal m-2">
+  //                       <span className="label text-sm">Total trips</span>
+  //                       {dispatchData.totalTrips}
+  //                     </p>
+  //                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
+  //                   </Col>
+  //                 </Row>
+  //               </div>
+  //             );
+  //           })
+  //         ) : (
+  //           rowData.vehicleIds.map((vehicle, index) => {
+  //             const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: '-', lastTrip: '-' };
+  
+  //             return (
+ 
+  //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
+  //                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
+  //                     <p>{index + 1}</p>
+  //                     <p className="flex flex-col w-100 font-normal m-2">
+  //                       <span className="label text-sm">Vehicle No</span>
+  //                       {vehicle.registrationNumber}
+  //                     </p>
+  //                     <p className="flex flex-col w-100 font-normal m-2">
+  //                       <span className="label text-sm">Total trips</span>
+  //                       {dispatchData.totalTrips}
+  //                     </p>
+  //                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
+  //                   </Col>
+  //                 </Row>
+             
+  //             );
+  //           })
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // };
+  
   const AddTruckOwnerForm = () => {
     const [formData, setFormData] = useState({
       name: '',
@@ -536,7 +691,7 @@ const OnboardingContainer = ({ onData }) => {
           "Authorization": `Bearer ${authToken}`
         }
       }
-
+      localStorage.setItem("prod-url", JSON.stringify("create-owner"))
       localStorage.setItem("prod-owner", JSON.stringify(payload))
       const postData = async () => {
         await API.post("create-owner", payload, headersOb)
@@ -560,9 +715,9 @@ const OnboardingContainer = ({ onData }) => {
               description: `${errorMessage}`,
               duration: 2,
             });
-            setTimeout(() => {
-              window.location.reload();
-            }, 3000)
+            // setTimeout(() => {
+            //   window.location.reload();
+            // }, 3000)
           });
       }
       if (formData.phoneNumber.length == 10) {
@@ -855,7 +1010,7 @@ const OnboardingContainer = ({ onData }) => {
     };
     const handleSubmit = (e) => {
       e.preventDefault();
-      const payload = {
+      const payloadOwner = {
         name: formData.name,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
@@ -872,7 +1027,7 @@ const OnboardingContainer = ({ onData }) => {
         }
       }
       const postData = async () => {
-        await API.put(`update-owner-details/${rowDataForEdit._id}`, payload, headersOb)
+        await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb)
           .then((response) => {
             console.log(response)
             if (response.status == 201) {

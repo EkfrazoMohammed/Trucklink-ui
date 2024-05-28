@@ -179,6 +179,15 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 width: 140,
             },
             {
+                title: 'Owner Name',
+            
+                width: 110,
+                render: (_, record)=>{
+                    return <p>{record.ownerName}</p>
+                }
+
+            },
+            {
                 title: 'From',
                 dataIndex: 'loadLocation',
                 key: 'loadLocation',
@@ -620,7 +629,10 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         };
         useEffect(() => {
             fetchSelectedVehicleDetails(selectedvehicleId)
-        }, [formData.vehicleNumber, selectedvehicleId])
+          }, [formData.vehicleNumber, selectedvehicleId])
+          useEffect(() => {
+            fetchSelectedVehicleDetails(editingRow.vehicleId)
+          }, [formData.isMarketRate])
         // Fetch materials on component mount
         useEffect(() => {
             fetchMaterials();
@@ -638,7 +650,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
         commisionRate=0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)

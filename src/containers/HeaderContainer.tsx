@@ -62,6 +62,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       const response = await API.get("get-hubs", headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
+        
       } else {
         console.log("error fetching hubs")
       }
@@ -113,13 +114,13 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
     setModalVisible(false);
     setSecondModalVisible(false);
   }
-
   const selectHubHandler = (value: string, id: string, color: string) => {
     dispatch(setSelectedHub(value));
     localStorage.setItem("selectedHubID", id);
     localStorage.setItem("selectedHubName", value);
     localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
+  
     window.location.reload();
   };
 
@@ -221,11 +222,11 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
                 {hubData && hubData.map((option, index: number) => (
                   <Space direction="vertical" key={index}>
                     <div className={`card-hub `} >
-                      <div onClick={() => selectHubHandler(option.location, option._id, borderColors[index])} style={{ cursor: "pointer", margin: "0 auto", textAlign: "center", borderColor: `rgb(${borderColors[index]})`, borderLeft: "3px solid #fff" }} className="progress-hub" >
+                      <div  style={{ cursor: "pointer", margin: "0 auto", textAlign: "center", borderColor: `rgb(${borderColors[index]})`, borderLeft: "3px solid #fff" }} className="progress-hub" >
                         <div className="text-hub">
                           {/* <p>{option.cityCode}</p> */}
-                          <p>{option.location}</p>
-                          <div onClick={() => { showThirdModal(); handleEdit(option) }} style={{ cursor: "pointer" }}><EditOutlined /></div>
+                          <p onClick={() => selectHubHandler(option.location, option._id, borderColors[index])}>{option.location}</p>
+                          <div onClick={() => { showThirdModal(); handleEdit(option);  }} style={{ cursor: "pointer" }}><EditOutlined /></div>
                           {/* <div style={{ cursor: "pointer" }}><EditOutlined /></div> */}
                         </div>
                       </div>

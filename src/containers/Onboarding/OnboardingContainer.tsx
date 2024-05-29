@@ -779,37 +779,13 @@ const OnboardingContainer = ({ onData }) => {
             }, 1000)
           });
       }
-      // const noAccountData = [{ "accountNumber": "", "accountHolderName": "", "ifscCode": "", "bankName": "", "branchName": "" }]
-      // const noFirstAccount = formData.bankAccounts[0].accountHolderName == "" || formData.bankAccounts[0].accountHolderName == "" || formData.bankAccounts[0].ifscCode == "" || formData.bankAccounts[0].bankName == "" || formData.bankAccounts[0].branchName == ""
-      // if (formData.phoneNumber.length !== 10) {
-      //   alert("mobile number must be atleast 10 digit")
-      // } else if (formData.bankAccounts == noAccountData || noFirstAccount) {
-      //   alert("Enter required bank account details")
-      // } else {
-      //   postData()
-      // }
-      //   const noAccountData = formData.bankAccounts.every(account =>
-      //     account.accountNumber === "" &&
-      //     account.accountHolderName === "" &&
-      //     account.ifscCode === "" &&
-      //     account.bankName === "" &&
-      //     account.branchName === ""
-      //   );
+     
 
-      //   const noFirstAccount = formData.bankAccounts[0].accountHolderName === "" ||
-      //     formData.bankAccounts[0].ifscCode === "" ||
-      //     formData.bankAccounts[0].bankName === "" ||
-      //     formData.bankAccounts[0].branchName === "";
-
-      //   if (formData.phoneNumber.length !== 10) {
-      //     alert("Mobile number must be at least 10 digits");
-      //   } else if (noAccountData || noFirstAccount) {
-      //     alert("Enter required bank account details");
-      //   } else {
-      //     postData();
-      //   }
-      // };
-
+      // Validation for phone number
+      if (formData.name == "") {
+        alert("Owner name is required");
+        return;
+      }
 
       // Validation for phone number
       if (formData.phoneNumber.length !== 10) {
@@ -817,30 +793,82 @@ const OnboardingContainer = ({ onData }) => {
         return;
       }
 
-      // Validation for bank accounts
-      const noFirstAccount = !formData.bankAccounts[0].accountHolderName ||
-        !formData.bankAccounts[0].ifscCode ||
-        !formData.bankAccounts[0].bankName ||
-        !formData.bankAccounts[0].branchName;
+      
+      let errors = [];
 
-      if (noFirstAccount) {
-        alert("Enter required bank account details for the first account");
-        return;
+      // Validation for phone number
+      if (formData.phoneNumber.length !== 10) {
+        errors.push("Mobile number must be exactly 10 digits");
+      }
+    
+      // Validation for the first bank account
+      if (!formData.bankAccounts[0].accountHolderName) {
+        errors.push("First bank account: Account Holder Name is required");
+      }
+      if (!formData.bankAccounts[0].ifscCode) {
+        errors.push("First bank account: IFSC Code is required");
+      }
+      if (!formData.bankAccounts[0].bankName) {
+        errors.push("First bank account: Bank Name is required");
+      }
+      if (!formData.bankAccounts[0].branchName) {
+        errors.push("First bank account: Branch Name is required");
       }
 
-      // Check if the second bank account exists and if it has any empty required fields
+      if (!formData.bankAccounts[0].accountNumber) {
+        errors.push("First bank account: Account number is required");
+      }
+      
+      // Check if the second bank account exists and validate it
       if (formData.bankAccounts.length > 1) {
-        const noSecondAccount = !formData.bankAccounts[1].accountHolderName ||
-          !formData.bankAccounts[1].ifscCode ||
-          !formData.bankAccounts[1].bankName ||
-          !formData.bankAccounts[1].branchName;
-
-        if (noSecondAccount) {
-          alert("Enter required bank account details for the second account");
-          return;
+        if (!formData.bankAccounts[1].accountHolderName) {
+          errors.push("Second bank account: Account Holder Name is required");
+        }
+        if (!formData.bankAccounts[1].ifscCode) {
+          errors.push("Second bank account: IFSC Code is required");
+        }
+        if (!formData.bankAccounts[1].bankName) {
+          errors.push("Second bank account: Bank Name is required");
+        }
+        if (!formData.bankAccounts[1].branchName) {
+          errors.push("Second bank account: Branch Name is required");
+        }
+        if (!formData.bankAccounts[1].accountNumber) {
+          errors.push("Second bank account: Account number is required");
         }
       }
+    
+      if (errors.length > 0) {
+        alert(errors.join("\n"));
+        return;
+      }
+// Validation for bank accounts
+const noFirstAccount = 
+!formData.bankAccounts[0].ifscCode ||
+!formData.bankAccounts[0].bankName ||
+!formData.bankAccounts[0].branchName ||
+!formData.bankAccounts[0].accountNumber ||
+!formData.bankAccounts[0].accountHolderName ;
 
+if (noFirstAccount) {
+alert("Enter required bank account details for the first account");
+return;
+}
+
+// Check if the second bank account exists and if it has any empty required fields
+if (formData.bankAccounts.length > 1) {
+const noSecondAccount = 
+!formData.bankAccounts[1].ifscCode ||
+!formData.bankAccounts[1].bankName ||
+!formData.bankAccounts[1].branchName ||
+!formData.bankAccounts[1].accountNumber ||
+!formData.bankAccounts[1].accountHolderName ;
+
+if (noSecondAccount) {
+  alert("Enter required bank account details for the second account");
+  return;
+}
+}
       postData();
     }
     const goBack = () => {

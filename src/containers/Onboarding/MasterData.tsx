@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch, Modal } from 'antd';
 import { API } from "../../API/apirequest"
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,InfoCircleOutlined } from '@ant-design/icons';
 const onSearch = (value: string) => {
     console.log('search:', value);
 };
@@ -40,6 +40,8 @@ const MasterData = () => {
             console.error('Error fetching materials:', error);
         }
     };
+
+    const [errMsg,setErrMsg]=useState("");
     // Function to handle adding a new material type
     const handleAddMaterial = async () => {
         const headersOb = {
@@ -49,21 +51,34 @@ const MasterData = () => {
             }
           }
         try {
-            // Post the new material type to the API
             const payload = {
                 "materialType": materialType,
                 "hubId": selectedHubId
             }
-            const response = await API.post('create-material', payload,headersOb);
-            if (response.status === 201) {
-                console.log("material added")
+            const response = await API.post('create-material', payload,headersOb)
+            .then((res)=>{
+                if (res.status === 201) {
+                    setErrMsg("")
+                }else{
+                    alert("error occurred1")
+                }
+            })
+            .catch((err)=>{
+                console.log(err)
+                console.log(err.response.data.message)
+               if(err.response.data.message == "Material Type is restricted"){
+                    setErrMsg("Create material type from the follwing list : 'CEMENT','FLYASH','GYPSUM', 'MT', 'C&T BAG', 'OTHERS' ")
+                }else{
+                    setErrMsg("")
+                }
             }
-            // Fetch updated materials
+        )
+            
             fetchMaterials();
-            // Clear the input field
             setMaterialType('');
         } catch (error) {
             console.error('Error adding material:', error);
+           alert("error occurred3")
         }
     };
 
@@ -78,7 +93,6 @@ const MasterData = () => {
         try {
             const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
             if (response.status == 201) {
-                console.log(response.data.materials)
                 setloadLocations(response.data.materials);
             } else {
                 console.log("error in fetchLoadLocations")
@@ -395,7 +409,7 @@ fetchDeliveryLocations();
                     </Space>
                 </div>
             </Modal>
-            <div className="flex flex-col" className="mymastertab-content">
+            <div className="flex flex-col mymastertab-content">
                 <div className="flex gap-12">
 
 
@@ -412,6 +426,7 @@ fetchDeliveryLocations();
                                 Add Material
                             </Button>
                         </div>
+                        {errMsg && errMsg.length>0 ? <><p style={{color:"red",paddingRight:"1rem"}}><InfoCircleOutlined />{" "}{errMsg}</p></>:<></>}
 
                         <div>
 

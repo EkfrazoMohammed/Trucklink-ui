@@ -411,21 +411,18 @@ const DispatchContainer = ({onData}) =>{
       let commissionTotal = 0;
       let commisionRate = 0
       if (formData.isMarketRate) {
-        console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
+        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
+        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
+        commissionTotal = t-m; 
         // commisionRate = 0;
-        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
-        
+        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
         commisionRate = parseFloat(selectedvehicleCommission);
       } else {
-        console.log("isMarketRate", formData.isMarketRate)
-        
         // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
         const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
         commissionTotal = commissionTotalInPercentage / 100;
         commisionRate = parseFloat(selectedvehicleCommission);
-
       }
 
       const payload = {
@@ -446,7 +443,7 @@ const DispatchContainer = ({onData}) =>{
         "ownerPhone": formData.ownerPhone,
         "quantityInMetricTons": formData.quantityInMetricTons,
         "rate": formData.rate,
-        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
+        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
         "vehicleBank": formData.vehicleBank,
         "vehicleId": formData.vehicleId,
         "vehicleNumber": formData.vehicleNumber,
@@ -455,7 +452,8 @@ const DispatchContainer = ({onData}) =>{
         "commisionTotal": commissionTotal,
         "isMarketRate": formData.isMarketRate,
         "marketRate": formData.marketRate,
-        "hubId": selectedHubId
+        "hubId": selectedHubId,
+        "shortage":formData.shortage
       }
       const headersOb = {
         headers: {
@@ -464,6 +462,8 @@ const DispatchContainer = ({onData}) =>{
         }
       }
       setData(payload)
+      localStorage.setItem("challan", JSON.stringify(payload))
+      
       if (formData.grDate !== null || formData.grDate !== "") {
         API.post('create-dispatch-challan', payload, headersOb)
           .then((response) => {
@@ -474,6 +474,8 @@ const DispatchContainer = ({onData}) =>{
           .catch((error) => {
             if(error.response.data.message =='This Delivery Number already exists'){
               alert("This Delivery Number already exists")
+            }else if(error.response.data.message =="Please select right owner for the selected period"){
+              alert("Please select right owner for the selected period")
             }else{
               alert("error occurred")        
             }
@@ -524,8 +526,7 @@ const DispatchContainer = ({onData}) =>{
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              {/* {JSON.stringify(selectedvehicleCommission, null,2)}
-                {JSON.stringify(data, null,2)} */}
+             
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
 
@@ -642,7 +643,7 @@ const DispatchContainer = ({onData}) =>{
                     name="vehicleType"
                     placeholder="Vehicle Type*"
                     size="large"
-                    value={formData.vehicleType}
+                 
                     style={{ width: '100%' }}
                     value={formData.vehicleType ? formData.vehicleType.charAt(0).toUpperCase() + formData.vehicleType.slice(1) : ''}
                     disabled
@@ -1077,8 +1078,10 @@ const DispatchContainer = ({onData}) =>{
         console.log("isMarketRate", formData.isMarketRate)
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
         // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-      
+        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
+        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
+        commissionTotal = t-m; 
         commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
@@ -1182,9 +1185,7 @@ const DispatchContainer = ({onData}) =>{
               </div>
             </div>
             <div className="flex flex-col gap-1">
-            {/* {JSON.stringify(selectedvehicleCommission, null,2)}
-              {JSON.stringify(a, null,2)} */}
-
+        
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
 
@@ -1480,24 +1481,13 @@ const DispatchContainer = ({onData}) =>{
       {
         title: 'Owner Name',
     
-        width: 110,
+        width: 160,
         render: (_, record)=>{
             return <p>{record.ownerName}</p>
         }
 
     },
-      // {
-      //   title: 'Owner Name',
-      //   dataIndex: 'ownerName',
-      //   key: 'ownerName',
-      //   width: 120,
-      // },
-      // {
-      //   title: 'Owner Phone',
-      //   dataIndex: 'ownerPhone',
-      //   key: 'ownerPhone',
-      //   width: 120,
-      // },
+     
       {
         title: 'Vehicle Type',
         dataIndex: 'vehicleType',

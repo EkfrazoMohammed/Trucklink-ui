@@ -20,8 +20,8 @@ interface RootState {
   };
 }
 
-const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ title,dataFromChild }) => {
-  const authToken=localStorage.getItem("token");
+const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ title, dataFromChild }) => {
+  const authToken = localStorage.getItem("token");
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
   const [thirdModalVisible, setThirdModalVisible] = useState(false);
@@ -30,14 +30,14 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
   const [errorMessage, setErrorMessage] = useState("");
   const [editFormData, setEditFormData] = useState({
     location: "",
-    hubId:""
+    hubId: ""
   });
   const [hubFormData, setHubFormData] = useState({
     location: ""
   });
   // background: rgba(255, 182, 40, 1);
 
-  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40'];
+  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40','201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40','201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40'];
 
   const getHubColor = localStorage.getItem("selectedHubColor")
 
@@ -56,10 +56,10 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      const response = await API.get("get-hubs",headersOb);
+      const response = await API.get("get-hubs", headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
       } else {
@@ -125,25 +125,25 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
 
 
   const handleEdit = (hubData) => {
-      setEditFormData({
-        location:hubData.location,
-        hubId:hubData._id
-      })
-      setThirdModalVisible(true);
-  
+    setEditFormData({
+      location: hubData.location,
+      hubId: hubData._id
+    })
+    setThirdModalVisible(true);
+
   };
   const handleUpdateHub = async () => {
     try {
-      const payload={
-        location:editFormData.location
+      const payload = {
+        location: editFormData.location
       }
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      const response = await API.put(`update-hub/${editFormData.hubId}`, payload,headersOb)
+      const response = await API.put(`update-hub/${editFormData.hubId}`, payload, headersOb)
       if (response.status == 201) {
         setSecondModalVisible(false);
         showEditConfirmModal();
@@ -168,16 +168,20 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+          "Authorization": `Bearer ${authToken}`
         }
       }
-      const response = await API.post("create-hub", hubFormData,headersOb)
+      const response = await API.post("create-hub", hubFormData, headersOb)
       if (response.status == 201) {
         setSecondModalVisible(false);
         showConfirmModal();
+        console.log(response.data)
+        const newHubName=response.data.Hub.location;
+        const newHubID=response.data.Hub._id;
+        // localStorage.setItem("selectedHubName", hubFormData.location);
         setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+          selectHubHandler(newHubName,newHubID,"40,126,255")
+        }, 2000);
       } else {
         setErrorMessage("Enter all fields");
       }
@@ -192,23 +196,23 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
     setEditFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  
+
 
   return (
     <>
-      <div className="flex h-12 pb-4 justify-between items-center " style={{display:`${dataFromChild}`}}>
+      <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px",borderRadius:"4px" }}>
+          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px" }}>
             <div className="flex flex-col">
 
-         <span className="flex justify-between" style={{color:"grey",fontSize:".6rem",fontWeight:"600"}}> Select Hub</span> 
-         <span style={{fontWeight:"700"}}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
+              <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}> Select Hub</span>
+              <span style={{ fontWeight: "700" }}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
             </div>
-         <div className="flex">
-         <DownOutlined />
-         </div>
-         </div>
+            <div className="flex">
+              <DownOutlined />
+            </div>
+          </div>
           {/* Select Hub Modal */}
           <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
             <div className="flex flex-col">
@@ -221,7 +225,7 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
                         <div className="text-hub">
                           {/* <p>{option.cityCode}</p> */}
                           <p>{option.location}</p>
-                          <div onClick={() => { showThirdModal(); handleEdit(option) }} style={{ cursor: "pointer" }}><EditOutlined /></div> 
+                          <div onClick={() => { showThirdModal(); handleEdit(option) }} style={{ cursor: "pointer" }}><EditOutlined /></div>
                           {/* <div style={{ cursor: "pointer" }}><EditOutlined /></div> */}
                         </div>
                       </div>
@@ -245,18 +249,18 @@ const HeaderContainer: React.FC<{ title: string,dataFromChild:string }> = ({ tit
           </Modal>
           <Modal title="Hub created successfully" visible={confirmModalVisible} onOk={handleCloseAll} onCancel={handleCloseAll} />
           {/* Edit Hub Modal */}
-           <Modal title="Edit Hub" visible={thirdModalVisible} onCancel={handleThirdCancel} footer={null}>
+          <Modal title="Edit Hub" visible={thirdModalVisible} onCancel={handleThirdCancel} footer={null}>
             {errorMessage && <span style={{ color: "red" }}>{errorMessage}</span>}
             <div>
               <Input size="large" placeholder="Edit Hub Location Name" className='mb-2 p-2' name="location" value={editFormData.location} onChange={handleEditInputChange} />
               <Space style={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button htmlType="button" onClick={handleThirdCancel}>Cancel</Button>
-                 <Button type="primary" htmlType="submit" onClick={handleUpdateHub}>Update</Button> 
+                <Button type="primary" htmlType="submit" onClick={handleUpdateHub}>Update</Button>
               </Space>
             </div>
-          </Modal> 
+          </Modal>
           <Modal title="Hub Updated successfully" visible={confirmEditModalVisible} onOk={handleEditCloseAll} onCancel={handleEditCloseAll} />
-         
+
           {/* Hiding on PRODUCTION */}
           {/* <Badge size="small" count={1}>
             <Dropdown overlay={

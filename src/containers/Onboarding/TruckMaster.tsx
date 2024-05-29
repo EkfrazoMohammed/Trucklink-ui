@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DatePickerProps } from 'antd';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined,RedoOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
@@ -181,18 +181,46 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
   useEffect(() => {
     getOwnerData(currentPage, currentPageSize, selectedHubId);
     getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
-  }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
+  }, [currentPage, currentPageSize, selectedHubId]);
 
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
+    const initialSearchQuery = localStorage.getItem('searchQuery2') || '';
+    const [searchQuery2, setSearchQuery2] = useState<string>(initialSearchQuery);
+  
+    // Update localStorage whenever searchQuery2 changes
+    useEffect(() => {
+      localStorage.setItem('searchQuery2', searchQuery2);
+    }, [searchQuery2]);
+  
+    const handleSearch = () => {
+      getTableData(searchQuery2, 1, 600, selectedHubId);
+    };
+  
+    const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery2(e.target.value);
+      if(e.target.value==""){
+        onReset()
+      }
+    };
+  
+    const onReset=()=>{
+      setSearchQuery2("");
+      getTableData("", 1, 600, selectedHubId);
+    }
     return (
       <div className='flex gap-2 justify-between  py-3'>
+     <div className='flex items-center gap-2'>      
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
+          value={searchQuery2}
+          onChange={onChangeSearch}
           onSearch={handleSearch}
           style={{ width: 320 }}
         />
+        {searchQuery2 !==null && searchQuery2 !== "" ? <><Button size='large' onClick={onReset} style={{rotate:"180deg"}} icon={<RedoOutlined />}></Button></>:<></>}
+      </div>
         <div className='flex gap-2'>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> ADD TRUCK</Button>
         </div>
@@ -335,7 +363,6 @@ const TruckMaster = ({onData,showTabs,setShowTabs}) => {
         truckType: formData.vehicleType,
         marketRate: formData.marketRate,
         isMarketRate: formData.isMarketRate,
-        hubId:selectedHubId,
       };
       const headersOb = {
         headers: {
@@ -834,6 +861,7 @@ setFormData({
           "Authorization": `Bearer ${authToken}`
         }
       }
+      localStorage.setItem("transferPayload", JSON.stringify(formData))
      const res= API.put(url, formData, headersOb)
      .then((res)=>{
        if(res.status==201){
@@ -847,7 +875,12 @@ setFormData({
           }
      }).catch(err=>{
        console.log(err)
-       alert("error occurred")
+       if(err.response.data.message=="Please choose transfer the later than latest dispatch challan date"){
+        alert("Please choose transfer the later than latest dispatch challan date")
+       }else{
+
+         alert("error occurred")
+       }
      })
     };
     const goBack = () => {
@@ -1132,7 +1165,7 @@ setFormData({
       isMarketRate: formData.isMarketRate,
    
     };
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
       const vehicleId = filterTruckTableData._id;
       const oldOwnerId = filterTruckTableData.ownerId[0]._id;
@@ -1146,15 +1179,19 @@ setFormData({
 
       localStorage.setItem("pay", JSON.stringify(payload))
       
-      const res=API.put(url, payload, headersOb)
-      if(res.statusCode === 201) {
-       alert("Truck data updated successfully");
+      const res=await API.put(url, payload, headersOb)
+      .then((response) => {
+        if(response.status == 201){
+          alert("Truck data updated successfully");
           window.location.reload();
         }else{
-          
-          console.error('Error updating truck data:', res);
-          alert("An error occurred while updating truck data");
+          alert('error occured')
         }
+      }).catch(error => {
+        console.error('Error updating truck data:', res);
+            alert("An error occurred while updating truck data");
+      })
+     
     };
 
     const goBack = () => {

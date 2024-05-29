@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import states from './states.json';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination } from 'antd';
 import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
@@ -45,58 +45,80 @@ const OnboardingContainer = ({ onData }) => {
   const [rowDataForView, setRowDataForView] = useState(null);
 
 
-
-  const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
-  const handleSearch = (e) => {
-    setSearchQuery(e);
-  };
-
-  // const onChangeSearch = (e) => {
-  //   console.log(e.target.value)
-  // }
-  const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // handleSearch(e.target.value);
-    console.log(e.target.value)
-  };
-  const debouncedSearch = debounce(handleSearch, 800);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
+  // const getTableData = async (searchQuery, page, limit, selectedHubID) => {
+  //   const headersOb = {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${authToken}`
+  //     }
+  //   }
+  //   try {
+  //     const pages = page;
+  //     const limitData = 600;
+  //     const searchData = searchQuery ? searchQuery : null;
+  //     const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
+  //       : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
+  //     let ownerDetails;
+  //     if (response.data.ownerDetails.length == 0) {
+  //       ownerDetails = response.data.ownerDetails
+  //       setFilteredOwnerData(ownerDetails);
+  //     } else {
+  //       ownerDetails = response.data.ownerDetails[0].data || "";
+  //       setTotalOwnerData(response.data.ownerDetails[0].count)
+  //       if (ownerDetails && ownerDetails.length > 0) {
+  //         const arrRes = ownerDetails.sort(function (a, b) {
+  //           a = a.name.toLowerCase();
+  //           b = b.name.toLowerCase();
+  //           return a < b ? -1 : a > b ? 1 : 0;
+  //         });
+  //         setFilteredOwnerData(arrRes);
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // };
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }
-    }
+    };
+
     try {
       const pages = page;
       const limitData = 600;
-      const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-        : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-      let ownerDetails;
-      if (response.data.ownerDetails.length == 0) {
-        ownerDetails = response.data.ownerDetails
-        setFilteredOwnerData(ownerDetails);
+      const searchData = searchQuery || null; // Simplified conditional assignment
+      const response = await API.get(
+        searchData
+          ? `get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`
+          : `get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,
+        headersOb
+      );
+
+      if (response.data.ownerDetails && response.data.ownerDetails.length > 0) {
+        // Data is available
+        const ownerDetails = response.data.ownerDetails[0].data;
+        setTotalOwnerData(response.data.ownerDetails[0].count);
+        const arrRes = ownerDetails.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        setFilteredOwnerData(arrRes);
       } else {
-        ownerDetails = response.data.ownerDetails[0].data || "";
-        setTotalOwnerData(response.data.ownerDetails[0].count)
-        if (ownerDetails && ownerDetails.length > 0) {
-          const arrRes = ownerDetails.sort(function (a, b) {
-            a = a.name.toLowerCase();
-            b = b.name.toLowerCase();
-            return a < b ? -1 : a > b ? 1 : 0;
-          });
-          setFilteredOwnerData(arrRes);
-        }
+        // No data available
+        setTotalOwnerData(0);
+        setFilteredOwnerData([]);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   };
+
   const [showEditForm, setShowEditForm] = useState(false)
   const OwnerMaster = ({ showTabs, setShowTabs }) => {
     const handleAddOwnerClick = () => {
@@ -156,17 +178,20 @@ const OnboardingContainer = ({ onData }) => {
         }
       }
       const response = await API.delete(`delete-owner-details/${rowData._id}`, headersOb);
+      alert("deleted data")
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
       console.log(response)
-      if (response.status === 201) {
-        alert("deleted data")
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      } else {
-        alert(`unable to delete data`)
-        console.log(response.data)
+      // if (response.status === 201) {
+      //   setTimeout(() => {
+      //     window.location.reload()
+      //   }, 1000)
+      // } else {
+      //   alert(`unable to delete data`)
+      //   console.log(response.data)
 
-      }
+      // }
     }
     return (
       <>
@@ -195,9 +220,44 @@ const OnboardingContainer = ({ onData }) => {
   };
 
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
+    const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
+    const [searchQuery1, setSearchQuery1] = useState<string>(initialSearchQuery);
+
+    // Update localStorage whenever searchQuery1 changes
+    useEffect(() => {
+      localStorage.setItem('searchQuery1', searchQuery1);
+    }, [searchQuery1]);
+
+    const handleSearch = () => {
+      getTableData(searchQuery1, 1, 600, selectedHubId);
+    };
+
+    const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery1(e.target.value);
+      if (e.target.value == "") {
+        onReset()
+      }
+    };
+
+    const onReset = () => {
+      setSearchQuery1("");
+      getTableData("", 1, 600, selectedHubId);
+    }
+
     return (
-      <div className='flex gap-2 justify-between  py-3'>
-        <Search placeholder="Search by Owner Name" size='large' onSearch={handleSearch} onChange={onChangeSearch} style={{ width: 320 }} />
+      <div className='flex justify-between  py-3'>
+        <div className='flex items-center gap-2'>
+
+          <Search
+            placeholder="Search by Owner Name"
+            size='large'
+            value={searchQuery1}
+            onChange={onChangeSearch}
+            onSearch={handleSearch}
+            style={{ width: 320 }}
+          />
+          {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+        </div>
         <div className='flex gap-2'>
           <Upload>
             <Button icon={<UploadOutlined />}></Button>
@@ -279,13 +339,13 @@ const OnboardingContainer = ({ onData }) => {
       const isoDate = dispatchData;
       const date = new Date(isoDate);
       let formattedDate
-      if(isoDate == "-"){
+      if (isoDate == "-") {
         formattedDate = `-`
-      }else{
+      } else {
         formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`
       }
-    
-      
+
+
       return (
         <p className="flex flex-col w-100 font-normal m-2">
           <span className="label text-sm">Last trip</span>
@@ -324,7 +384,7 @@ const OnboardingContainer = ({ onData }) => {
             </div>
           ))}
         </div>
-   
+
         <div className="section mx-2 my-4">
           <h2 className="font-semibold text-md">Vehicle Details</h2>
           {rowData.vehicleIds.map((vehicle, index) => {
@@ -343,7 +403,7 @@ const OnboardingContainer = ({ onData }) => {
                       <span className="label text-sm">Total trips</span>
                       {dispatchData.totalTrips}
                     </p>
-                    
+
                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
                   </Col>
                 </Row>
@@ -357,7 +417,7 @@ const OnboardingContainer = ({ onData }) => {
 
   // const ViewOwnerDataRow = ({ rowData }) => {
   //   const [dispatchDetails, setDispatchDetails] = useState(null);
-  
+
   //   const getDispatchDetails = () => {
   //     const headersOb = {
   //       headers: {
@@ -381,15 +441,15 @@ const OnboardingContainer = ({ onData }) => {
   //       console.log(err);
   //     }
   //   };
-  
+
   //   useEffect(() => {
   //     getDispatchDetails();
   //   }, []);
-  
+
   //   const aggregateDispatchData = (data) => {
   //     if (!data) return {};
   //     const aggregatedData = {};
-  
+
   //     data.forEach((dispatch) => {
   //       const { vehicleNumber, createdAt } = dispatch;
   //       if (!aggregatedData[vehicleNumber]) {
@@ -398,32 +458,32 @@ const OnboardingContainer = ({ onData }) => {
   //           lastTrip: null
   //         };
   //       }
-  
+
   //       aggregatedData[vehicleNumber].totalTrips += 1;
   //       if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
   //         aggregatedData[vehicleNumber].lastTrip = createdAt;
   //       }
   //     });
-  
+
   //     return aggregatedData;
   //   };
-  
+
   //   const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
-  
+
   //   const goBack = () => {
   //     setShowOwnerTable(true);
   //     setShowTabs(true);
   //     onData('flex');
   //   };
-  
-  
+
+
   //   const LastTripComponent = ({ dispatchData }) => {
   //     if (!dispatchData) return <p className="flex flex-col w-100 font-normal m-2"><span className="label text-sm">Last trip</span> - </p>;
-  
+
   //     const isoDate = dispatchData;
   //     const date = new Date(isoDate);
   //     const formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
-  
+
   //     return (
   //       <p className="flex flex-col w-100 font-normal m-2">
   //         <span className="label text-sm">Last trip</span>
@@ -431,7 +491,7 @@ const OnboardingContainer = ({ onData }) => {
   //       </p>
   //     );
   //   }
-  
+
   //   return (
   //     <div className="owner-details">
   //       <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
@@ -467,7 +527,7 @@ const OnboardingContainer = ({ onData }) => {
   //         {rowData.vehicleIds.length === 0 && rowData.oldVehicleDetails.length > 0 ? (
   //           rowData.oldVehicleDetails.map((vehicle, index) => {
   //             const dispatchData = aggregatedDispatchData[vehicle.vehicleNumber] || { totalTrips: '-', lastTrip: '-' };
-  
+
   //             return (
   //               <div key={index}>
   //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
@@ -490,9 +550,9 @@ const OnboardingContainer = ({ onData }) => {
   //         ) : (
   //           rowData.vehicleIds.map((vehicle, index) => {
   //             const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: '-', lastTrip: '-' };
-  
+
   //             return (
- 
+
   //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
   //                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
   //                     <p>{index + 1}</p>
@@ -507,7 +567,7 @@ const OnboardingContainer = ({ onData }) => {
   //                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
   //                   </Col>
   //                 </Row>
-             
+
   //             );
   //           })
   //         )}
@@ -515,7 +575,7 @@ const OnboardingContainer = ({ onData }) => {
   //     </div>
   //   );
   // };
-  
+
   const AddTruckOwnerForm = () => {
     const [formData, setFormData] = useState({
       name: '',
@@ -691,8 +751,7 @@ const OnboardingContainer = ({ onData }) => {
           "Authorization": `Bearer ${authToken}`
         }
       }
-      localStorage.setItem("prod-url", JSON.stringify("create-owner"))
-      localStorage.setItem("prod-owner", JSON.stringify(payload))
+
       const postData = async () => {
         await API.post("create-owner", payload, headersOb)
           .then((response) => {
@@ -709,23 +768,57 @@ const OnboardingContainer = ({ onData }) => {
           .catch((error) => {
             // Log any errors that occur during the dispatch process
             console.error('Error adding owner data:', error);
-            let errorMessage = error.response.data.message;
+            const errorMessage = error.response.data.message;
             notification.error({
               message: "error occurred",
               description: `${errorMessage}`,
               duration: 2,
             });
-            // setTimeout(() => {
-            //   window.location.reload();
-            // }, 3000)
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000)
           });
       }
-      if (formData.phoneNumber.length == 10) {
-        postData()
+      // const noAccountData = [{ "accountNumber": "", "accountHolderName": "", "ifscCode": "", "bankName": "", "branchName": "" }]
+      // const noFirstAccount = formData.bankAccounts[0].accountHolderName == "" || formData.bankAccounts[0].accountHolderName == "" || formData.bankAccounts[0].ifscCode == "" || formData.bankAccounts[0].bankName == "" || formData.bankAccounts[0].branchName == ""
+      // if (formData.phoneNumber.length !== 10) {
+      //   alert("mobile number must be atleast 10 digit")
+      // } else if (formData.bankAccounts == noAccountData || noFirstAccount) {
+      //   alert("Enter required bank account details")
+      // } else {
+      //   postData()
+      // }
+      const noAccountData = [{
+        "accountNumber": "",
+        "accountHolderName": "",
+        "ifscCode": "",
+        "bankName": "",
+        "branchName": ""
+      }];
+      
+      // Check if the first account has missing required fields
+      const noFirstAccount = formData.bankAccounts[0].accountHolderName === "" ||
+        formData.bankAccounts[0].ifscCode === "" ||
+        formData.bankAccounts[0].bankName === "" ||
+        formData.bankAccounts[0].branchName === "";
+      
+      // Check if the second account exists and has missing required fields
+      const secondAccountExists = formData.bankAccounts.length > 1;
+      const noSecondAccount = secondAccountExists && (
+        formData.bankAccounts[1].accountHolderName === "" ||
+        formData.bankAccounts[1].ifscCode === "" ||
+        formData.bankAccounts[1].bankName === "" ||
+        formData.bankAccounts[1].branchName === ""
+      );
+      
+      if (formData.phoneNumber.length !== 10) {
+        alert("Mobile number must be at least 10 digits");
+      } else if (formData.bankAccounts.length === 0 || noAccountData || noFirstAccount || noSecondAccount) {
+        alert("Enter required bank account details");
       } else {
-        alert("mobile number must be atleast 10 digit")
+        postData();
       }
-
+      
     };
 
     const goBack = () => {
@@ -1018,7 +1111,7 @@ const OnboardingContainer = ({ onData }) => {
         address: selectedHubName,
         district: formData.district,
         state: formData.state,
-        
+
       };
       const headersOb = {
         headers: {
@@ -1050,6 +1143,8 @@ const OnboardingContainer = ({ onData }) => {
             }, 1000)
           });
       }
+
+
       if (formData.phoneNumber.length == 10) {
 
         postData()
@@ -1199,7 +1294,7 @@ const OnboardingContainer = ({ onData }) => {
   const [currentPageSize, setCurrentPageSize] = useState(10);
   useEffect(() => {
     getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
-  }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
+  }, [currentPage, currentPageSize, selectedHubId]);
   const OwnerTable = ({ filteredOwnerData, onEditClick, onViewClick, onDeleteClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -1314,7 +1409,7 @@ const OnboardingContainer = ({ onData }) => {
     }
     return (
       <>
-        
+
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -1335,7 +1430,7 @@ const OnboardingContainer = ({ onData }) => {
       </>
     );
   };
-{/* <div style={{ textAlign: 'right', margin: '10px' }}>
+  {/* <div style={{ textAlign: 'right', margin: '10px' }}>
           {renderPaginationButtons()}
           <Button
             onClick={() => handlePageSizeChange(10)}

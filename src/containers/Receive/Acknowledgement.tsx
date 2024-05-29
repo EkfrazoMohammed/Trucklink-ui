@@ -182,7 +182,7 @@ const Acknowledgement = ({onData,showTabs,setShowTabs}) => {
             {
                 title: 'Owner Name',
             
-                width: 110,
+                width: 160,
                 render: (_, record)=>{
                     return <p>{record.ownerName}</p>
                 }
@@ -247,9 +247,11 @@ const Acknowledgement = ({onData,showTabs,setShowTabs}) => {
             },
             {
                 title: 'Commission',
-                width: 180,
+                width: 160,
                 render: (_, record) => {
                     console.log(record)
+                    const percentCommission=(record.commisionRate) * (record.quantityInMetricTons * record.rate)
+                    const percentCommissionINR=(percentCommission/100) 
                   return (
                     <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
                       
@@ -264,7 +266,7 @@ const Acknowledgement = ({onData,showTabs,setShowTabs}) => {
                       {record.commisionRate == null || record.commisionRate == 0 ?<>-</>:<> {`${record.commisionRate} %`}</>}
                     </p>
                     <p>
-                      -
+                    {`${percentCommissionINR}`}
                     </p>
                         </>
                     }
@@ -691,7 +693,10 @@ console.log('reset clicked')
        if (formData.isMarketRate) {
          console.log("isMarketRate", formData.isMarketRate)
          // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-         commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        //  commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
+        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
+        commissionTotal = t-m; 
          commisionRate=0;
        } else {
          console.log("isMarketRate", formData.isMarketRate)

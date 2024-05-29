@@ -348,3 +348,13 @@ align-items: center;
   color: #000 !important;
   text-shadow: 0 0 0.25px currentcolor;
 }
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-submenu>.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-submenu>.ant-menu-submenu-title {
+  inset-inline-start: 0;
+  padding-inline: 8px !important;
+  text-overflow: clip;
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+  /* background-color: #1677ff; */
+  background-color: #424242 !important;
+}

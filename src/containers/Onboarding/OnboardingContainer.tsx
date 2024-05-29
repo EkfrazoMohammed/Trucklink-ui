@@ -788,39 +788,61 @@ const OnboardingContainer = ({ onData }) => {
       // } else {
       //   postData()
       // }
-      const noAccountData = [{
-        "accountNumber": "",
-        "accountHolderName": "",
-        "ifscCode": "",
-        "bankName": "",
-        "branchName": ""
-      }];
-      
-      // Check if the first account has missing required fields
-      const noFirstAccount = formData.bankAccounts[0].accountHolderName === "" ||
-        formData.bankAccounts[0].ifscCode === "" ||
-        formData.bankAccounts[0].bankName === "" ||
-        formData.bankAccounts[0].branchName === "";
-      
-      // Check if the second account exists and has missing required fields
-      const secondAccountExists = formData.bankAccounts.length > 1;
-      const noSecondAccount = secondAccountExists && (
-        formData.bankAccounts[1].accountHolderName === "" ||
-        formData.bankAccounts[1].ifscCode === "" ||
-        formData.bankAccounts[1].bankName === "" ||
-        formData.bankAccounts[1].branchName === ""
-      );
-      
+      //   const noAccountData = formData.bankAccounts.every(account =>
+      //     account.accountNumber === "" &&
+      //     account.accountHolderName === "" &&
+      //     account.ifscCode === "" &&
+      //     account.bankName === "" &&
+      //     account.branchName === ""
+      //   );
+
+      //   const noFirstAccount = formData.bankAccounts[0].accountHolderName === "" ||
+      //     formData.bankAccounts[0].ifscCode === "" ||
+      //     formData.bankAccounts[0].bankName === "" ||
+      //     formData.bankAccounts[0].branchName === "";
+
+      //   if (formData.phoneNumber.length !== 10) {
+      //     alert("Mobile number must be at least 10 digits");
+      //   } else if (noAccountData || noFirstAccount) {
+      //     alert("Enter required bank account details");
+      //   } else {
+      //     postData();
+      //   }
+      // };
+
+
+      // Validation for phone number
       if (formData.phoneNumber.length !== 10) {
         alert("Mobile number must be at least 10 digits");
-      } else if (formData.bankAccounts.length === 0 || noAccountData || noFirstAccount || noSecondAccount) {
-        alert("Enter required bank account details");
-      } else {
-        postData();
+        return;
       }
-      
-    };
 
+      // Validation for bank accounts
+      const noFirstAccount = !formData.bankAccounts[0].accountHolderName ||
+        !formData.bankAccounts[0].ifscCode ||
+        !formData.bankAccounts[0].bankName ||
+        !formData.bankAccounts[0].branchName;
+
+      if (noFirstAccount) {
+        alert("Enter required bank account details for the first account");
+        return;
+      }
+
+      // Check if the second bank account exists and if it has any empty required fields
+      if (formData.bankAccounts.length > 1) {
+        const noSecondAccount = !formData.bankAccounts[1].accountHolderName ||
+          !formData.bankAccounts[1].ifscCode ||
+          !formData.bankAccounts[1].bankName ||
+          !formData.bankAccounts[1].branchName;
+
+        if (noSecondAccount) {
+          alert("Enter required bank account details for the second account");
+          return;
+        }
+      }
+
+      postData();
+    }
     const goBack = () => {
       setShowOwnerTable(true)
       localStorage.setItem("displayHeader", "flex");
@@ -853,7 +875,6 @@ const OnboardingContainer = ({ onData }) => {
               <div className='text-md font-normal'>Enter Truck Registration and Owner Details</div>
 
             </div>
-
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={12}>

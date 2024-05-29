@@ -1188,7 +1188,6 @@ const DispatchContainer = ({onData}) =>{
         
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
-
                   <Select
                     name="materialType"
                     onChange={(value) => handleChange('materialType', value)}

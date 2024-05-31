@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DatePickerProps } from 'antd';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined, RedoOutlined, SearchOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined,RedoOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
@@ -12,7 +12,7 @@ import axios from 'axios';
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
-const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
+const VoucherBook = ({onData,showTabs,setShowTabs}) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,8 +75,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      window.location.reload()
-
+        window.location.reload()
+     
     } else {
       alert(`unable to delete data`)
       console.log(response.data)
@@ -187,40 +187,40 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery2') || '';
     const [searchQuery2, setSearchQuery2] = useState<string>(initialSearchQuery);
-
+  
     // Update localStorage whenever searchQuery2 changes
     useEffect(() => {
       localStorage.setItem('searchQuery2', searchQuery2);
     }, [searchQuery2]);
-
+  
     const handleSearch = () => {
       getTableData(searchQuery2, 1, 600, selectedHubId);
     };
-
+  
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery2(e.target.value);
-      if (e.target.value == "") {
+      if(e.target.value==""){
         onReset()
       }
     };
-
-    const onReset = () => {
+  
+    const onReset=()=>{
       setSearchQuery2("");
       getTableData("", 1, 600, selectedHubId);
     }
     return (
       <div className='flex gap-2 justify-between  py-3'>
-        <div className='flex items-center gap-2'>
-          <Search
-            placeholder="Search by Vehicle Number"
-            size='large'
-            value={searchQuery2}
-            onChange={onChangeSearch}
-            onSearch={handleSearch}
-            style={{ width: 320 }}
-          />
-          {searchQuery2 !== null && searchQuery2 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
-        </div>
+     <div className='flex items-center gap-2'>      
+        <Search
+          placeholder="Search by Vehicle Number"
+          size='large'
+          value={searchQuery2}
+          onChange={onChangeSearch}
+          onSearch={handleSearch}
+          style={{ width: 320 }}
+        />
+        {searchQuery2 !==null && searchQuery2 !== "" ? <><Button size='large' onClick={onReset} style={{rotate:"180deg"}} icon={<RedoOutlined />}></Button></>:<></>}
+      </div>
         <div className='flex gap-2'>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> ADD TRUCK</Button>
         </div>
@@ -229,7 +229,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
-  const TruckMasterForm = () => {
+  const VoucherBookForm = () => {
 
     const [formData, setFormData] = useState({
       registrationNumber: '',
@@ -241,7 +241,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       isCommission: true,
       marketRate: '',
       isMarketRate: false,
-      hubId: selectedHubId,
+      hubId:selectedHubId,
     });
 
     const onResetClick = () => {
@@ -258,11 +258,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         isMarketRate: false,
       });
     }
-    const [fileName, setFileName] = useState("");
+    const [fileName,setFileName] = useState("");
     const [bankData, setBankdata] = useState([])
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
-
+    
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -638,8 +638,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         dataIndex: 'name',
         key: 'name',
         width: 60,
-        render: (_, record) => {
-
+        render:(_,record)=>{
+        
           return record?.ownerId[0]?.name.charAt(0).toUpperCase() + record?.ownerId[0]?.name.slice(1)
         }
       },
@@ -658,7 +658,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         key: 'rcBookProof',
         width: 40,
         render: rcBookProof => (
-          rcBookProof ? <Image src={rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} /> : null
+          rcBookProof ? <Image src={rcBookProof} alt="img" width={40} height={40} style={{objectFit:"cover",border:"1px solid #eee",margin:"0 auto"}} /> : null
         )
       },
       {
@@ -741,25 +741,25 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       phoneNumber: "",
       ownerTransferDate: "",
       ownerTransferToDate: "",
-      hubId: selectedHubId
+      hubId:selectedHubId
     });
 
-    const handleResetClick = () => {
-      console.log('reset clicked')
-      setFormData({
-        ownerId: '',
-        accountId: '',
-        registrationNumber: rowDataForTruckTransfer.registrationNumber,
-        commission: rowDataForTruckTransfer.commission,
-        truckType: rowDataForTruckTransfer.truckType,
-        rcBookProof: rowDataForTruckTransfer.rcBookProof,
-        phoneNumber: "",
-        ownerTransferDate: "",
-        ownerTransferToDate: "",
-      });
+    const handleResetClick = () =>{
+console.log('reset clicked')
+setFormData({
+  ownerId: '',
+  accountId: '',
+  registrationNumber: rowDataForTruckTransfer.registrationNumber,
+  commission: rowDataForTruckTransfer.commission,
+  truckType: rowDataForTruckTransfer.truckType,
+  rcBookProof: rowDataForTruckTransfer.rcBookProof,
+  phoneNumber: "",
+  ownerTransferDate: "",
+  ownerTransferToDate: "",
+});
     }
     const filteredOptions = filteredOwnerData.filter(owner => owner._id !== rowDataForTruckTransfer.ownerId[0]._id);
-    const [fileName, setFileName] = useState("");
+    const [fileName,setFileName] = useState("");
     const axiosFileUploadRequest = async (file) => {
       console.log(file)
       try {
@@ -862,26 +862,26 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         }
       }
       localStorage.setItem("transferPayload", JSON.stringify(formData))
-      const res = API.put(url, formData, headersOb)
-        .then((res) => {
-          if (res.status == 201) {
+     const res= API.put(url, formData, headersOb)
+     .then((res)=>{
+       if(res.status==201){
             console.log('Truck transfered successfully:', res.data);
             alert("Owner Transfered successfully")
             window.location.reload();
-          } else {
+      }else{
             console.error('Error adding truck data:', res);
-
-            alert("error occurred")
+           
+       alert("error occurred")
           }
-        }).catch(err => {
-          console.log(err)
-          if (err.response.data.message == "Please choose transfer the later than latest dispatch challan date") {
-            alert("Please choose transfer the later than latest dispatch challan date")
-          } else {
+     }).catch(err=>{
+       console.log(err)
+       if(err.response.data.message=="Please choose transfer the later than latest dispatch challan date"){
+        alert("Please choose transfer the later than latest dispatch challan date")
+       }else{
 
-            alert("error occurred")
-          }
-        })
+         alert("error occurred")
+       }
+     })
     };
     const goBack = () => {
       setShowTruckTable(true)
@@ -988,7 +988,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     {fileName}
                   </div>
                 </Col>
-
+               
 
 
               </Row>
@@ -1035,15 +1035,13 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   };
 
   const EditTruckDataRow = ({ filterTruckTableData }) => {
-    const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
-    const initialOwnerId = {"value":filterTruckTableData.ownerId[0]._id,"ownerName":filterTruckTableData.ownerId[0].name}
-    // `${filterTruckTableData.ownerId[0]._id}`;
+    const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}` ;
+    const initialOwnerId = `${filterTruckTableData.ownerId[0]._id}` ;
 
     const [formData, setFormData] = useState({
       registrationNumber: filterTruckTableData.registrationNumber,
       commission: filterTruckTableData.commission,
-      ownerId: initialOwnerId.value,
-      ownerName:initialOwnerId.ownerName,
+      ownerId: initialOwnerId,
       accountId: null,
       vehicleType: filterTruckTableData.truckType,
       rcBookProof: null,
@@ -1054,12 +1052,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const handleResetClick = () => {
       console.log('reset clicked')
-      setFormData({
+     setFormData({
         registrationNumber: filterTruckTableData.registrationNumber,
         commission: filterTruckTableData.commission,
         // ownerId: '',
-        ownerId: initialOwnerId.value,
-        ownerName:initialOwnerId.ownerName,
+        ownerId: initialOwnerId,
         accountId: null,
         vehicleType: filterTruckTableData.truckType,
         rcBookProof: null,
@@ -1125,9 +1122,9 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
         }));
       }
+
       else if (name === "ownerId") {
-        console.log(value)
-        const request = API.get(`get-owner-bank-details/${value.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
             setBankdata(res.data.ownerDetails[0]['accountIds'])
           })
@@ -1160,14 +1157,13 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       hubId: selectedHubId,
       accountId: formData.accountId,
       commission: formData.commission,
-      ownerId: formData.ownerId.value,
-      ownerName: formData.ownerId.ownerName,
+      ownerId: formData.ownerId,
       rcBookProof: formData.rcBookProof,
       registrationNumber: formData.registrationNumber,
       truckType: formData.vehicleType,
       marketRate: formData.marketRate,
       isMarketRate: formData.isMarketRate,
-
+   
     };
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -1182,30 +1178,20 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       }
 
       localStorage.setItem("pay", JSON.stringify(payload))
-
-      const res = await API.put(url, payload, headersOb)
-        .then((response) => {
-          console.log(response)
-          if (response.status == 201) {
-            alert("Truck data updated successfully");
-            window.location.reload();
-          } else if (response.status == 400) {
-            alert("Truck data updated successfully");
-            window.location.reload();
-          } else {
-            alert('error occured')
-          }
-        }).catch(error => {
-          console.error('Error updating truck data:', error);
-          if(error.response.data.message == "Unable to Find Challan Information"){
-            alert("Truck data updated successfully");
-            window.location.reload(); 
-          }else{
+      
+      const res=await API.put(url, payload, headersOb)
+      .then((response) => {
+        if(response.status == 201){
+          alert("Truck data updated successfully");
+          window.location.reload();
+        }else{
+          alert('error occured')
+        }
+      }).catch(error => {
+        console.error('Error updating truck data:', res);
             alert("An error occurred while updating truck data");
-          }
-          
-        })
-
+      })
+     
     };
 
     const goBack = () => {
@@ -1213,17 +1199,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       onData('flex')
       setShowTabs(true); // Set showTabs to false when adding owner
     }
-
-    const handleOwnerChange = (value) => {
-      const selectedOwner = filteredOwnerData.find(owner => owner._id === value);
-      const ownerName = selectedOwner ? selectedOwner.name : '';
-      console.log(ownerName)
-      let ob={value,ownerName}
-      // Update your state  with both ownerId and ownerName
-      handleChange('ownerId', ob);
-      // handleChange('ownerName', ownerName);
-    };
-    
+   
+   
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1254,6 +1231,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             </div>
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              
                 <Col className="gutter-row mt-6" span={8}>
                   <Input
                     placeholder="Vehicle Number*"
@@ -1283,12 +1261,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     placeholder="Owner Mobile Number"
                     style={{ width: '100%' }}
                     name="ownerId"
-                    onChange={(value) => handleOwnerChange(value)}
-                    // onChange={(value) => handleChange('ownerId', value)}
+                    onChange={(value) => handleChange('ownerId', value)}
                     showSearch
                     optionFilterProp="children"
                     filterOption={filterOption}
-                    value={formData.ownerId == initialOwnerId ? initialOwnerData : formData.ownerId}
+                    value={formData.ownerId ==initialOwnerId ? initialOwnerData :formData.ownerId }
                   >
                     {filteredOwnerData.map((owner, index) => (
                       <Option key={index} value={owner._id}>
@@ -1401,7 +1378,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             )}
           </>
         ) : (
-          <TruckMasterForm />
+          <VoucherBookForm />
         )
       )}
     </>
@@ -1411,4 +1388,4 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
 
 
-export default TruckMaster
+export default VoucherBook

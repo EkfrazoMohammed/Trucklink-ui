@@ -1039,11 +1039,14 @@ if (noSecondAccount) {
       vehicleIds: [],
       hubId: selectedHubId,
       bankAccounts: rowDataForEdit.accountIds.map(account => ({
-        accountNumber: account.accountNumber,
-        accountHolderName: account.accountHolderName,
-        ifscCode: account.ifscCode,
-        bankName: account.bankName,
-        branchName: account.branchName
+      id: account._id,
+      accountNumber: account.accountNumber,
+      accountHolderName: account.accountHolderName,
+      ifscCode: account.ifscCode,
+      bankName: account.bankName,
+      branchName: account.branchName,
+      hubId: account.hubId,
+      ownerId: account.ownerId,
       }))
     });
     const handleOwnerFormChange = (e) => {
@@ -1150,8 +1153,58 @@ if (noSecondAccount) {
         setDistricts([]);
       }
     };
-    const handleSubmit = (e) => {
-      e.preventDefault();
+    // const handleSubmit = (e) => {
+    //   e.preventDefault();
+    //   const payloadOwner = {
+    //     name: formData.name,
+    //     email: formData.email,
+    //     phoneNumber: formData.phoneNumber,
+    //     panNumber: formData.panNumber,
+    //     address: selectedHubName,
+    //     district: formData.district,
+    //     state: formData.state,
+
+    //   };
+    //   const headersOb = {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "Authorization": `Bearer ${authToken}`
+    //     }
+    //   }
+    //   const postData = async () => {
+    //     await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb)
+    //       .then((response) => {
+    //         console.log(response)
+    //         if (response.status == 201) {
+    //           console.log(response)
+    //           alert('Owner data updated successfully!');
+    //           setTimeout(() => {
+    //             window.location.reload();
+    //           }, 1000)
+    //         }
+    //       })
+    //       .catch((error) => {
+    //         console.error('Error updating owner data:', error);
+    //         alert('error occured')
+    //         console.log(error.response.data)
+    //         if (error.response.data.keyPattern.phoneNumber == 1) {
+    //           alert(`mobile number ${formData.phoneNumber} already exist`)
+    //         }
+    //         setTimeout(() => {
+    //           window.location.reload();
+    //         }, 1000)
+    //       });
+    //   }
+
+
+    //   if (formData.phoneNumber.length == 10) {
+
+    //     postData()
+    //   } else {
+    //     alert("mobile number must be atleast 10 digit")
+    //   }
+    // };
+    const updateOwnerDetails = async () => {
       const payloadOwner = {
         name: formData.name,
         email: formData.email,
@@ -1160,48 +1213,85 @@ if (noSecondAccount) {
         address: selectedHubName,
         district: formData.district,
         state: formData.state,
-
       };
+    
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${authToken}`
         }
-      }
-      const postData = async () => {
-        await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb)
-          .then((response) => {
-            console.log(response)
-            if (response.status == 201) {
-              console.log(response)
-              alert('Owner data updated successfully!');
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
-            }
-          })
-          .catch((error) => {
-            console.error('Error updating owner data:', error);
-            alert('error occured')
-            console.log(error.response.data)
-            if (error.response.data.keyPattern.phoneNumber == 1) {
-              alert(`mobile number ${formData.phoneNumber} already exist`)
-            }
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000)
-          });
-      }
-
-
-      if (formData.phoneNumber.length == 10) {
-
-        postData()
-      } else {
-        alert("mobile number must be atleast 10 digit")
+      };
+    
+      try {
+        const response = await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb);
+        if (response.status !== 201) {
+          throw new Error('Failed to update owner details');
+        }
+      } catch (error) {
+        console.error('Error updating owner details:', error);
+        if (error.response && error.response.data.keyPattern && error.response.data.keyPattern.phoneNumber === 1) {
+          alert(`Mobile number ${formData.phoneNumber} already exists`);
+        } else {
+          alert('Error occurred while updating owner details');
+        }
+        throw error; // Re-throw error to be caught by the caller
       }
     };
-
+    
+    const updateOwnerAccounts = async () => {
+      const payloadAccounts = {
+        allBankDetails: formData.bankAccounts.map(account => ({
+          accountNumber: account.accountNumber,
+          accountHolderName: account.accountHolderName,
+          ifscCode: account.ifscCode,
+          bankName: account.bankName,
+          branchName: account.branchName,
+          id: account.id,
+          hubId: selectedHubId,
+          ownerId: account.ownerId
+        }))
+      };
+    
+      const headersOb = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      };
+    
+      try {
+        const response = await API.put(`update-owner-accounts`, payloadAccounts, { headers: headersOb });
+        if (response.status !== 200 && response.status !== 201) {
+          throw new Error('Failed to update bank details');
+        }
+      } catch (error) {
+        console.error('Error updating bank details:', error);
+        alert('Error updating bank details');
+        throw error; // Re-throw error to be caught by the caller
+      }
+    };
+    
+  
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+  
+      if (formData.phoneNumber.length !== 10) {
+        alert("Mobile number must be exactly 10 digits");
+        return;
+      }
+  
+      try {
+        await updateOwnerDetails();
+        await updateOwnerAccounts();
+        
+      alert('Owner data and bank details updated successfully!');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } catch (error) {
+        console.error('Submission error:', error);
+      }
+    };
+  
+ 
     const goBack = () => {
       setShowOwnerTable(true)
       localStorage.setItem("displayHeader", "flex");
@@ -1237,6 +1327,7 @@ if (noSecondAccount) {
               <div className='text-md font-semibold'>Vehicle Owner Information</div>
               <div className='text-md font-normal'>Edit Truck Registration and Owner Details</div>
             </div>
+
 
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>

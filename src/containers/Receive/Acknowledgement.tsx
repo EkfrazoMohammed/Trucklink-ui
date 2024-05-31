@@ -692,11 +692,7 @@ console.log('reset clicked')
        let commisionRate=0
        if (formData.isMarketRate) {
          console.log("isMarketRate", formData.isMarketRate)
-         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        //  commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
-        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
-        commissionTotal = t-m; 
+        commissionTotal = ((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate))-((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)) ; 
          commisionRate=0;
        } else {
          console.log("isMarketRate", formData.isMarketRate)
@@ -709,7 +705,7 @@ console.log('reset clicked')
  
        const payload = {
 
-         "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (commissionTotal) -(parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+         "balance": ((parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (commissionTotal)) -(parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
          "bankTransfer": formData.bankTransfer,
          "cash": formData.cash,
          "deliveryLocation": formData.deliveryLocation,

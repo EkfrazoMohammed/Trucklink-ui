@@ -412,12 +412,14 @@ const DispatchContainer = ({onData}) =>{
       let commisionRate = 0
       if (formData.isMarketRate) {
         // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
-        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
-        commissionTotal = t-m; 
+        // const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
+        // const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
+        // commissionTotal = t-m; 
         // commisionRate = 0;
         // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate); 
+        commissionTotal = ((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate))-((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)) ; 
         commisionRate = parseFloat(selectedvehicleCommission);
+       
       } else {
         // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
         const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
@@ -526,7 +528,6 @@ const DispatchContainer = ({onData}) =>{
               </div>
             </div>
             <div className="flex flex-col gap-1">
-             
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
 
@@ -1076,12 +1077,11 @@ const DispatchContainer = ({onData}) =>{
       let commisionRate = 0
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate)
-        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate) - (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        // commissionTotal =(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
-        const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
-        commissionTotal = t-m; 
+        // const t=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate)
+        // const m=(parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)
+        // commissionTotal = (t-m); 
+        commissionTotal = ((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate))-((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)) ; 
+       
         commisionRate = 0;
       } else {
         console.log("isMarketRate", formData.isMarketRate)
@@ -1093,7 +1093,7 @@ const DispatchContainer = ({onData}) =>{
       }
 
       const payload = {
-        "balance": ((parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) -(commissionTotal)- (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage))),
+        "balance": (((parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) -(commissionTotal))- (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage))),
         "bankTransfer": formData.bankTransfer,
         "cash": formData.cash,
         "deliveryLocation": formData.deliveryLocation,

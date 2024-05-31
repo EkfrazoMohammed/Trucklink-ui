@@ -21,19 +21,9 @@ import ReceiveContainer from '../../containers/Receive/ReceiveContainer';
 import AccountingContainer from '../../containers/Accounting/AccountingContainer';
 import ReportsContainer from '../../containers/Reports/ReportsContainer';
 import SettingsContainer from '../../containers/Settings/SettingsContainer';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+
 
 const { Content, Footer, Sider } = Layout;
-interface RootState {
-  hub: {
-    selectedHub: string; // Assuming selectedHub is of type string
-    // Other properties of the hub slice
-  };
-  // Other slices of the Redux store
-}
-
-
 
 const Dashboard: React.FC = () => {
   const [dataFromChild, setDataFromChild] = useState('');

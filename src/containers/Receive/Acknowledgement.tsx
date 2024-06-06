@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 
 import moment from 'moment-timezone';
 const { Search } = Input;
@@ -31,10 +31,12 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [startDate, setStartDate] = useState("")
     const [endDate, setEndDate] = useState("")
-
-    const handleSearch = (e) => {
-        setSearchQuery(e);
-    };
+    const [startDateValue, setStartDateValue] = useState("")
+    const [endDateValue, setEndDateValue] = useState("")
+    const [loading, setLoading] = useState(false);
+    // const handleSearch = (e) => {
+    //     setSearchQuery(e);
+    // };
 
     const convertToIST = (date) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
@@ -42,22 +44,24 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
     };
     const handleStartDateChange = (date, dateString) => {
         console.log(convertToIST(dateString))
+        setStartDateValue(date)
         setStartDate(date ? convertToIST(dateString) : null);
     };
 
     const handleEndDateChange = (date, dateString) => {
+        setEndDateValue(date)
         setEndDate(date ? convertToIST(dateString) : null);
     };
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
-          if (params[param]) {
-            queryParams.push(`${param}=${params[param]}`);
-          }
+            if (params[param]) {
+                queryParams.push(`${param}=${params[param]}`);
+            }
         }
         return queryParams.length ? `?${queryParams.join("&")}` : "";
-      };
-    const getTableData = async () => {
+    };
+    const getTableData = async (searchQuery) => {
         const headersOb = {
             headers: {
                 "Content-Type": "application/json",
@@ -79,18 +83,17 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             data.endDate = endDate;
         }
 
-        console.log(data)
+
         let queryParams = buildQueryParams(data);
-        console.log(queryParams)
         try {
             const searchData = queryParams ? queryParams : null;
             // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
             // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
             //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
 
-            const response = searchData 
-            ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=50&hubId=${selectedHubId}`, headersOb)
-            : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
+            const response = searchData
+                ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=50&hubId=${selectedHubId}`, headersOb)
+                : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
 
             let allAcknowledgement;
             if (response.data.dispatchData.length == 0) {
@@ -118,11 +121,45 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
     };
     //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
     useEffect(() => {
-        getTableData();
+        getTableData(searchQuery);
     }, [searchQuery, currentPage, currentPageSize, selectedHubId, startDate, endDate]);
 
 
     const DispatchChallanComponent = () => {
+        const initialSearchQuery = localStorage.getItem('searchQuery3') || '';
+        const [searchQuery3, setSearchQuery3] = useState<string>(initialSearchQuery);
+
+        // Update localStorage whenever searchQuery3 changes
+        useEffect(() => {
+            if (searchQuery3 !== initialSearchQuery) {
+                localStorage.setItem('searchQuery3', searchQuery3);
+            }
+        }, [searchQuery3, initialSearchQuery]);
+
+        const handleSearch = () => {
+            getTableData(searchQuery3);
+        };
+
+
+        const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            setSearchQuery3(value);
+            console.log(value);
+            if (value === "") {
+                onReset();
+            }
+        };
+
+        const onReset = () => {
+            setSearchQuery3("");
+            setStartDate("")
+            setEndDate("")
+            setStartDateValue("")
+            setEndDateValue("")
+            setLoading(false)
+            getTableData("");
+            localStorage.removeItem('searchQuery3');
+        };
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
 
@@ -130,19 +167,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     <Search
                         placeholder="Search by Delivery Number"
                         size='large'
+                        value={searchQuery3}
+                        onChange={onChangeSearch}
                         onSearch={handleSearch}
                         style={{ width: 320 }}
                     />
                     <DatePicker
                         size='large'
+                        value={startDateValue}
                         onChange={handleStartDateChange}
                         placeholder='From date'
                     /> -
                     <DatePicker
                         size='large'
+                        value={endDateValue}
                         onChange={handleEndDateChange}
                         placeholder='To date'
                     />
+
+                    {searchQuery3 !== null && searchQuery3 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
             </div>
 
@@ -750,7 +793,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 console.log("isMarketRate", formData.isMarketRate);
                 const t = totalIncome;
                 const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-                commissionTotal = totalIncome-m;
+                commissionTotal = totalIncome - m;
                 commisionRate = 0;
             } else {
                 console.log("isMarketRate", formData.isMarketRate);

@@ -192,33 +192,41 @@ const OnboardingContainer = ({ onData }) => {
 
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
-    const [searchQuery1, setSearchQuery1] = useState<string>(initialSearchQuery);
+    const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
 
     // Update localStorage whenever searchQuery1 changes
-    useEffect(() => {
+    // useEffect(() => {
+    //   localStorage.setItem('searchQuery1', searchQuery1);
+    // }, [searchQuery1]);
+  // Update localStorage whenever searchQuery1 changes
+  useEffect(() => {
+    if (searchQuery1 !== initialSearchQuery) {
       localStorage.setItem('searchQuery1', searchQuery1);
-    }, [searchQuery1]);
+    }
+  }, [searchQuery1, initialSearchQuery]);
 
     const handleSearch = () => {
       getTableData(searchQuery1, 1, 600, selectedHubId);
     };
 
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery1(e.target.value);
-      if (e.target.value == "") {
-        onReset()
+      const value = e.target.value;
+      setSearchQuery1(value);
+      console.log(value);
+      if (value === "") {
+        onReset();
       }
     };
-
+  
     const onReset = () => {
       setSearchQuery1("");
+      localStorage.removeItem('searchQuery1');
       getTableData("", 1, 600, selectedHubId);
-    }
-
+    };
     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
-
+        
           <Search
             placeholder="Search by Owner Name"
             size='large'

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined,  FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 import moment from 'moment-timezone';
 
 const { Search } = Input;
@@ -34,20 +34,23 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
     const [startDate, setStartDate] = useState("")
     const [endDate, setEndDate] = useState("")
 
-    const handleSearch = (e) => {
-        setSearchQuery(e);
-    };
+    const [startDateValue, setStartDateValue] = useState("")
+    const [endDateValue, setEndDateValue] = useState("")
+    const [loading, setLoading] = useState(false);
 
+    
     const convertToIST = (date) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
     };
     const handleStartDateChange = (date, dateString) => {
         console.log(convertToIST(dateString))
+        setStartDateValue(date)
         setStartDate(date ? convertToIST(dateString) : null);
     };
 
     const handleEndDateChange = (date, dateString) => {
+        setEndDateValue(date)
         setEndDate(date ? convertToIST(dateString) : null);
     };
     const buildQueryParams = (params) => {
@@ -59,7 +62,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         }
         return queryParams.length ? `?${queryParams.join("&")}` : "";
     };
-    const getTableData = async () => {
+    const getTableData = async (searchQuery) => {
         const headersOb = {
             headers: {
                 "Content-Type": "application/json",
@@ -119,33 +122,101 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
     useEffect(() => {
         getTableData();
     }, [searchQuery, currentPage, currentPageSize, selectedHubId, startDate, endDate]);
-
-
     const DispatchChallanComponent = () => {
+        const initialSearchQuery = localStorage.getItem('searchQuery5') || '';
+        const [searchQuery5, setSearchQuery5] = useState<string>(initialSearchQuery);
+
+        // Update localStorage whenever searchQuery5 changes
+        useEffect(() => {
+            if (searchQuery5 !== initialSearchQuery) {
+                localStorage.setItem('searchQuery5', searchQuery5);
+            }
+        }, [searchQuery5, initialSearchQuery]);
+
+        const handleSearch = () => {
+            getTableData(searchQuery5);
+        };
+
+
+        const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            setSearchQuery5(value);
+            console.log(value);
+            if (value === "") {
+                onReset();
+            }
+        };
+
+        const onReset = () => {
+            setSearchQuery5("");
+            setStartDate("")
+            setEndDate("")
+            setStartDateValue("")
+            setEndDateValue("")
+            setLoading(false)
+            getTableData("");
+            localStorage.removeItem('searchQuery5');
+        };
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
+
                 <div className='flex gap-2'>
                     <Search
                         placeholder="Search by Delivery Number"
                         size='large'
+                        value={searchQuery5}
+                        onChange={onChangeSearch}
                         onSearch={handleSearch}
                         style={{ width: 320 }}
                     />
                     <DatePicker
                         size='large'
+                        value={startDateValue}
                         onChange={handleStartDateChange}
                         placeholder='From date'
                     /> -
                     <DatePicker
                         size='large'
+                        value={endDateValue}
                         onChange={handleEndDateChange}
                         placeholder='To date'
                     />
+
+                    {searchQuery5 !== null && searchQuery5 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
             </div>
 
         );
     };
+
+    // const DispatchChallanComponent = () => {
+
+    //     return (
+    //         <div className='flex gap-2 flex-col justify-between p-2'>
+    //             <div className='flex gap-2'>
+    //                 <Search
+    //                     placeholder="Search by Delivery Number"
+    //                     size='large'
+    //                     onSearch={handleSearch}
+    //                     style={{ width: 320 }}
+    //                 />
+    //                 <DatePicker
+    //                     size='large'
+    //                     onChange={handleStartDateChange}
+    //                     placeholder='From date'
+    //                 /> -
+    //                 <DatePicker
+    //                     size='large'
+    //                     onChange={handleEndDateChange}
+    //                     placeholder='To date'
+    //                 />
+    //             </div>
+    //         </div>
+
+    //     );
+    // };
+
+
 
     const DispatchChallanComponentTable = ({ onEditChallanClick }) => {
 

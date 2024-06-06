@@ -18,7 +18,6 @@ const VoucherBook = ({onData,showTabs,setShowTabs}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredVoucherData, setFilteredVoucherData] = useState([]);
 
-console.log(filteredVoucherData)
   const handleSearch = (e) => {
     setSearchQuery(e);
   };
@@ -475,8 +474,6 @@ console.log(filteredVoucherData)
     ];
     return (
       <>
-
-
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -614,10 +611,7 @@ setFormData({
       }
     };
 
-
-
     const handleSubmitTransfer = (e) => {
-
       e.preventDefault();
       const vehicleId = rowDataForTruckTransfer._id
       const oldOwnerId = rowDataForTruckTransfer.ownerId[0]._id;
@@ -660,7 +654,6 @@ setFormData({
     return (
       <>
         <div className="flex flex-col gap-2">
-
           <div className="flex items-center gap-4">
             <div className="flex"> <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
             <div className="flex flex-col">
@@ -1121,7 +1114,5 @@ setFormData({
   );
 
 }
-
-
 
 export default VoucherBook

@@ -6,7 +6,7 @@ const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 
 
-const OwnerTransferLog = () => {
+const RecoveryRegister = () => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
@@ -20,7 +20,7 @@ const OwnerTransferLog = () => {
     setSearchQuery(value);
   };
 
-  const TransferLogHeader = () => {
+  const RecoveryRegisterHeader = () => {
     return (
       <div className='flex gap-2 justify-between  py-3'>
         <Search
@@ -34,24 +34,7 @@ const OwnerTransferLog = () => {
     );
   };
 
-  const ViewTransferLogDataRow = ({ filterTruckTableData }) => {
-    return (
-      <div className="owner-details">
-
-        <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={() => { setShowTruckTable(true) }} />
-        <div className="section mx-2 my-4">
-          <h2 className='font-semibold text-md'>Vehicle Information</h2>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={5}>
-              <p className='flex flex-col font-normal m-2'><span className="label text-sm">Enter Truck details </span> </p>
-            </Col>
-
-          </Row>
-        </div>
-
-      </div>
-    );
-  };
+  
   const [transferData, setTransferData] = useState([])
   const getTransferDetails = async () => {
     let response = await API.get(`get-all-users-logs/${selectedHubId}`, headersOb)
@@ -70,7 +53,7 @@ const OwnerTransferLog = () => {
   useEffect(() => {
     getTransferDetails()
   }, [])
-  const TransferLogTable = ({ transferData }) => {
+  const RecoveryRegisterTable = ({ transferData }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -154,7 +137,7 @@ const OwnerTransferLog = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={transferData}
+          dataSource={[]}
           scroll={{ x: 767, y: 360 }}
           rowKey="_id"
           pagination={{
@@ -168,11 +151,11 @@ const OwnerTransferLog = () => {
   return (
     <>
 
-      {/* <TransferLogHeader /> */}
-      <TransferLogTable transferData={transferData} />
+      <RecoveryRegisterHeader />
+      <RecoveryRegisterTable transferData={transferData} />
 
     </>
   )
 }
 
-export default OwnerTransferLog
+export default RecoveryRegister

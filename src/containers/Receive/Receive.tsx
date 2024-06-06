@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
-import axios from "axios"
+
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
+import moment from 'moment-timezone';
 
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
@@ -15,37 +16,80 @@ const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 
 const filterOption = (input, option) =>
     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-  
-const Receive = ({onData,showTabs,setShowTabs}) => {
 
-    const authToken=localStorage.getItem("token");
-    
+const Receive = ({ onData, showTabs, setShowTabs }) => {
+
+    const authToken = localStorage.getItem("token");
+
     const [showTable, setShowTable] = useState(true);
     const selectedHubId = localStorage.getItem("selectedHubID");
-    const [searchQuery, setSearchQuery] = useState('');
-
     const [receive, setreceive] = useState([]);
 
-    const handleSearch = (e) => {
-        setSearchQuery(e.target.value);
-    };
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(50);
     const [totalChallanData, setTotalChallanData] = useState(100)
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
+
+    const handleSearch = (e) => {
+        setSearchQuery(e);
+    };
+
+    const convertToIST = (date) => {
+        const istDate = moment.tz(date, "Asia/Kolkata");
+        return istDate.valueOf();
+    };
+    const handleStartDateChange = (date, dateString) => {
+        console.log(convertToIST(dateString))
+        setStartDate(date ? convertToIST(dateString) : null);
+    };
+
+    const handleEndDateChange = (date, dateString) => {
+        setEndDate(date ? convertToIST(dateString) : null);
+    };
+    const buildQueryParams = (params) => {
+        let queryParams = [];
+        for (const param in params) {
+            if (params[param]) {
+                queryParams.push(`${param}=${params[param]}`);
+            }
+        }
+        return queryParams.length ? `?${queryParams.join("&")}` : "";
+    };
     const getTableData = async () => {
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
+
+        const data = {};
+
+        if (searchQuery) {
+            data.searchTDNo = [searchQuery];
+        }
+
+        if (startDate) {
+            data.startDate = startDate;
+        }
+
+        if (endDate) {
+            data.endDate = endDate;
+        }
+
+        console.log(data)
+        let queryParams = buildQueryParams(data);
+        console.log(queryParams)
         try {
-            const searchData = searchQuery ? searchQuery : null;
-            const response = searchData ? await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb)
-                : await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`,headersOb);
-            
+            const searchData = queryParams ? queryParams : null;
+
+            const response = searchData ? await API.get(`get-receive-register${queryParams}&page=1?limit=200&hubId=${selectedHubId}`, headersOb)
+                : await API.get(`get-receive-register?page=1&limit=200&hubId=${selectedHubId}`, headersOb);
+
             let allreceive;
             if (response.data.dispatchData.length == 0) {
                 allreceive = response.data.disptachData
@@ -74,21 +118,29 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
     //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
     useEffect(() => {
         getTableData();
-    }, [searchQuery, currentPage, currentPageSize, selectedHubId]);
+    }, [searchQuery, currentPage, currentPageSize, selectedHubId, startDate, endDate]);
 
 
     const DispatchChallanComponent = () => {
         return (
             <div className='flex gap-2 flex-col justify-between p-2'>
-            <div className='flex gap-2'>
+                <div className='flex gap-2'>
                     <Search
-                        placeholder="Search by Vehicle Number"
+                        placeholder="Search by Delivery Number"
                         size='large'
                         onSearch={handleSearch}
                         style={{ width: 320 }}
                     />
-                    <DatePicker onChange={onChange} placeholder='From date' /> -
-                    <DatePicker onChange={onChange} placeholder='To date' />
+                    <DatePicker
+                        size='large'
+                        onChange={handleStartDateChange}
+                        placeholder='From date'
+                    /> -
+                    <DatePicker
+                        size='large'
+                        onChange={handleEndDateChange}
+                        placeholder='To date'
+                    />
                 </div>
             </div>
 
@@ -179,6 +231,15 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 width: 140,
             },
             {
+                title: 'Owner Name',
+
+                width: 160,
+                render: (_, record) => {
+                    return <p>{record.ownerName}</p>
+                }
+
+            },
+            {
                 title: 'From',
                 dataIndex: 'loadLocation',
                 key: 'loadLocation',
@@ -219,28 +280,40 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
             {
                 title: 'Total',
                 width: 110,
-                render: (_,record) => {
-                    return record.quantityInMetricTons * record.rate
-
+                render: (_, record) => {
+                    return (record.quantityInMetricTons * record.rate).toFixed(2);
                 }
             },
             {
                 title: 'Commission',
-                width: 180,
+                width: 160,
                 render: (_, record) => {
-                  return (
-                    <div style={{display:"flex",gap:"2rem",alignItems:"space-between",justifyContent:"center"}}>
+                    console.log(record)
+                    const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
+                    const percentCommissionINR = (percentCommission / 100)
+                    return (
+                        <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
-                    <p>
-                      {record.commisionRate == null || record.commisionRate == 0 ?<>-</>:<> {`${record.commisionRate} %`}</>}
-                    </p>
-                    <p>
-                      {`${record.commisionTotal}`}
-                    </p>
-                    </div>
-                  );
+                            {record.isMarketRate ? <>
+                                <p>-</p>
+                                <p>
+                                    {`${record.commisionTotal}`}
+                                </p>
+                            </>
+                                :
+                                <><p>
+                                    {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
+                                </p>
+                                    <p>
+                                        {`${percentCommissionINR}`}
+                                    </p>
+                                </>
+                            }
+
+                        </div>
+                    );
                 }
-              },
+            },
             {
                 title: 'Diesel',
                 dataIndex: 'diesel',
@@ -264,7 +337,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 dataIndex: 'shortage',
                 key: 'shortage',
                 width: 110,
-                render: (_,record) => {
+                render: (_, record) => {
                     return record.shortage
                 },
             },
@@ -273,17 +346,17 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 dataIndex: 'balance',
                 key: 'balance',
                 width: 140,
-                render: (_,record: unknown) => (
+                render: (_, record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                        <span style={{color:"#009f23",fontWeight:"600"}}>+ {(record.balance).toFixed(2)}</span>
-                        :
-                        <span style={{color:"red"}}>{(record.balance).toFixed(2)}</span>
-                        
-                    }
+                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(record.balance)}</span>
+                            :
+                            <span style={{ color: "red" }}>{(record.balance)}</span>
+
+                        }
                     </p>
                 )
-                    
+
             },
             {
                 title: 'Action',
@@ -293,7 +366,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 render: (record: unknown) => (
                     <Space size="middle">
                         <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
-                        
+
                     </Space>
                 ),
             },
@@ -336,7 +409,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                         onChange: changePagination,
                         onShowSizeChange: changePaginationAll,
                     }}
-                    />
+                />
             </>
         );
     };
@@ -345,16 +418,16 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
 
     const handleEditChallanClick = (rowData) => {
         setEditingRow(rowData);
-            setShowTable(false);
-            onData('none')
+        setShowTable(false);
+        onData('none')
         setShowTabs(false); // Set showTabs to false when adding owner
     };
 
-    
+
     const EditableChallan = ({ editingRow }) => {
 
         const selectedHubId = localStorage.getItem("selectedHubID");
-    
+
         const [formData, setFormData] = useState(
             {
                 "balance": editingRow.balance,
@@ -385,9 +458,9 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                 "hubId": selectedHubId,
                 "shortage": editingRow.shortage,
             }
-    
+
         );
-    
+
         const onResetClick = () => {
             console.log('reset clicked')
             setFormData(
@@ -420,7 +493,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                     "hubId": selectedHubId,
                     "shortage": editingRow.shortage,
                 }
-        
+
             );
         }
         const handleChange = (name, value) => {
@@ -464,17 +537,17 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         };
         const [materials, setMaterials] = useState([]);
         const [loadLocation, setloadLocations] = useState([]);
-    
+
         const [deliveryLocation, setDeliveryLocations] = useState([]);
         const fetchMaterials = async () => {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             try {
-                const response = await API.get(`get-material/${selectedHubId}`,headersOb);
+                const response = await API.get(`get-material/${selectedHubId}`, headersOb);
                 if (response.status === 201) {
                     setMaterials(response.data.materials);
                 }
@@ -486,18 +559,18 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         const fetchLoadLocations = async () => {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             try {
-                const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
+                const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
                 if (response.status == 201) {
                     setloadLocations(response.data.materials);
                 } else {
                     console.log("error in fetchLoadLocations")
                 }
-    
+
             } catch (error) {
                 console.error('Error fetching materials:', error);
             }
@@ -506,12 +579,12 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         const fetchDeliveryLocations = async () => {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             try {
-                const response = await API.get(`get-delivery-location/${selectedHubId}`,headersOb);
+                const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
                 setDeliveryLocations(response.data.materials);
             } catch (error) {
                 console.error('Error fetching materials:', error);
@@ -521,33 +594,33 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         const fetchVehicleDetails = async () => {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             try {
-                const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
+                const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
                 let truckDetails;
                 if (response.data.truck == 0) {
                     truckDetails = response.data.truck
                     setVehicleDetails(truckDetails);
                 } else {
-    
+
                     truckDetails = response.data.truck[0].data || "";
                     setVehicleDetails(response.data.truck[0].count);
-    
+
                     if (truckDetails && truckDetails.length > 0) {
                         const arrRes = truckDetails.sort(function (a, b) {
                             a = a.
                                 registrationNumber.toLowerCase();
                             b = b.
                                 registrationNumber.toLowerCase();
-    
+
                             return a < b ? -1 : a > b ? 1 : 0;
                         });
-    
+
                         setVehicleDetails(arrRes);
-    
+
                         return arrRes;
                     }
                 }
@@ -557,18 +630,18 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
             }
         };
         const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
-    
+
         const [selectedvehicleCommission, setselectedCommission] = useState(''); // State to store vehicle details
-    
+
         const fetchSelectedVehicleDetails = async (vehicleId) => {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             try {
-                const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`,headersOb);
+                const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
                 const truckDetails = response.data.truck;
                 if (truckDetails && truckDetails.length > 0) {
                     const selectedVehicle = truckDetails[0];
@@ -588,9 +661,9 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                     } else {
                         console.log('second')
                         commissionRate = selectedVehicle.commission
-    
+
                     }
-    
+
                     setFormData((prevFormData) => ({
                         ...prevFormData,
                         ownerId,
@@ -611,6 +684,9 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         useEffect(() => {
             fetchSelectedVehicleDetails(selectedvehicleId)
         }, [formData.vehicleNumber, selectedvehicleId])
+        useEffect(() => {
+            fetchSelectedVehicleDetails(editingRow.vehicleId)
+        }, [formData.isMarketRate])
         // Fetch materials on component mount
         useEffect(() => {
             fetchMaterials();
@@ -618,64 +694,139 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
             fetchDeliveryLocations();
             fetchVehicleDetails();
         }, [selectedHubId]);
-    
+
+        //     const handleSubmit = (e) => {
+        //         e.preventDefault();
+        //         // Calculate commissionTotal based on isMarketRate
+        //   let commissionTotal = 0;
+        //   let commisionRate=0
+        //   if (formData.isMarketRate) {
+        //     console.log("isMarketRate", formData.isMarketRate)
+
+        //     commissionTotal = ((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate))-((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)) ; 
+
+        //     commisionRate=0;
+        //   } else {
+        //     console.log("isMarketRate", formData.isMarketRate)
+        //     // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
+        //     const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
+        //     commissionTotal = commissionTotalInPercentage / 100;
+        //     commisionRate=parseFloat(selectedvehicleCommission);
+
+        //   }
+
+        //   const payload = {
+        //     "balance": ((parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (commissionTotal)) -(parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+        //     "bankTransfer": formData.bankTransfer,
+        //     "cash": formData.cash,
+        //     "deliveryLocation": formData.deliveryLocation,
+        //     "deliveryNumber": formData.deliveryNumber,
+        //     "diesel": formData.diesel,
+        //     "grDate": formData.grDate,
+        //     "grNumber": formData.grNumber,
+        //     "invoiceProof": null,
+        //     "loadLocation": formData.loadLocation,
+        //     "materialType": formData.materialType,
+        //     "ownerId": formData.ownerId,
+        //     "ownerName": formData.ownerName,
+        //     "ownerPhone": formData.ownerPhone,
+        //     "quantityInMetricTons": formData.quantityInMetricTons,
+        //     "rate": formData.rate,
+        //     "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
+        //     "vehicleBank": formData.vehicleBank,
+        //     "vehicleId": formData.vehicleId,
+        //     "vehicleNumber": formData.vehicleNumber,
+        //     "vehicleType": formData.vehicleType,
+        //     "commisionRate": commisionRate,
+        //     "commisionTotal": commissionTotal,
+        //     "isMarketRate": formData.isMarketRate,
+        //     "marketRate": formData.marketRate,
+        //     "hubId": selectedHubId,
+        //   "shortage": formData.shortage,
+        //   }
+        //   const headersOb = {
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //       "Authorization": `Bearer ${authToken}`
+        //     }
+        //   }
+
+        //         API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload,headersOb)
+        //             .then((response) => {
+        //                 console.log('Challan updated successfully:', response.data);
+        //                 alert("Challan updated successfully")
+        //                 window.location.reload(); // Reload the page or perform any necessary action
+        //             })
+        //             .catch((error) => {
+        //                 alert("error occurred")
+        //                 console.error('Error adding truck data:', error);
+        //             });
+
+        //     };
+
+        const [a, setA] = useState(null);
         const handleSubmit = (e) => {
             e.preventDefault();
-            // Calculate commissionTotal based on isMarketRate
-             // Calculate commissionTotal based on isMarketRate
-      let commissionTotal = 0;
-      let commisionRate=0
-      if (formData.isMarketRate) {
-        console.log("isMarketRate", formData.isMarketRate)
-        // If isMarketRate is true, calculate commissionTotal as quantityInMetrics * marketRate
-        commissionTotal = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commisionRate=0;
-      } else {
-        console.log("isMarketRate", formData.isMarketRate)
-        // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-        const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
-        commissionTotal = commissionTotalInPercentage / 100;
-        commisionRate=parseFloat(selectedvehicleCommission);
-      
-      }
 
-      const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-        "bankTransfer": formData.bankTransfer,
-        "cash": formData.cash,
-        "deliveryLocation": formData.deliveryLocation,
-        "deliveryNumber": formData.deliveryNumber,
-        "diesel": formData.diesel,
-        "grDate": formData.grDate,
-        "grNumber": formData.grNumber,
-        "invoiceProof": null,
-        "loadLocation": formData.loadLocation,
-        "materialType": formData.materialType,
-        "ownerId": formData.ownerId,
-        "ownerName": formData.ownerName,
-        "ownerPhone": formData.ownerPhone,
-        "quantityInMetricTons": formData.quantityInMetricTons,
-        "rate": formData.rate,
-        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer),
-        "vehicleBank": formData.vehicleBank,
-        "vehicleId": formData.vehicleId,
-        "vehicleNumber": formData.vehicleNumber,
-        "vehicleType": formData.vehicleType,
-        "commisionRate": commisionRate,
-        "commisionTotal": commissionTotal,
-        "isMarketRate": formData.isMarketRate,
-        "marketRate": formData.marketRate,
-        "hubId": selectedHubId,
-      "shortage": formData.shortage,
-      }
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
+            let commissionTotal = 0;
+            let commisionRate = 0;
 
-            API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload,headersOb)
+            const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
+
+            if (formData.isMarketRate) {
+                console.log("isMarketRate", formData.isMarketRate);
+                const t = totalIncome;
+                const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+                commissionTotal = totalIncome -m;
+                commisionRate = 0;
+            } else {
+                console.log("isMarketRate", formData.isMarketRate);
+                const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
+                commissionTotal = commissionTotalInPercentage / 100;
+                commisionRate = parseFloat(selectedvehicleCommission);
+            }
+
+
+            const totalExpenses = parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage);
+            const balance = totalIncome - commissionTotal - totalExpenses;
+
+            const payload = {
+                balance: balance,
+                bankTransfer: formData.bankTransfer,
+                cash: formData.cash,
+                deliveryLocation: formData.deliveryLocation,
+                deliveryNumber: formData.deliveryNumber,
+                diesel: formData.diesel,
+                grDate: formData.grDate,
+                grNumber: formData.grNumber,
+                invoiceProof: null,
+                loadLocation: formData.loadLocation,
+                materialType: formData.materialType,
+                ownerId: formData.ownerId,
+                ownerName: formData.ownerName,
+                ownerPhone: formData.ownerPhone,
+                quantityInMetricTons: formData.quantityInMetricTons,
+                rate: formData.rate,
+                totalExpense: totalExpenses,
+                vehicleBank: formData.vehicleBank,
+                vehicleId: formData.vehicleId,
+                vehicleNumber: formData.vehicleNumber,
+                vehicleType: formData.vehicleType,
+                commisionRate: commisionRate,
+                commisionTotal: commissionTotal,
+                isMarketRate: formData.isMarketRate,
+                marketRate: formData.marketRate,
+                hubId: selectedHubId,
+                shortage: formData.shortage,
+            };
+            setA(payload);
+            const headersOb = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
+                }
+            }
+            API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
                     alert("Challan updated successfully")
@@ -685,8 +836,8 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                     alert("error occurred")
                     console.error('Error adding truck data:', error);
                 });
-    
-        };
+
+        }
         const goBack = () => {
             setShowTable(true)
             onData('flex')
@@ -695,30 +846,30 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
         return (
             <>
                 <div className="flex flex-col gap-2">
-                
-<div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
-            <div className="flex flex-col">
-              <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
-              <Breadcrumb
-                items={[
-                  {
-                    title: 'Receive',
-                  },
-                  {
-                    title: 'Receive Register',
-                  },
-                  {
-                    title: 'Edit',
-                  },
-                ]}
-              />
-            </div>
-          </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
+                        <div className="flex flex-col">
+                            <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Challan</h1>
+                            <Breadcrumb
+                                items={[
+                                    {
+                                        title: 'Receive',
+                                    },
+                                    {
+                                        title: 'Receive Register',
+                                    },
+                                    {
+                                        title: 'Edit',
+                                    },
+                                ]}
+                            />
+                        </div>
+                    </div>
                     <div className="flex flex-col gap-1">
                         <div className="flex gap-1 justify-between">
                             <div>
-    
+
                                 <div className="text-md font-semibold">Challan Details</div>
                                 <div className="text-md font-normal">Enter Challan Details</div>
                             </div>
@@ -732,14 +883,14 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                             </div>
                         </div>
                         <div className="flex flex-col gap-1">
-    
+                            {/* {JSON.stringify(a, null, 2)} */}
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col className="gutter-row mt-6" span={6}>
-    
+
                                     <Select
-                                      showSearch
-                                      optionFilterProp="children"
-                                      filterOption={filterOption}
+                                        showSearch
+                                        optionFilterProp="children"
+                                        filterOption={filterOption}
                                         name="materialType"
                                         onChange={(value) => handleChange('materialType', value)}
                                         placeholder="Material Type*"
@@ -762,12 +913,12 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                         size="large"
                                         value={formData.grNumber}
                                         style={{ width: '100%' }}
-    
+
                                         onChange={(e) => handleChange('grNumber', e.target.value)}
                                     />
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
-    
+
                                     <DatePicker
                                         placeholder="GR Date"
                                         size="large"
@@ -776,11 +927,11 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                     />
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
-    
+
                                     <Select
-                                      showSearch
-                                      optionFilterProp="children"
-                                      filterOption={filterOption}
+                                        showSearch
+                                        optionFilterProp="children"
+                                        filterOption={filterOption}
                                         name="loadLocation"
                                         onChange={(value) => handleChange('loadLocation', value)}
                                         placeholder="Loaded From*"
@@ -794,15 +945,15 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                             </Option>
                                         ))}
                                     </Select>
-    
+
                                 </Col>
                             </Row>
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col className="gutter-row mt-6" span={6}>
                                     <Select
-                                      showSearch
-                                      optionFilterProp="children"
-                                      filterOption={filterOption}
+                                        showSearch
+                                        optionFilterProp="children"
+                                        filterOption={filterOption}
                                         name="deliveryLocation"
                                         onChange={(value) => handleChange('deliveryLocation', value)}
                                         placeholder="Deliver To*"
@@ -819,9 +970,9 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
                                     <Select
-                                      showSearch
-                                      optionFilterProp="children"
-                                      filterOption={filterOption}
+                                        showSearch
+                                        optionFilterProp="children"
+                                        filterOption={filterOption}
                                         name="vehicleNumber"
                                         placeholder="Vehicle Number*"
                                         size="large"
@@ -844,7 +995,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                     </Select>
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
-    
+
                                     <Select
                                         name="vehicleType"
                                         placeholder="Vehicle Type*"
@@ -853,11 +1004,11 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                         value={formData.vehicleType}
                                         disabled
                                     />
-    
-    
+
+
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
-    
+
                                     <Input
                                         placeholder="DeliveryNumber*"
                                         size="large"
@@ -887,7 +1038,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                         onChange={(e) => handleChange('rate', e.target.value)}
                                     />
                                 </Col>
-    
+
                                 <Col className="gutter-row mt-6" span={6}>
                                     {formData.isMarketRate ? <>
                                         <Input
@@ -899,23 +1050,23 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                             onChange={(e) => handleChange('marketRate', e.target.value)}
                                         />
                                     </> : <></>}
-    
+
                                 </Col>
                             </Row>
-    
-    
+
+
                         </div>
                     </div>
-    
+
                     <div className="flex flex-col gap-1">
                         <div className="flex gap-1 justify-between">
                             <div>
-    
+
                                 <div className="text-md font-semibold">Load Trip Expense Details</div>
                                 <div className="text-md font-normal">Enter Trip Details</div>
                             </div>
                         </div>
-    
+
                         <div className="flex flex-col gap-1">
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col className="gutter-row mt-2" span={6}>
@@ -947,7 +1098,7 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                         value={formData.bankTransfer}
                                         onChange={(e) => handleChange('bankTransfer', e.target.value)}
                                     />
-    
+
                                 </Col>
                                 <Col className="gutter-row mt-2" span={6}>
                                     <Input
@@ -958,11 +1109,11 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
                                         value={formData.shortage}
                                         onChange={(e) => handleChange('shortage', e.target.value)}
                                     />
-    
+
                                 </Col>
                             </Row>
-    
-    
+
+
                         </div>
                     </div>
                     <div className="flex gap-4 items-center justify-center reset-button-container">
@@ -975,18 +1126,18 @@ const Receive = ({onData,showTabs,setShowTabs}) => {
             </>
         );
     };
-    
+
     return (
         <>
             {showTable ? (
-          <>
-                <DispatchChallanComponent />
-                <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} />
-            </>
-            ):(
+                <>
+                    <DispatchChallanComponent />
+                    <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} />
+                </>
+            ) : (
                 <EditableChallan editingRow={editingRow} />
             )
-        }
+            }
         </>
     )
 

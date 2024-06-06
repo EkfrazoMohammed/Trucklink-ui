@@ -3,7 +3,7 @@ import { Table, Input } from 'antd';
 const { Search } = Input;
 import { API } from "../../API/apirequest"
 
-const OwnerActivityLog = () => {
+const BillRegister = () => {
   const authToken=localStorage.getItem("token");
   const headersOb = {
     headers: {
@@ -12,7 +12,7 @@ const OwnerActivityLog = () => {
     }
   }
 
-  const ActivityLogHeader = () => {
+  const BillRegisterHeader = () => {
     return (
 
         <div className='flex gap-2 justify-between  py-3'>
@@ -42,7 +42,7 @@ const OwnerActivityLog = () => {
   useEffect(() => {
     getActivityDetails()
   }, [])
-  const ActivityLogTable = ({ ActivityData }) => {
+  const BillRegisterTable = ({ ActivityData }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -148,11 +148,11 @@ const OwnerActivityLog = () => {
   return (
     <>
 
-      {/* <ActivityLogHeader /> */}
-      <ActivityLogTable ActivityData={ActivityData} />
+      {/* <BillRegisterHeader /> */}
+      <BillRegisterTable ActivityData={ActivityData} />
 
     </>
   )
 }
 
-export default OwnerActivityLog
+export default BillRegister

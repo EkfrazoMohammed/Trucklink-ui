@@ -21,19 +21,9 @@ import ReceiveContainer from '../../containers/Receive/ReceiveContainer';
 import AccountingContainer from '../../containers/Accounting/AccountingContainer';
 import ReportsContainer from '../../containers/Reports/ReportsContainer';
 import SettingsContainer from '../../containers/Settings/SettingsContainer';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+
 
 const { Content, Footer, Sider } = Layout;
-interface RootState {
-  hub: {
-    selectedHub: string; // Assuming selectedHub is of type string
-    // Other properties of the hub slice
-  };
-  // Other slices of the Redux store
-}
-
-
 
 const Dashboard: React.FC = () => {
   const [dataFromChild, setDataFromChild] = useState('');
@@ -41,11 +31,11 @@ const Dashboard: React.FC = () => {
   const handleDataFromChild = (childData) => {
     setDataFromChild(childData);
   };
-  console.log(dataFromChild)
 
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
-  const [title, setTitle] = useState('Dashboard');
+  const [selectedMenuTitle, setSelectedMenuTitle] = useState(localStorage.getItem("selectedMenuItemTitle")|| 'Dashboard')
+  const [title, setTitle] = useState(selectedMenuTitle || 'Dashboard');
 
   const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
@@ -64,9 +54,12 @@ const Dashboard: React.FC = () => {
   const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
     setSelectedMenuItem(menuItemKey);
     setTitle(menuTitle);
+    setSelectedMenuTitle(menuTitle)
   };
 
   useEffect(() => {
+    localStorage.setItem("selectedMenu", "");
+    localStorage.setItem("selectedMenuItemTitle", selectedMenuTitle);
     localStorage.setItem('selectedMenuItem', selectedMenuItem); // Store the selected menu item key in localStorage
   }, [selectedMenuItem]);
 
@@ -76,6 +69,7 @@ const Dashboard: React.FC = () => {
 
     setLogoutModalVisible(false);
     localStorage.removeItem('token');
+    localStorage.removeItem('selectedMenuItemTitle');
     localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
     localStorage.clear();
     window.location.replace("/");

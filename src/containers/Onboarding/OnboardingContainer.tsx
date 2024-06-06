@@ -7,7 +7,6 @@ import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlin
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
-import debounce from 'lodash/debounce';
 import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
@@ -44,6 +43,7 @@ const OnboardingContainer = ({ onData }) => {
   const [rowDataForEdit, setRowDataForEdit] = useState(null);
   const [rowDataForView, setRowDataForView] = useState(null);
 
+  const [loading, setLoading] = useState(false);
 
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
@@ -51,40 +51,7 @@ const OnboardingContainer = ({ onData }) => {
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
-  // const getTableData = async (searchQuery, page, limit, selectedHubID) => {
-  //   const headersOb = {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       "Authorization": `Bearer ${authToken}`
-  //     }
-  //   }
-  //   try {
-  //     const pages = page;
-  //     const limitData = 600;
-  //     const searchData = searchQuery ? searchQuery : null;
-  //     const response = searchData ? await API.get(`get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-  //       : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-  //     let ownerDetails;
-  //     if (response.data.ownerDetails.length == 0) {
-  //       ownerDetails = response.data.ownerDetails
-  //       setFilteredOwnerData(ownerDetails);
-  //     } else {
-  //       ownerDetails = response.data.ownerDetails[0].data || "";
-  //       setTotalOwnerData(response.data.ownerDetails[0].count)
-  //       if (ownerDetails && ownerDetails.length > 0) {
-  //         const arrRes = ownerDetails.sort(function (a, b) {
-  //           a = a.name.toLowerCase();
-  //           b = b.name.toLowerCase();
-  //           return a < b ? -1 : a > b ? 1 : 0;
-  //         });
-  //         setFilteredOwnerData(arrRes);
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // };
-  const getTableData = async (searchQuery, page, limit, selectedHubID) => {
+   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
@@ -92,6 +59,7 @@ const OnboardingContainer = ({ onData }) => {
       }
     };
 
+    setLoading(true);
     try {
       const pages = page;
       const limitData = 600;
@@ -114,8 +82,11 @@ const OnboardingContainer = ({ onData }) => {
         setTotalOwnerData(0);
         setFilteredOwnerData([]);
       }
+      setLoading(false);
     } catch (err) {
+
       console.log(err);
+      setLoading(false);
     }
   };
 
@@ -1565,6 +1536,7 @@ if (noSecondAccount) {
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
+          loading={loading}
         />
 
       </>

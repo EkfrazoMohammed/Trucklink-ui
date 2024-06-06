@@ -15,6 +15,7 @@ const filterOption = (input, option) =>
 const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredOwnerData, setFilteredOwnerData] = useState([]);
 
@@ -94,6 +95,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
+    setLoading(true);
+
     try {
 
       const pages = page;
@@ -122,7 +125,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           setFilteredOwnerData(arrRes);
         }
       }
+      setLoading(false);
+
     } catch (err) {
+      setLoading(false);
+
       console.log(err)
 
     }
@@ -136,6 +143,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
+    setLoading(true);
+
     try {
 
       const pages = page;
@@ -172,9 +181,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         }
 
       }
+      setLoading(false);
+
     } catch (err) {
       console.log(err)
-
+      setLoading(false);
     }
   };
   // Update the useEffect hook to include currentPage and currentPageSize as dependencies
@@ -725,6 +736,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
+          loading={loading}
         />
       </>
     );

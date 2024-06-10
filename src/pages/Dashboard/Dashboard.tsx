@@ -28,6 +28,8 @@ const { Content, Footer, Sider } = Layout;
 const Dashboard: React.FC = () => {
   const [dataFromChild, setDataFromChild] = useState('');
 
+  console.log(dataFromChild)
+
   const handleDataFromChild = (childData) => {
     setDataFromChild(childData);
   };
@@ -55,6 +57,7 @@ const Dashboard: React.FC = () => {
     setSelectedMenuItem(menuItemKey);
     setTitle(menuTitle);
     setSelectedMenuTitle(menuTitle)
+    setDataFromChild("flex")
   };
 
   useEffect(() => {
@@ -94,7 +97,7 @@ const Dashboard: React.FC = () => {
                  }}/>
 
                <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto truck-top-logo-close' /> 
-                               </div>
+                </div>
                  </>
               : 
               

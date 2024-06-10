@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import moment from "moment";
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
@@ -17,8 +16,8 @@ const AccountingContainer = () => {
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
   const [owners, setOwners] = useState([]);  // State to manage the list of owners
-
   const authToken = localStorage.getItem("token");
+  const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
     headers: {
       "Content-Type": "application/json",
@@ -29,6 +28,7 @@ const AccountingContainer = () => {
   const getTableData = async () => {
     try {
       setLoading(true);
+      // const response = await API.get(`get-advance-data&hubId=${selectedHubId}`, headersOb);
       const response = await API.get(`get-advance-data`, headersOb);
       const { ownersAdavance } = response.data || [];
       if (ownersAdavance && ownersAdavance.length > 0) {
@@ -59,6 +59,7 @@ const AccountingContainer = () => {
 
   const getOutstandingData = async () => {
     try {
+      // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
       const response = await API.get(`get-owner-advance-outstanding-details`, headersOb);
       const outstandingEntries = response.data.amountData || "";
       if (outstandingEntries && outstandingEntries.length > 0) {
@@ -74,6 +75,7 @@ const AccountingContainer = () => {
   // Fetch the list of owners
   const getOwners = async () => {
     try {
+      // const response = await API.get(`get-owner-name&hubId=${selectedHubId}`, headersOb);
       const response = await API.get(`get-owner-name`, headersOb);
       setOwners(response.data.ownerDetails || []);
     } catch (err) {
@@ -86,6 +88,7 @@ const AccountingContainer = () => {
     if (expanded) {
       try {
         if (record && record.key !== "") {
+          // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
           const response = await API.get(`get-ledger-data/${record.key}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
 
@@ -124,6 +127,7 @@ const AccountingContainer = () => {
         entryDate: vDate,
         credit: Number(IntAmount),
         narration: "Vehicle Advance",
+        hubId: selectedHubId
       }, headersOb)
         .then(() => {
           message.success("Successfully Added Owner Advance Outstanding");
@@ -141,11 +145,7 @@ const AccountingContainer = () => {
     }
   };
 
-  useEffect(() => {
-    getTableData();
-    getOutstandingData();
-    getOwners();
-  }, []);
+
 
   const handleAdd = () => {
     const newData = {
@@ -208,23 +208,7 @@ const AccountingContainer = () => {
                 ))}
               </Select>
 
-              {/* <Select
-                onChange={(value) => {
-                  const selectedOwner = owners.find(owner => owner.id === value.id);
 
-                  setNewRow({
-                    ...newRow,
-                    ownerName: selectedOwner ? selectedOwner.name : '', // Check if selectedOwner exists
-                    ownerId: selectedOwner ? selectedOwner._id : '', // Use the selected owner's ID directly
-                  });
-                }}
-              >
-                {owners.map((owner, index) => (
-                  <Select.Option key={index} value={owner.name}>
-                    {owner.name}
-                  </Select.Option>
-                ))}
-              </Select> */}
             </Form.Item>
           );
         }
@@ -351,6 +335,7 @@ const AccountingContainer = () => {
             debit: Number(debit),
             credit: Number(credit),
             narration,
+            hubId: selectedHubId
           };
 
           await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
@@ -575,6 +560,12 @@ const AccountingContainer = () => {
       console.log(err);
     }
   };
+  useEffect(() => {
+    getTableData();
+    getOutstandingData();
+    getOwners();
+  }, []);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -613,9 +604,26 @@ const AccountingContainer = () => {
           }}
           pagination={false}
           loading={loading}
+          summary={() => (
+            <Table.Summary.Row >
+
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+                Total Outstanding
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+                {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+
+              </Table.Summary.Cell>
+
+            </Table.Summary.Row>
+          )}
         />
       </Form>
-      <h1 style={{ fontSize: "1rem", padding: "1rem" }}> Total Outstanding : {totalOutstanding}</h1>
     </div>
   );
 };

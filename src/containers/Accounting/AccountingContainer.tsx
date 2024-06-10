@@ -124,7 +124,7 @@ const AccountingContainer = ({ onData }) => {
     {
       key: '4',
       label: 'Recovery Register',
-      children: <RecoveryRegister />,
+      children: <RecoveryRegister onData={onData} />,
     },
     {
       key: '5',
@@ -136,11 +136,11 @@ const AccountingContainer = ({ onData }) => {
   return (
     <>
 
-      {/* <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
+      <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
         <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
-      </div> */}
+      </div>
 
-      <h1>Accounting Container</h1>
+      {/* <h1>Accounting Container</h1> */}
     </>
   );
 };

@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import moment from "moment";
 import dayjs from 'dayjs';
-import { API } from "../../API/apirequest"
+import { API } from "../../API/apirequest";
 
 const dateFormat = "DD/MM/YYYY";
 
 const DailyCashBook = () => {
   const [dataSource, setDataSource] = useState([]);
+  const [amountData,setAmountData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [totalOutstanding, setTotalOutstanding] = useState('0.00');
   const [count, setCount] = useState(0);
-  const [ledgerEntries, setLedgerEntries] = useState({});
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
-  const [owners, setOwners] = useState([]);  // State to manage the list of owners
 
   const authToken = localStorage.getItem("token");
   const headersOb = {
@@ -29,27 +25,28 @@ const DailyCashBook = () => {
   const getTableData = async () => {
     try {
       setLoading(true);
-      const response = await API.get(`get-advance-data`, headersOb);
-      const { ownersAdavance } = response.data || [];
-      if (ownersAdavance && ownersAdavance.length > 0) {
-        const dataSource = ownersAdavance.map((data) => {
-          const { ownerDetails, outStandingAmount } = data;
-          const { initialDate, ownerName } = ownerDetails[0];
-          const intDate = dayjs(initialDate, "DD/MM/YYYY");
-          return {
-            key: data._id,
-            ownerName: ownerName[0], // Adjusted for array structure
-            initialDate,
-            intDate,
-            IntAmount: outStandingAmount,
-            entries: [] // Initialize empty, will fetch on expand
-          };
-        });
+      const response = await API.get(`get-cash-book-by-month/6/2024`, headersOb);
+      const { cashBookEntries,amounts } = response.data || [];
+      if (cashBookEntries && cashBookEntries.length > 0) {
+        const dataSource = cashBookEntries.map((entry) => ({
+          key: entry._id,
+          date: entry.entryDate,
+          debit: entry.debit,
+          credit: entry.credit,
+          narration: entry.narration,
+        }));
         setDataSource(dataSource);
-        setCount(dataSource.length);
-      } else {
+      setCount(dataSource.length);
+      }
+      else {
         setDataSource([]);
       }
+      if (amounts) {
+      
+        setAmountData(amounts);
+    } else {
+      setAmountData([]);
+    }
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -57,78 +54,20 @@ const DailyCashBook = () => {
     }
   };
 
-  const getOutstandingData = async () => {
+ 
+  const createCashBookEntry = async (row) => {
+    const { date, debit, credit, narration } = row;
+    const formattedDate = dayjs(date).format("DD/MM/YYYY");
     try {
-      const response = await API.get(`get-owner-advance-outstanding-details`, headersOb);
-      const outstandingEntries = response.data.amountData || "";
-      if (outstandingEntries && outstandingEntries.length > 0) {
-        setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
-      } else {
-        setTotalOutstanding("0.00");
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Fetch the list of owners
-  const getOwners = async () => {
-    try {
-      const response = await API.get(`get-owner-name`, headersOb);
-      setOwners(response.data.ownerDetails || []);
-    } catch (err) {
-      console.log(err);
-      message.error("Error fetching owners. Please try again later", 2);
-    }
-  };
-
-  const handleTableRowExpand = async (expanded, record) => {
-    if (expanded) {
-      try {
-        if (record && record.key !== "") {
-          const response = await API.get(`get-ledger-data/${record.key}`, headersOb);
-          const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
-
-          const dataSource = ledgerEntries.map((data) => {
-            const date = data.entryDate;
-            const eDate = moment(date, "DD/MM/YYYY");
-            return {
-              ...data,
-              entDate: eDate,
-              IdofOwner: record.key,
-              key: data._id // Ensure unique key for each ledger entry
-            };
-          });
-
-          setLedgerEntries((prevEntries) => ({
-            ...prevEntries,
-            [record.key]: dataSource
-          }));
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
-
-  const createOwnerAdvance = async (row) => {
-    const { intDate, IntAmount, ownerName, ownerId } = row;
-    const DateString = dayjs(intDate).format("DD/MM/YYYY");
-    const startDate = dayjs(DateString, "DD/MM/YYYY");
-    const vDate = startDate.format("DD/MM/YYYY");
-    console.log(newRow)
-    try {
-      await API.post(`create-owner-advance`, {
-        ownerId: ownerId,
-        ownerName: ownerName,
-        entryDate: vDate,
-        credit: Number(IntAmount),
-        narration: "Vehicle Advance",
+      await API.post(`create-cash-book`, {
+        entryDate: formattedDate,
+        debit: debit,
+        credit: credit,
+        narration: narration,
       }, headersOb)
         .then(() => {
-          message.success("Successfully Added Owner Advance Outstanding");
+          message.success("Successfully Added Cash Book Entry");
           getTableData();
-          getOutstandingData();
         })
         .catch((error) => {
           const { response } = error;
@@ -143,34 +82,30 @@ const DailyCashBook = () => {
 
   useEffect(() => {
     getTableData();
-    getOutstandingData();
-    getOwners();
   }, []);
 
   const handleAdd = () => {
     const newData = {
       key: count.toString(),
       date: null,
-      ownerName: '',
-      ownerId: '',
-      IntAmount: 0,
+      debit: 0,
+      credit: 0,
+      narration: '',
     };
     setNewRow(newData);
     setCount(count + 1);
   };
 
   const saveNewRow = async () => {
-    console.log(newRow)
     try {
       await form.validateFields().then(values => {
         const newRowData = {
           ...newRow,
           ...values,
-          // date: values.intDate.format(dateFormat),
-          credit: Number(values.IntAmount)
+          debit: Number(values.debit),
+          credit: Number(values.credit),
         };
-        console.log(newRowData);
-        createOwnerAdvance(newRowData);
+        createCashBookEntry(newRowData);
         setNewRow(null);
       });
     } catch (errInfo) {
@@ -206,66 +141,54 @@ const DailyCashBook = () => {
       }
     },
     {
-      title: 'Owner Name',
-      dataIndex: 'ownerName',
-      key: 'ownerName',
+      title: 'Narration',
+      dataIndex: 'narration',
+      key: 'narration',
       render: (text, record) => {
         if (newRow && newRow.key === record.key) {
           return (
             <Form.Item
-              name="ownerName"
+              name="narration"
               style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input narration!' }]}
             >
-              <Select
-                onChange={(value) => {
-                  const selectedOwner = owners.find(owner => owner.name === value);
-                  setNewRow({
-                    ...newRow,
-                    ownerName: value,
-                    ownerId: selectedOwner ? selectedOwner._id : '',
-                  });
-                }}
-              >
-                {owners.map((owner, index) => (
-                  <Select.Option key={index} value={owner.name}>
-                    {owner.name}
-                  </Select.Option>
-                ))}
-              </Select>
-              {/* <Select
-                onChange={(value) => {
-                  const selectedOwner = owners.find(owner => owner.id === value.id);
-                  setNewRow({
-                    ...newRow,
-                    ownerName: selectedOwner ? selectedOwner.name : '', // Check if selectedOwner exists
-                    ownerId: selectedOwner ? selectedOwner._id : '', // Use the selected owner's ID directly
-                  });
-                }}
-              >
-                {owners.map((owner, index) => (
-                  <Select.Option key={index} value={owner.name}>
-                    {owner.name}
-                  </Select.Option>
-                ))}
-              </Select> */}
+              <Input />
             </Form.Item>
           );
         }
         return text;
       }
     },
-
     {
-      title: 'Amount',
-      dataIndex: 'IntAmount',
-      key: 'IntAmount',
+      title: 'Debit',
+      dataIndex: 'debit',
+      key: 'debit',
       render: (text, record) => {
         if (newRow && newRow.key === record.key) {
           return (
             <Form.Item
-              name="IntAmount"
+              name="debit"
               style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input amount!' }]}
+              rules={[{ required: true, message: 'Please input debit amount!' }]}
+            >
+              <InputNumber />
+            </Form.Item>
+          );
+        }
+        return text;
+      }
+    },
+    {
+      title: 'Credit',
+      dataIndex: 'credit',
+      key: 'credit',
+      render: (text, record) => {
+        if (newRow && newRow.key === record.key) {
+          return (
+            <Form.Item
+              name="credit"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input credit amount!' }]}
             >
               <InputNumber />
             </Form.Item>
@@ -320,23 +243,18 @@ const DailyCashBook = () => {
       console.log(err);
     }
   };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className='flex gap-2 items-center'>
-          <Input.Search
-            placeholder="Search by Owner Name"
-            size='large'
-            style={{ width: 320 }}
-          />
+        
           <DatePicker
             size='large'
-            placeholder='From date'
-          /> -
-          <DatePicker
-            size='large'
-            placeholder='To date'
-          />
+            placeholder='By Month'
+            picker="month"
+          /> 
+        
         </div>
 
         <Button
@@ -354,11 +272,32 @@ const DailyCashBook = () => {
           columns={columns}
           pagination={false}
           loading={loading}
+          // scroll={{ x: 800, y: 310 }}
+          summary={() => (
+            <Table.Summary.Row style={{backgroundColor:"#eee"}}>
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold',backgroundColor:"#fff" }}>
+             
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
+              Current Month balance
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
+              {(amountData.monthlyTotalDebit)}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
+              {(amountData.monthlyTotalCredit)}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
+              
+              {amountData.monthlyOutstanding >0 ? <p style={{color:"green"}}>{amountData.monthlyOutstanding}</p>:<p style={{color:"red"}}>{amountData.monthlyOutstanding}</p>}
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
         />
       </Form>
-      <h1 style={{ fontSize: "1rem", padding: "1rem" }}> Total Outstanding : {totalOutstanding}</h1>
     </div>
   );
 };
 
 export default DailyCashBook;
+

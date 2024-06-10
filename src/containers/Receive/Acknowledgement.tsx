@@ -48,10 +48,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         setStartDate(date ? convertToIST(dateString) : null);
     };
 
+    // const handleEndDateChange = (date, dateString) => {
+    //     setEndDateValue(date)
+    //     setEndDate(date ? convertToIST(dateString) : null);
+    // };
     const handleEndDateChange = (date, dateString) => {
-        setEndDateValue(date)
-        setEndDate(date ? convertToIST(dateString) : null);
-    };
+        if (date) {
+          // Set endDate to the last minute of the selected day in IST
+          const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+          setEndDateValue(date);
+          setEndDate(endOfDay.valueOf());
+        } else {
+          setEndDateValue(null);
+          setEndDate(null);
+        }
+      };
+      // Disable dates before the selected start date
+ const disabledEndDate = (current) => {
+    return current && current < moment(startDate).startOf('day');
+  };
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -182,6 +197,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                         size='large'
                         value={endDateValue}
                         onChange={handleEndDateChange}
+                        disabledDate={disabledEndDate}
                         placeholder='To date'
                     />
 

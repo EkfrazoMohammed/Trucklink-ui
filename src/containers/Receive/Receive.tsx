@@ -49,10 +49,25 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         setStartDate(date ? convertToIST(dateString) : null);
     };
 
+    // const handleEndDateChange = (date, dateString) => {
+    //     setEndDateValue(date)
+    //     setEndDate(date ? convertToIST(dateString) : null);
+    // };
     const handleEndDateChange = (date, dateString) => {
-        setEndDateValue(date)
-        setEndDate(date ? convertToIST(dateString) : null);
-    };
+        if (date) {
+          // Set endDate to the last minute of the selected day in IST
+          const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+          setEndDateValue(date);
+          setEndDate(endOfDay.valueOf());
+        } else {
+          setEndDateValue(null);
+          setEndDate(null);
+        }
+      };
+      // Disable dates before the selected start date
+ const disabledEndDate = (current) => {
+    return current && current < moment(startDate).startOf('day');
+  };
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -179,6 +194,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         size='large'
                         value={endDateValue}
                         onChange={handleEndDateChange}
+                        disabledDate={disabledEndDate}
                         placeholder='To date'
                     />
 
@@ -954,7 +970,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             </div>
                         </div>
                         <div className="flex flex-col gap-1">
-                            {/* {JSON.stringify(a, null, 2)} */}
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col className="gutter-row mt-6" span={6}>
 

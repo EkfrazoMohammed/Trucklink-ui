@@ -114,7 +114,7 @@ const OnboardingContainer = ({ onData }) => {
       }
       try {
         const dispatcher = API.get(`/get-challan-data/${rowData._id}`, headersOb)
-        console.log(dispatcher)
+     
         let res = API.get(`get-owner-details/${rowData._id}`, headersOb)
           .then((res) => {
             console.log(res.data.ownerDetails)
@@ -852,7 +852,7 @@ if (noSecondAccount) {
     }
     const goBack = () => {
       setShowOwnerTable(true)
-      localStorage.setItem("displayHeader", "flex");
+
       onData("flex");
       setShowTabs(true);
     }
@@ -1273,7 +1273,6 @@ if (noSecondAccount) {
  
     const goBack = () => {
       setShowOwnerTable(true)
-      localStorage.setItem("displayHeader", "flex");
       onData("flex");
       setShowTabs(true);
     }

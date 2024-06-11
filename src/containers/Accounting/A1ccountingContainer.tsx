@@ -29,7 +29,7 @@ const AccountingContainer = () => {
     try {
       setLoading(true);
       // const response = await API.get(`get-advance-data&hubId=${selectedHubId}`, headersOb);
-      const response = await API.get(`get-advance-data`, headersOb);
+      const response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
       const { ownersAdavance } = response.data || [];
       if (ownersAdavance && ownersAdavance.length > 0) {
         const dataSource = ownersAdavance.map((data) => {
@@ -76,7 +76,7 @@ const AccountingContainer = () => {
   const getOwners = async () => {
     try {
       // const response = await API.get(`get-owner-name&hubId=${selectedHubId}`, headersOb);
-      const response = await API.get(`get-owner-name`, headersOb);
+      const response = await API.get(`get-owner-name/${selectedHubId}`, headersOb);
       setOwners(response.data.ownerDetails || []);
     } catch (err) {
       console.log(err);
@@ -89,7 +89,7 @@ const AccountingContainer = () => {
       try {
         if (record && record.key !== "") {
           // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
-          const response = await API.get(`get-ledger-data/${record.key}`, headersOb);
+          const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
 
           const dataSource = ledgerEntries.map((data) => {

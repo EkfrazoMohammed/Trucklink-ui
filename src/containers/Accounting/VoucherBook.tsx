@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined, RedoOutlined, SearchOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
-import axios from 'axios';
 
 
 const filterOption = (input, option) =>
@@ -23,8 +22,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const [showVoucherView, setshowVoucherView] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
-  const [rowDataForTruckView, setRowDataForTruckView] = useState(null);
-  const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
   const handleEditVoucherClick = (rowData) => {
     //onData('none')
     setShowTabs(false); // Set showTabs to false when adding owner
@@ -37,7 +34,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     //onData('none')
     setShowTabs(false); // Set showTabs to false when adding owner
     setRowDataForTruckEdit(rowData);
-    setRowDataForTruckView(rowData)
     setshowVoucherTable(false);
     setShowTransferForm(false);
     setshowVoucherView(true)
@@ -53,7 +49,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     //onData('none')
     setShowTabs(false); // Set showTabs to false when adding owner
     setShowTransferForm(true);
-    setRowDataForTruckTransfer(rowData)
     setRowDataForTruckEdit(rowData);
     setshowVoucherTable(false);
   };
@@ -94,12 +89,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     try {
       const searchData = searchQuery ? searchQuery : null;
       const month = '6'
-      const year = "2024"
-      const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}`, headersOb)
-        : await API.get(`get-vouchers-by-month/${month}/${year}`, headersOb);
+      const year = '2024'
+
+      const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb)
+        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb);
       // const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb)
       //   : await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb);
-      
+
       let truckDetails;
       if (response.data.vaucharEntries == 0) {
         truckDetails = response.data.vaucharEntries
@@ -164,7 +160,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           {searchQuery2 !== null && searchQuery2 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-          <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> ADD TRUCK</Button>
+          <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> CREATE VOUCHER</Button>
         </div>
       </div>
 
@@ -174,20 +170,26 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const VoucherBookForm = () => {
     const [formData, setFormData] = useState({
       hubId: selectedHubId,
-      amount: "100",
+      amount: "",
       materialId: "",
       materialType: "",
-      modeOfPayment: "Bank Transfer",
-      narration: "111",
-      ownerId: "66557de735f213327e2c7acc",
-      ownerName: "tayib",
-      ownerPhone: "1231231231",
-      vehicleBank: "66557de735f213327e2c7acf",
-      vehicleId: "665815c16364f6342e577911",
-      vehicleNumber: "MH01AB1234",
-      voucherDate: "01/06/2024",
-      voucherNumber: "111",
+      modeOfPayment: "",
+      narration: "",
+      ownerId: "",
+      ownerName: "",
+      ownerPhone: "",
+      vehicleBank: "",
+      vehicleId: "",
+      vehicleNumber: "",
+      voucherDate: "",
+      voucherNumber: "",
     });
+    const [materialType, setMaterialType] = useState('')
+
+    const handleMaterialTypeChange = (value) => {
+      setMaterialType(value);
+      console.log(value)
+    };
 
     const handleChange = (name, value) => {
       setFormData((prevFormData) => ({
@@ -206,7 +208,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       };
 
       try {
-        const response = await axios.post('https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-voucher', formData, headersOb);
+        const response = await API.post('create-voucher', formData, headersOb);
         console.log('Voucher created successfully:', response.data);
         alert("Voucher created successfully");
         window.location.reload();
@@ -220,7 +222,65 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       setshowVoucherTable(true);
       setShowTabs(true);
     };
+    const [materials, setMaterials] = useState([]);
 
+    const fetchMaterials = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-material/${selectedHubId}`, headersOb);
+        if (response.status === 201) {
+          setMaterials(response.data.materials);
+        }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    useEffect(() => {
+      fetchMaterials();
+    }, [])
+
+    const [voucherOwners, setVoucherOwners] = useState([]);
+
+    const fetchVoucherOwners = async () => {
+      try {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        }
+        const response = await API.get(`get-voucher-vehicles-info/${selectedHubId}`, headersOb);
+        if (response.status === 201) {
+          setVoucherOwners(response.data.vehicle);
+        }
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    };
+    const handleVoucherOwnerChange = (value) => {
+      // setVoucherOwners(value);
+      console.log(value)
+      const selectedVehicle = voucherOwners.find(vehicle => vehicle.registrationNumber === value);
+      if (selectedVehicle) {
+        setFormData({
+          ...formData,
+          ownerId: selectedVehicle.ownerId._id,
+          ownerName: selectedVehicle.ownerId.name,
+          ownerPhone: selectedVehicle.ownerId.phoneNumber,
+          vehicleId: selectedVehicle._id,
+          vehicleNumber: selectedVehicle.registrationNumber,
+          vehicleBank:selectedVehicle.accountId
+        });
+      }
+    };
+    useEffect(() => {
+      fetchVoucherOwners();
+    }, [])
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -237,48 +297,11 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row mt-6" span={6}>
                 <Input
-                  placeholder="Amount*"
+                  placeholder="Voucher Number*"
                   size="large"
-                  value={formData.amount}
-                  name="amount"
-                  onChange={(e) => handleChange('amount', e.target.value)}
-                />
-              </Col>
-
-              <Col className="gutter-row mt-6" span={6}>
-                <Input
-                  placeholder="Narration*"
-                  size="large"
-                  value={formData.narration}
-                  name="narration"
-                  onChange={(e) => handleChange('narration', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Input
-                  placeholder="Owner Name*"
-                  size="large"
-                  value={formData.ownerName}
-                  name="ownerName"
-                  onChange={(e) => handleChange('ownerName', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Input
-                  placeholder="Owner Phone*"
-                  size="large"
-                  value={formData.ownerPhone}
-                  name="ownerPhone"
-                  onChange={(e) => handleChange('ownerPhone', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Input
-                  placeholder="Vehicle Number*"
-                  size="large"
-                  value={formData.vehicleNumber}
-                  name="vehicleNumber"
-                  onChange={(e) => handleChange('vehicleNumber', e.target.value)}
+                  value={formData.voucherNumber}
+                  name="voucherNumber"
+                  onChange={(e) => handleChange('voucherNumber', e.target.value)}
                 />
               </Col>
               <Col className="gutter-row mt-6" span={6}>
@@ -293,26 +316,79 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
               </Col>
               <Col className="gutter-row mt-6" span={6}>
                 <Select
-                  style={{ width: "100%" }}
-                  placeholder="Mode of Payment*"
+                  name="vehicleNumber"
+                  value={formData.vehicleNumber ? formData.vehicleNumber : null}
+                  placeholder="Truck Number*"
                   size="large"
-                  value={formData.modeOfPayment}
-                  onChange={(value) => handleChange('modeOfPayment', value)}
+                  style={{ width: "100%" }}
+                  onChange={handleVoucherOwnerChange}
+                  filterOption={filterOption}
                 >
-                  <Option value="Bank Transfer">Bank Transfer</Option>
-                  <Option value="Cash">Cash</Option>
+                  {voucherOwners.map((v, index) => (
+                    <Option key={index} value={v.registrationNumber}>
+                      {`${v.registrationNumber}`}
+                    </Option>
+                  ))}
                 </Select>
               </Col>
               <Col className="gutter-row mt-6" span={6}>
                 <Input
-                  placeholder="Voucher Number*"
+                  placeholder="Owner Name*"
                   size="large"
-                  value={formData.voucherNumber}
-                  name="voucherNumber"
-                  onChange={(e) => handleChange('voucherNumber', e.target.value)}
+                  disabled
+                  value={formData.ownerName}
+                  name="ownerName"
+                  onChange={(e) => handleChange('ownerName', e.target.value)}
                 />
               </Col>
-
+              <Col className="gutter-row mt-6" span={6}>
+                <Input
+                  placeholder="Narration*"
+                  size="large"
+                  value={formData.narration}
+                  name="narration"
+                  onChange={(e) => handleChange('narration', e.target.value)}
+                />
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Input
+                  placeholder="Amount*"
+                  size="large"
+                  value={formData.amount}
+                  name="amount"
+                  onChange={(e) => handleChange('amount', e.target.value)}
+                />
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Mode of Payment*"
+                  size="large"
+                  name="modeOfPayment"
+                  onChange={(value) => handleChange('modeOfPayment', value)}
+                  filterOption={filterOption}
+                >
+                  <Option key={1} value="Bank Transfer">Bank Transfer</Option>
+                  <Option key={2} value="Cash">Cash</Option>
+                </Select>
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Select
+                  name="materialType"
+                  value={materialType ? materialType : null}
+                  placeholder="Material Type*"
+                  size="large"
+                  style={{ width: "100%" }}
+                  onChange={handleMaterialTypeChange}
+                  filterOption={filterOption}
+                >
+                  {materials.map((v, index) => (
+                    <Option key={index} value={v.materialType}>
+                      {`${v.materialType}`}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
             </Row>
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
@@ -742,7 +818,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
               <></>
             ) : (
               showVoucherView ? (
-                  <></>
+                <></>
               ) : (
                 <EditTruckDataRow filterTruckTableData={rowDataForTruckEdit} />
               )

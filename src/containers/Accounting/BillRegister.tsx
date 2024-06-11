@@ -7,6 +7,8 @@ import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
 const dateFormat = "DD/MM/YYYY";
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 interface RecordType {
   key: string;
@@ -15,7 +17,7 @@ interface RecordType {
   chosen: boolean;
 }
 
-const BillRegister = () => {
+const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalOutstanding, setTotalOutstanding] = useState(0);
@@ -138,12 +140,12 @@ const BillRegister = () => {
   const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
 
   const handleAdd = () => {
+    setShowTabs(false);
     setShowAddRecoveryForm(true)
   };
 
   const saveNewRow = async () => {
-    console.log(newRow)
-    try {
+   try {
       await form.validateFields().then(values => {
         const newRowData = {
           ...newRow,
@@ -325,25 +327,85 @@ const BillRegister = () => {
 
 
     const columnsInsideRow = [
-      // {
-      //   title: 'Invoice Date',
-      //   dataIndex: 'entryDate',
-      //   key: 'entryDate',
-      //   render: (text, record) => {
-      //     const editable = isEditing(record);
-      //     return editable ? (
-      //       <Form.Item
-      //         name="entDate"
-      //         style={{ margin: 0 }}
-      //         rules={[{ required: true, message: 'Please input date!' }]}
-      //       >
-      //         <DatePicker format={dateFormat} />
-      //       </Form.Item>
-      //     ) : (
-      //       dayjs(text).format('DD/MM/YYYY')
-      //     );
-      //   },
-      // },
+      {
+        title: 'Invoice Date',
+        dataIndex: 'entryDate',
+        key: 'entryDate',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="entDate"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input date!' }]}
+            >
+              <DatePicker format={dateFormat} />
+            </Form.Item>
+          ) : (
+            dayjs(text).format('DD/MM/YYYY')
+          );
+        },
+      },
+      {
+        title: 'QTY',
+        dataIndex: 'quantityInMetricTons',
+        key: 'quantityInMetricTons',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="quantityInMetricTons"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input Qty!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+      {
+        title: 'rate',
+        dataIndex: 'rate',
+        key: 'rate',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="rate"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input Rate!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+
+      {
+        title: 'Total',
+        dataIndex: 'totalExpense',
+        key: 'totalExpense',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="totalExpense"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input totalExpense!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+
+
       {
         title: 'Truck Number',
         dataIndex: 'vehicleNumber',
@@ -376,69 +438,6 @@ const BillRegister = () => {
               rules={[{ required: true, message: 'Please input Delivery Number!' }]}
             >
               <Input />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-
-      {
-        title: 'Destination',
-        dataIndex: 'deliveryLocation',
-        key: 'deliveryLocation',
-      },
-      {
-        title: 'Shortage',
-        dataIndex: 'shortage',
-        key: 'shortage',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="shortage"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input shortage!' }]}
-            >
-              <InputNumber />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-      {
-        title: 'Recovery',
-        dataIndex: 'recovery',
-        key: 'recovery',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="recovery"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input recovery!' }]}
-            >
-              <InputNumber />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-      {
-        title: 'Outstanding',
-        dataIndex: 'outstanding',
-        key: 'outstanding',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="outstanding"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input outstanding!' }]}
-            >
-              <InputNumber />
             </Form.Item>
           ) : (
             text
@@ -519,270 +518,200 @@ const BillRegister = () => {
   }, []);
 
   const RecoveryCodeFormComponent = () => {
-    const [mockData, setMockData] = useState<RecordType[]>([]);
-    const [targetKeys, setTargetKeys] = useState<TransferProps['targetKeys']>([]);
+    const [DONumberData, setDONumberData] = useState([]);
+    const [targetKeys, setTargetKeys] = useState([]);
+  
+    const getDONumber = async () => {
 
-    const getMock = () => {
-      const tempMockData = [];
-      for (let i = 0; i < 10; i++) {
-        const data = {
-          key: i.toString(),
-          title: `content ${i + 1}`,
-          chosen: i % 2 === 0,
-        };
-        tempMockData.push(data);
+      try {
+
+        const res = await API.get("get-all-recovery-delivery", headersOb)
+          .then((response) => {
+            console.log(response.data)
+            if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
+              const deliveryData = response.data.deliveryData.map((item, index) => ({
+                key: item._id,
+                deliveryNumber: item.deliveryNumber,
+              }));
+              setDONumberData(deliveryData);
+            } else {
+              setDONumberData([]);
+            }
+
+          }).catch((error) => {
+            console.log(error)
+          })
+      } catch (err) {
+        console.log(err);
       }
-      setMockData(tempMockData);
-      setTargetKeys([]);
+
     };
 
     useEffect(() => {
-      getMock();
+      getDONumber();
     }, []);
-
-    const handleChangeTransfer: TransferProps['onChange'] = (newTargetKeys) => {
+  
+    const handleChangeTransfer = (newTargetKeys) => {
       setTargetKeys(newTargetKeys);
     };
-
-    const renderFooter: TransferProps['footer'] = (_, info) => {
+  
+    const renderFooter = (_, info) => {
       if (info?.direction === 'left') {
         return (
-          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getMock}>
+          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
             reload
           </Button>
         );
       }
       return (
-        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getMock}>
+        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
           reload
         </Button>
       );
     };
-
-
+  
     const [formData, setFormData] = useState({
-      registrationNumber: '',
-      commission: 0,
-      ownerId: '',
-      accountId: null,
-      vehicleType: '',
-      rcBookProof: null,
-      isCommission: true,
-      marketRate: '',
-      isMarketRate: false,
+    
+      billNumber: '',
+      billType: '',
+      challan: [],
+      remarks: '',
+      tax: '',
+      valueRaised: '',
       hubId: selectedHubId,
     });
-
+  
     const onResetClick = () => {
       console.log('reset clicked')
       setFormData({
-        registrationNumber: '',
-        commission: 0,
-        ownerId: '',
-        accountId: null,
-        vehicleType: '',
-        rcBookProof: null,
-        isCommission: true,
-        marketRate: '',
-        isMarketRate: false,
+       
+        billNumber: '',
+        billType: '',
+        challan: [],
+        remarks: '',
+        tax: '',
+        valueRaised: '',
+        hubId: selectedHubId,
       });
-    }
-    const [fileName, setFileName] = useState("");
-    const [bankData, setBankdata] = useState([])
-    const axiosFileUploadRequest = async (file) => {
-      console.log(file)
-
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const config = {
-          headers: {
-            "content-type": "multipart/form-data",
-            "Authorization": `Bearer ${authToken}`
-          },
-        };
-        const response = await API.post(
-          `rc-upload`,
-          formData,
-          config
-        );
-        setFileName(file.name)
-        const { rcBookProof } = response.data;
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          rcBookProof: rcBookProof,
-        }));
-        alert("File uploaded successfully");
-      } catch (err) {
-        console.log(err);
-        alert("Failed to upload, retry again!");
-      }
+      setTargetKeys([]);
     };
-    const handleFileChange = (file) => {
-      console.log(file)
-      axiosFileUploadRequest(file.file);
-
-    };
+  
     const handleChange = (name, value) => {
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-      if (name === 'isCommission' && value === true) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: true,
-          isMarketRate: false,
-          marketRate: "",
-        }));
-      }
-      else if (name === 'isCommission' && value === false) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: false,
-          isMarketRate: true,
-          commission: 0
-        }));
-      }
-
-      else if (name === "ownerId") {
-        const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
-          .then((res) => {
-            console.log(res)
-
-            setBankdata(res.data.ownerDetails[0]['accountIds'])
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-          accountId: null,
-        }));
-      }
-
-      else if (name === "registrationNumber") {
-        const updatedValue = value.toUpperCase();
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: updatedValue,
-        }));
-      }
-      else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-        }));
-      }
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
     };
-
-    const handleSubmit = (e) => {
+  
+    const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
-        hubId: selectedHubId,
-        accountId: formData.accountId,
-        commission: formData.commission,
-        ownerId: formData.ownerId,
-        rcBookProof: formData.rcBookProof,
-        registrationNumber: formData.registrationNumber,
-        truckType: formData.vehicleType,
-        marketRate: formData.marketRate,
-        isMarketRate: formData.isMarketRate,
+        billNumber: formData.billNumber,
+        billType: formData.billType,
+        challan: targetKeys,
+        remarks: formData.remarks,
+        tax: formData.tax,
+        valueRaised: formData.valueRaised,
       };
+  
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${authToken}`
         }
+      };
+  
+      try {
+        const response = await API.post('create-bill-register', payload, headersOb);
+        console.log('Bill registered successfully:', response.data);
+        alert("Bill registered successfully");
+        window.location.reload();
+      } catch (error) {
+        console.error('Error registering bill:', error);
+        alert("Error occurred while registering bill");
       }
-      API.post('create-vehicle', payload, headersOb)
-        .then((response) => {
-          console.log('Truck data added successfully:', response.data);
-          alert("Truck data added successfully")
-          window.location.reload();
-        })
-        .catch((error) => {
-          console.error('Error adding truck data:', error);
-          let errorResponse = error.response.data
-
-          let errorMessages = [];
-
-          if (errorResponse.error && errorResponse.error.err && errorResponse.error.err.errors) {
-            Object.keys(errorResponse.error.err.errors).forEach((key) => {
-              const errorMessage = errorResponse.error.err.errors[key].message;
-              errorMessages.push(errorMessage);
-            });
-          }
-
-
-          if (errorMessages.length > 0) {
-            console.log("Error:", errorMessages.join(", "));
-            alert("error occurred")
-          } else {
-            alert("error occurred")
-            console.log("Something went wrong");
-          }
-        });
     };
-
+  
     const goBack = () => {
-      setShowAddRecoveryForm(false)
-    }
-
+      setShowTabs(true);
+      setShowAddRecoveryForm(false);
+    };
+  
     return (
-      <>
-        <div className="flex flex-col gap-2">
-
-
-          <div className="flex flex-col gap-1">
-
-            <div className="flex items-center gap-4">
-              <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
-              <div className="flex flex-col">
-                <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Recovery Code</h1>
-                <Breadcrumb
-                  items={[
-                    {
-                      title: 'Recovery Register',
-                    },
-                    {
-                      title: 'Create',
-                    },
-                  ]}
-                />
-              </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-4">
+            <div className="flex">
+              <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
             </div>
-            <div className="flex flex-col gap-1">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={8}>
-                  <Input
-                    placeholder="Recovery Code*"
-                    size="large"
-                    name="recoveryCode"
-                    onChange={(e) => handleChange('recoveryCode', e.target.value)}
-                  />
-                </Col>
-
-                <Col className="gutter-row mt-6" span={8}>
-                  <Input
-                    placeholder="Value*"
-                    size="large"
-                    name="value"
-                    onChange={(e) => handleChange('value', e.target.value)}
-                  />
-                </Col>
-
-              </Row>
-
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={16}>
-
-                  <Transfer
-                    dataSource={mockData}
+            <div className="flex flex-col">
+              <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
+              <Breadcrumb
+                items={[
+                  { title: 'Bill Register' },
+                  { title: 'Create' },
+                ]}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              
+              <Col className="gutter-row mt-6" span={8}>
+                <Input
+                  placeholder="Bill Number*"
+                  size="large"
+                  name="billNumber"
+                  onChange={(e) => handleChange('billNumber', e.target.value)}
+                />
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Bill Type*"
+                  size="large"
+                  name="billType"
+                  onChange={(value) => handleChange('billType', value)}
+                  filterOption={filterOption}
+                >
+                  <Option key={1} value="Physical">Physical</Option>
+                  <Option key={2} value="Epod">Epod</Option>
+                  <Option key={3} value="Incentive">Incentive</Option>
+                </Select>
+              </Col>
+              <Col className="gutter-row mt-6" span={8}>
+                <Input
+                  placeholder="Value Raised*"
+                  size="large"
+                  name="valueRaised"
+                  onChange={(e) => handleChange('valueRaised', e.target.value)}
+                />
+              </Col>
+            </Row>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+             
+              <Col className="gutter-row mt-6" span={8}>
+                <Input
+                  placeholder="Tax*"
+                  size="large"
+                  name="tax"
+                  onChange={(e) => handleChange('tax', e.target.value)}
+                />
+              </Col>
+              <Col className="gutter-row mt-6" span={14}>
+                <Input
+                  placeholder="Remarks"
+                  size="large"
+                  name="remarks"
+                  onChange={(e) => handleChange('remarks', e.target.value)}
+                />
+              </Col>
+              
+            </Row>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row mt-6" span={16}>
+              <Transfer
+                    dataSource={DONumberData}
                     showSearch
                     listStyle={{
                       width: 650,
@@ -791,27 +720,314 @@ const BillRegister = () => {
                     operations={['', '']}
                     targetKeys={targetKeys}
                     onChange={handleChangeTransfer}
-                    render={(item) => `${item.title}`}
+                    render={(item) => `${item.deliveryNumber}`}
                     footer={renderFooter}
                   />
-                </Col>
-              </Row>
-            </div>
-          </div>
-
-
-          <div className="flex gap-4 items-center justify-center reset-button-container">
-
-            <Button onClick={onResetClick}>Reset</Button>
-            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
-              Save
-            </Button>
+              </Col>
+            </Row>
           </div>
         </div>
-      </>
+        <div className="flex gap-4 items-center justify-center reset-button-container">
+          <Button onClick={onResetClick}>Reset</Button>
+          <Button type="primary" className="bg-primary" onClick={handleSubmit}>Save</Button>
+        </div>
+      </div>
+    );
+  };
+  // const RecoveryCodeFormComponent = () => {
+  //   const [mockData, setMockData] = useState<RecordType[]>([]);
+  //   const [targetKeys, setTargetKeys] = useState<TransferProps['targetKeys']>([]);
 
-    )
-  }
+  //   const getMock = () => {
+  //     const tempMockData = [];
+  //     for (let i = 0; i < 10; i++) {
+  //       const data = {
+  //         key: i.toString(),
+  //         title: `content ${i + 1}`,
+  //         chosen: i % 2 === 0,
+  //       };
+  //       tempMockData.push(data);
+  //     }
+  //     setMockData(tempMockData);
+  //     setTargetKeys([]);
+  //   };
+
+  //   useEffect(() => {
+  //     getMock();
+  //   }, []);
+
+  //   const handleChangeTransfer: TransferProps['onChange'] = (newTargetKeys) => {
+  //     setTargetKeys(newTargetKeys);
+  //   };
+
+  //   const renderFooter: TransferProps['footer'] = (_, info) => {
+  //     if (info?.direction === 'left') {
+  //       return (
+  //         <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getMock}>
+  //           reload
+  //         </Button>
+  //       );
+  //     }
+  //     return (
+  //       <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getMock}>
+  //         reload
+  //       </Button>
+  //     );
+  //   };
+
+
+  //   const [formData, setFormData] = useState({
+  //     registrationNumber: '',
+  //     commission: 0,
+  //     ownerId: '',
+  //     accountId: null,
+  //     vehicleType: '',
+  //     rcBookProof: null,
+  //     isCommission: true,
+  //     marketRate: '',
+  //     isMarketRate: false,
+  //     hubId: selectedHubId,
+  //   });
+
+  //   const onResetClick = () => {
+  //     console.log('reset clicked')
+  //     setFormData({
+  //       registrationNumber: '',
+  //       commission: 0,
+  //       ownerId: '',
+  //       accountId: null,
+  //       vehicleType: '',
+  //       rcBookProof: null,
+  //       isCommission: true,
+  //       marketRate: '',
+  //       isMarketRate: false,
+  //     });
+  //   }
+  //   const [fileName, setFileName] = useState("");
+  //   const [bankData, setBankdata] = useState([])
+  //   const axiosFileUploadRequest = async (file) => {
+  //     console.log(file)
+
+  //     try {
+  //       const formData = new FormData();
+  //       formData.append("file", file);
+
+  //       const config = {
+  //         headers: {
+  //           "content-type": "multipart/form-data",
+  //           "Authorization": `Bearer ${authToken}`
+  //         },
+  //       };
+  //       const response = await API.post(
+  //         `rc-upload`,
+  //         formData,
+  //         config
+  //       );
+  //       setFileName(file.name)
+  //       const { rcBookProof } = response.data;
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         rcBookProof: rcBookProof,
+  //       }));
+  //       alert("File uploaded successfully");
+  //     } catch (err) {
+  //       console.log(err);
+  //       alert("Failed to upload, retry again!");
+  //     }
+  //   };
+  //   const handleFileChange = (file) => {
+  //     console.log(file)
+  //     axiosFileUploadRequest(file.file);
+
+  //   };
+  //   const handleChange = (name, value) => {
+  //     const headersOb = {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${authToken}`
+  //       }
+  //     }
+  //     if (name === 'isCommission' && value === true) {
+  //       setFormData(prevFormData => ({
+  //         ...prevFormData,
+  //         isCommission: true,
+  //         isMarketRate: false,
+  //         marketRate: "",
+  //       }));
+  //     }
+  //     else if (name === 'isCommission' && value === false) {
+  //       setFormData(prevFormData => ({
+  //         ...prevFormData,
+  //         isCommission: false,
+  //         isMarketRate: true,
+  //         commission: 0
+  //       }));
+  //     }
+
+  //     else if (name === "ownerId") {
+  //       const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+  //         .then((res) => {
+  //           console.log(res)
+
+  //           setBankdata(res.data.ownerDetails[0]['accountIds'])
+  //         })
+  //         .catch((err) => {
+  //           console.log(err)
+  //         })
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         [name]: value,
+  //         accountId: null,
+  //       }));
+  //     }
+
+  //     else if (name === "registrationNumber") {
+  //       const updatedValue = value.toUpperCase();
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         [name]: updatedValue,
+  //       }));
+  //     }
+  //     else {
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         [name]: value,
+  //       }));
+  //     }
+  //   };
+
+  //   const handleSubmit = (e) => {
+  //     e.preventDefault();
+  //     const payload = {
+  //       hubId: selectedHubId,
+  //       accountId: formData.accountId,
+  //       commission: formData.commission,
+  //       ownerId: formData.ownerId,
+  //       rcBookProof: formData.rcBookProof,
+  //       registrationNumber: formData.registrationNumber,
+  //       truckType: formData.vehicleType,
+  //       marketRate: formData.marketRate,
+  //       isMarketRate: formData.isMarketRate,
+  //     };
+  //     const headersOb = {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Authorization": `Bearer ${authToken}`
+  //       }
+  //     }
+  //     API.post('create-vehicle', payload, headersOb)
+  //       .then((response) => {
+  //         console.log('Truck data added successfully:', response.data);
+  //         alert("Truck data added successfully")
+  //         window.location.reload();
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error adding truck data:', error);
+  //         let errorResponse = error.response.data
+
+  //         let errorMessages = [];
+
+  //         if (errorResponse.error && errorResponse.error.err && errorResponse.error.err.errors) {
+  //           Object.keys(errorResponse.error.err.errors).forEach((key) => {
+  //             const errorMessage = errorResponse.error.err.errors[key].message;
+  //             errorMessages.push(errorMessage);
+  //           });
+  //         }
+
+
+  //         if (errorMessages.length > 0) {
+  //           console.log("Error:", errorMessages.join(", "));
+  //           alert("error occurred")
+  //         } else {
+  //           alert("error occurred")
+  //           console.log("Something went wrong");
+  //         }
+  //       });
+  //   };
+
+  //   const goBack = () => {
+  //     setShowAddRecoveryForm(false)
+  //   }
+
+  //   return (
+  //     <>
+  //       <div className="flex flex-col gap-2">
+
+
+  //         <div className="flex flex-col gap-1">
+
+  //           <div className="flex items-center gap-4">
+  //             <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
+  //             <div className="flex flex-col">
+  //               <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
+  //               <Breadcrumb
+  //                 items={[
+  //                   {
+  //                     title: 'Bill Register',
+  //                   },
+  //                   {
+  //                     title: 'Create',
+  //                   },
+  //                 ]}
+  //               />
+  //             </div>
+  //           </div>
+  //           <div className="flex flex-col gap-1">
+  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+  //               <Col className="gutter-row mt-6" span={8}>
+  //                 <Input
+  //                   placeholder="Recovery Code*"
+  //                   size="large"
+  //                   name="recoveryCode"
+  //                   onChange={(e) => handleChange('recoveryCode', e.target.value)}
+  //                 />
+  //               </Col>
+
+  //               <Col className="gutter-row mt-6" span={8}>
+  //                 <Input
+  //                   placeholder="Value*"
+  //                   size="large"
+  //                   name="value"
+  //                   onChange={(e) => handleChange('value', e.target.value)}
+  //                 />
+  //               </Col>
+
+  //             </Row>
+
+  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+  //               <Col className="gutter-row mt-6" span={16}>
+
+  //                 <Transfer
+  //                   dataSource={mockData}
+  //                   showSearch
+  //                   listStyle={{
+  //                     width: 650,
+  //                     height: 300,
+  //                   }}
+  //                   operations={['', '']}
+  //                   targetKeys={targetKeys}
+  //                   onChange={handleChangeTransfer}
+  //                   render={(item) => `${item.title}`}
+  //                   footer={renderFooter}
+  //                 />
+  //               </Col>
+  //             </Row>
+  //           </div>
+  //         </div>
+
+
+  //         <div className="flex gap-4 items-center justify-center reset-button-container">
+
+  //           <Button onClick={onResetClick}>Reset</Button>
+  //           <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+  //             Save
+  //           </Button>
+  //         </div>
+  //       </div>
+  //     </>
+
+  //   )
+  // }
 
   return (
     <>

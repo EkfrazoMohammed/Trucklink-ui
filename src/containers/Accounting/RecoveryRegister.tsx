@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined,ExclamationCircleOutlined } from '@ant-design/icons';
 import moment from "moment";
-import dayjs from 'dayjs';
+import dayjs, { locale } from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
 import axios from "axios"
@@ -15,7 +15,7 @@ interface RecordType {
   chosen: boolean;
 }
 
-const RecoveryRegister = () => {
+const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalOutstanding, setTotalOutstanding] = useState(0);
@@ -23,7 +23,6 @@ const RecoveryRegister = () => {
   const [ledgerEntries, setLedgerEntries] = useState({});
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
-  const [owners, setOwners] = useState([]);  // State to manage the list of owners
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
@@ -141,6 +140,7 @@ const RecoveryRegister = () => {
   const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
 
   const handleAdd = () => {
+    setShowTabs(false);
     setShowAddRecoveryForm(true)
   };
 
@@ -164,20 +164,25 @@ const RecoveryRegister = () => {
   };
 
   const columns = [
+  
     {
       title: 'Code',
       dataIndex: 'recoveryCode',
       key: 'recoveryCode',
+      width: 180,
+    
     },
     {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
+      width:200
     },
     {
       title: 'Recovered',
       dataIndex: 'recovered',
       key: 'recovered',
+      width:180
     },
     {
       title: 'Outstanding Amount',
@@ -466,7 +471,18 @@ const RecoveryRegister = () => {
       },
     ];
 
-
+    const locale = {
+      emptyText: (
+        <span>
+          <p>
+            <ExclamationCircleOutlined style={{color: "red"}} />
+            <span style={{padding: "5px", textTransform: "initial"}}>
+              Please, attach DO number to Recovery.
+            </span>
+          </p>
+        </span>
+      ),
+    };
     return (
       <div className='bg-[#BBE2FF] p-4'>
 
@@ -478,6 +494,7 @@ const RecoveryRegister = () => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
+            locale={locale}
           />
         </Form>
       </div>
@@ -604,6 +621,7 @@ const RecoveryRegister = () => {
     };
 
     const goBack = () => {
+      setShowTabs(true);
       setShowAddRecoveryForm(false);
     };
 
@@ -731,6 +749,7 @@ const RecoveryRegister = () => {
                 }}
                 pagination={false}
                 loading={loading}
+               
                 summary={() => (
                   <Table.Summary.Row >
 

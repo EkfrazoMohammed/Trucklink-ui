@@ -6,7 +6,7 @@ import { API } from "../../API/apirequest";
 
 const dateFormat = "DD/MM/YYYY";
 
-const DailyCashBook = () => {
+const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
   const [amountData,setAmountData] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -60,10 +60,23 @@ const DispatchContainer = ({ onData }) => {
     setStartDate(date ? convertToIST(dateString) : null);
   };
 
+  // const handleEndDateChange = (date, dateString) => {
+  //   setEndDateValue(date)
+  //   setEndDate(date ? convertToIST(dateString) : null);
+  // };
   const handleEndDateChange = (date, dateString) => {
-    setEndDateValue(date)
-    setEndDate(date ? convertToIST(dateString) : null);
+    if (date) {
+      // Set endDate to the last minute of the selected day in IST
+      const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+      setEndDateValue(date);
+      setEndDate(endOfDay.valueOf());
+    } else {
+      setEndDateValue(null);
+      setEndDate(null);
+    }
   };
+  
+  
 
   const getTableData = async () => {
     const headersOb = {
@@ -174,7 +187,10 @@ const DispatchContainer = ({ onData }) => {
       window.location.reload()
     }
 
-
+ // Disable dates before the selected start date
+ const disabledEndDate = (current) => {
+  return current && current < moment(startDate).startOf('day');
+};
 
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
@@ -198,7 +214,9 @@ const DispatchContainer = ({ onData }) => {
             value={endDateValue}
             onChange={handleEndDateChange}
             placeholder='To date'
+            disabledDate={disabledEndDate}
           />
+
           <Select
             name="materialType"
             value={materialType ? materialType : null}
@@ -1298,9 +1316,6 @@ const DispatchContainer = ({ onData }) => {
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              {/* {JSON.stringify(formData, null,2)} */}
-              <br />
-              {/* {JSON.stringify(a, null,2)} */}
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select

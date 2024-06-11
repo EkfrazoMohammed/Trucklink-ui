@@ -119,28 +119,28 @@ const AccountingContainer = ({ onData }) => {
     {
       key: '3',
       label: 'Daily Cash Book',
-      children: <DailyCashBook />,
+      children: <DailyCashBook onData={onData} showTabs={showTabs} setShowTabs={setShowTabs} />,
     },
     {
       key: '4',
       label: 'Recovery Register',
-      children: <RecoveryRegister />,
+      children: <RecoveryRegister onData={onData} showTabs={showTabs} setShowTabs={setShowTabs} />,
     },
     {
       key: '5',
       label: 'Bill Register',
-      children: <BillRegister />,
+      children: <BillRegister onData={onData} showTabs={showTabs} setShowTabs={setShowTabs} />,
     }
   ];
 
   return (
     <>
 
-      <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
+      {/* <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
         <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
-      </div>
+      </div> */}
 
-      {/* <h1>Accounting Container</h1> */}
+      <h1>Accounting Container</h1>
     </>
   );
 };

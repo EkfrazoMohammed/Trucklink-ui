@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch, Modal } from 'antd';
 import { API } from "../../API/apirequest"
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined,InfoCircleOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
 const onSearch = (value: string) => {
     console.log('search:', value);
 };
@@ -13,7 +13,7 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
 const MasterData = () => {
 
     const selectedHubId = localStorage.getItem("selectedHubID");
-    const authToken=localStorage.getItem("token");
+    const authToken = localStorage.getItem("token");
     // State to store the list of materials
     const [materials, setMaterials] = useState([]);
     // State to store the input value for adding material type
@@ -27,12 +27,12 @@ const MasterData = () => {
     const fetchMaterials = async () => {
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization":`Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
         try {
-            const response = await API.get(`get-material/${selectedHubId}`,headersOb);
+            const response = await API.get(`get-material/${selectedHubId}`, headersOb);
             if (response.status === 201) {
                 setMaterials(response.data.materials);
             }
@@ -41,44 +41,46 @@ const MasterData = () => {
         }
     };
 
-    const [errMsg,setErrMsg]=useState("");
+    const [errMsg, setErrMsg] = useState("");
     // Function to handle adding a new material type
     const handleAddMaterial = async () => {
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization":`Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
         try {
             const payload = {
                 "materialType": materialType,
                 "hubId": selectedHubId
             }
-            const response = await API.post('create-material', payload,headersOb)
-            .then((res)=>{
-                if (res.status === 201) {
-                    setErrMsg("")
-                }else{
-                    alert("error occurred1")
+            const response = await API.post('create-material', payload, headersOb)
+                .then((res) => {
+                    if (res.status === 201) {
+                        setErrMsg("")
+                    } else {
+                        alert("error occurred1")
+                    }
+                })
+                .catch((err) => {
+                    console.log(err)
+                    console.log(err.response.data.message)
+                    if (err.response.data.message == "Material Type is restricted") {
+                        setErrMsg("Material type is required")
+
+                        // setErrMsg("Create material type from the follwing list : 'CEMENT','FLYASH','GYPSUM', 'MT', 'C&T BAG', 'OTHERS' ")
+                    } else {
+                        setErrMsg("")
+                    }
                 }
-            })
-            .catch((err)=>{
-                console.log(err)
-                console.log(err.response.data.message)
-               if(err.response.data.message == "Material Type is restricted"){
-                    setErrMsg("Create material type from the follwing list : 'CEMENT','FLYASH','GYPSUM', 'MT', 'C&T BAG', 'OTHERS' ")
-                }else{
-                    setErrMsg("")
-                }
-            }
-        )
-            
+                )
+
             fetchMaterials();
             setMaterialType('');
         } catch (error) {
             console.error('Error adding material:', error);
-           alert("error occurred3")
+            alert("error occurred3")
         }
     };
 
@@ -86,12 +88,12 @@ const MasterData = () => {
     const fetchLoadLocations = async () => {
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization":`Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
         try {
-            const response = await API.get(`get-load-location/${selectedHubId}`,headersOb);
+            const response = await API.get(`get-load-location/${selectedHubId}`, headersOb);
             if (response.status == 201) {
                 setloadLocations(response.data.materials);
             } else {
@@ -109,10 +111,10 @@ const MasterData = () => {
         try {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization":`Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             const payload =
             {
                 "location": loadLocationName,
@@ -120,7 +122,7 @@ const MasterData = () => {
 
             }
             // Post the new material type to the API
-            const repsonseLoad = await API.post('create-load-location', payload,headersOb);
+            const repsonseLoad = await API.post('create-load-location', payload, headersOb);
             console.log(repsonseLoad)
             fetchLoadLocations()
             // Clear the input field
@@ -134,12 +136,12 @@ const MasterData = () => {
     const fetchDeliveryLocations = async () => {
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization":`Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
         try {
-            const response = await API.get(`get-delivery-location/${selectedHubId}`,headersOb);
+            const response = await API.get(`get-delivery-location/${selectedHubId}`, headersOb);
             setDeliveryLocations(response.data.materials);
         } catch (error) {
             console.error('Error fetching materials:', error);
@@ -152,10 +154,10 @@ const MasterData = () => {
         try {
             const headersOb = {
                 headers: {
-                  "Content-Type": "application/json",
-                  "Authorization":`Bearer ${authToken}`
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-              }
+            }
             const payload =
             {
                 "location": deliveryLocationName,
@@ -209,25 +211,25 @@ const MasterData = () => {
 
     const handleUpdateMaterials = async () => {
 
-        const payload= {
-             hubId:updatedMaterials.hubId,
-              materialType:updatedMaterials.materialType,
+        const payload = {
+            hubId: updatedMaterials.hubId,
+            materialType: updatedMaterials.materialType,
         }
 
         const headersOb = {
             headers: {
-              "Content-Type": "application/json",
-              "Authorization":`Bearer ${authToken}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
             }
-          }
+        }
         try {
-             if(updatedMaterials.materialType !== "" && updatedMaterials.materialType !== null){
+            if (updatedMaterials.materialType !== "" && updatedMaterials.materialType !== null) {
 
-                const response = await API.put(`update-material/${updatedMaterials._id}`,payload,headersOb);
+                const response = await API.put(`update-material/${updatedMaterials._id}`, payload, headersOb);
                 console.log(response)
                 setmaterialModalVisible(false);
                 fetchMaterials();
-            }else{
+            } else {
                 alert('Material Type is required')
             }
         } catch (error) {
@@ -237,122 +239,122 @@ const MasterData = () => {
         }
     };
 
-// load location
-const [loadLocationModalVisible, setloadLocationModalVisible] = useState(false);
-const [updatedloadLocation, setUpdatedloadLocation] = useState({
-    hubId: "",
-    location: "",
-    _id: ""
-})
+    // load location
+    const [loadLocationModalVisible, setloadLocationModalVisible] = useState(false);
+    const [updatedloadLocation, setUpdatedloadLocation] = useState({
+        hubId: "",
+        location: "",
+        _id: ""
+    })
 
-const handleUpdateloadLocationCancel = () => {
-    setloadLocationModalVisible(false);
-};
-const handleOpenloadLocationModal = (material) => {
-    setloadLocationModalVisible(true)
-    setUpdatedloadLocation(
-        {
-            hubId: material.hubId,
-            location: material.location,
-            _id: material._id
-        }
-    )
-}
-const handleloadLocationOnChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedloadLocation((prevMaterials) => ({
-        ...prevMaterials,
-        [name]: value
-    }));
-};
-
-const handleUpdateloadLocation = async () => {
-
-    const payload= {
-         hubId:updatedloadLocation.hubId,
-          location:updatedloadLocation.location,
+    const handleUpdateloadLocationCancel = () => {
+        setloadLocationModalVisible(false);
+    };
+    const handleOpenloadLocationModal = (material) => {
+        setloadLocationModalVisible(true)
+        setUpdatedloadLocation(
+            {
+                hubId: material.hubId,
+                location: material.location,
+                _id: material._id
+            }
+        )
     }
-    const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
-        }
-      }
-    try {
-        if(updatedloadLocation.location !== "" && updatedloadLocation.location !==null){
+    const handleloadLocationOnChange = (e) => {
+        const { name, value } = e.target;
+        setUpdatedloadLocation((prevMaterials) => ({
+            ...prevMaterials,
+            [name]: value
+        }));
+    };
 
-            const response = await API.put(`update-load-location/${updatedloadLocation._id}`,payload,headersOb);
-            console.log(response)
-            setloadLocationModalVisible(false);
-            fetchLoadLocations();
-        }else{
-            alert("Load location is required field")
+    const handleUpdateloadLocation = async () => {
+
+        const payload = {
+            hubId: updatedloadLocation.hubId,
+            location: updatedloadLocation.location,
         }
-    } catch (error) {
-        fetchMaterials();
-        alert('Error updating load location');
-        console.error('Error updating load location:', error);
+        const headersOb = {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
+        }
+        try {
+            if (updatedloadLocation.location !== "" && updatedloadLocation.location !== null) {
+
+                const response = await API.put(`update-load-location/${updatedloadLocation._id}`, payload, headersOb);
+                console.log(response)
+                setloadLocationModalVisible(false);
+                fetchLoadLocations();
+            } else {
+                alert("Load location is required field")
+            }
+        } catch (error) {
+            fetchMaterials();
+            alert('Error updating load location');
+            console.error('Error updating load location:', error);
+        }
+    };
+
+
+    // delivery location
+    const [deliveryLocationModalVisible, setdeliveryLocationModalVisible] = useState(false);
+    const [updateddeliveryLocation, setUpdateddeliveryLocation] = useState({
+        hubId: "",
+        location: "",
+        _id: ""
+    })
+
+    const handleUpdatedeliveryLocationCancel = () => {
+        setdeliveryLocationModalVisible(false);
+    };
+    const handleOpendeliveryLocationModal = (material) => {
+        setdeliveryLocationModalVisible(true)
+        setUpdateddeliveryLocation(
+            {
+                hubId: material.hubId,
+                location: material.location,
+                _id: material._id
+            }
+        )
     }
-};
+    const handledeliveryLocationOnChange = (e) => {
+        const { name, value } = e.target;
+        setUpdateddeliveryLocation((prevMaterials) => ({
+            ...prevMaterials,
+            [name]: value
+        }));
+    };
 
+    const handleUpdatedeliveryLocation = async () => {
 
-// delivery location
-const [deliveryLocationModalVisible, setdeliveryLocationModalVisible] = useState(false);
-const [updateddeliveryLocation, setUpdateddeliveryLocation] = useState({
-    hubId: "",
-    location: "",
-    _id: ""
-})
-
-const handleUpdatedeliveryLocationCancel = () => {
-    setdeliveryLocationModalVisible(false);
-};
-const handleOpendeliveryLocationModal = (material) => {
-    setdeliveryLocationModalVisible(true)
-    setUpdateddeliveryLocation(
-        {
-            hubId: material.hubId,
-            location: material.location,
-            _id: material._id
+        const payload = {
+            hubId: updateddeliveryLocation.hubId,
+            location: updateddeliveryLocation.location,
         }
-    )
-}
-const handledeliveryLocationOnChange = (e) => {
-    const { name, value } = e.target;
-    setUpdateddeliveryLocation((prevMaterials) => ({
-        ...prevMaterials,
-        [name]: value
-    }));
-};
-
-const handleUpdatedeliveryLocation = async () => {
-
-    const payload= {
-         hubId:updateddeliveryLocation.hubId,
-          location:updateddeliveryLocation.location,
-    }
-    const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization":`Bearer ${authToken}`
+        const headersOb = {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
         }
-      }
-    try {
-        if(updateddeliveryLocation.location !=="" && updateddeliveryLocation.location !==null) {
-        const response = await API.put(`update-delivery-location/${updateddeliveryLocation._id}`,payload,headersOb);
-console.log(response)
-setdeliveryLocationModalVisible(false);
-fetchDeliveryLocations();
-}else{
-    alert("Load location is required field")
-}
+        try {
+            if (updateddeliveryLocation.location !== "" && updateddeliveryLocation.location !== null) {
+                const response = await API.put(`update-delivery-location/${updateddeliveryLocation._id}`, payload, headersOb);
+                console.log(response)
+                setdeliveryLocationModalVisible(false);
+                fetchDeliveryLocations();
+            } else {
+                alert("Load location is required field")
+            }
 
-    } catch (error) {
-      fetchDeliveryLocations();
-        alert('Error updating load location');
-        console.error('Error updating load location:', error);
-    }
-};
+        } catch (error) {
+            fetchDeliveryLocations();
+            alert('Error updating load location');
+            console.error('Error updating load location:', error);
+        }
+    };
 
 
 
@@ -360,7 +362,7 @@ fetchDeliveryLocations();
         <>
             <Modal title="Update Material" visible={materialModalVisible} onCancel={handleUpdateMaterialCancel} footer={null}>
                 <div>
-                <Input
+                    <Input
                         size="large"
                         placeholder="Enter Material Type"
                         className='mb-2 p-2'
@@ -377,7 +379,7 @@ fetchDeliveryLocations();
 
             <Modal title="Update Load Location" visible={loadLocationModalVisible} onCancel={handleUpdateloadLocationCancel} footer={null}>
                 <div>
-                <Input
+                    <Input
                         size="large"
                         placeholder="Enter Load Location"
                         className='mb-2 p-2'
@@ -394,7 +396,7 @@ fetchDeliveryLocations();
 
             <Modal title="Update Delivery Location" visible={deliveryLocationModalVisible} onCancel={handleUpdatedeliveryLocationCancel} footer={null}>
                 <div>
-                <Input
+                    <Input
                         size="large"
                         placeholder="Enter Delivery Location"
                         className='mb-2 p-2'
@@ -425,7 +427,7 @@ fetchDeliveryLocations();
                                 Add Material
                             </Button>
                         </div>
-                        {errMsg && errMsg.length>0 ? <><p style={{color:"red",paddingRight:"1rem"}}><InfoCircleOutlined />{" "}{errMsg}</p></>:<></>}
+                        {errMsg && errMsg.length > 0 ? <><p style={{ color: "red", paddingRight: "1rem" }}><InfoCircleOutlined />{" "}{errMsg}</p></> : <></>}
 
                         <div>
 
@@ -449,10 +451,10 @@ fetchDeliveryLocations();
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "180px" }}
-                               
+
                                 dataSource={materials}
                                 renderItem={(item) => (
-                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
+                                    <List.Item style={{ width: "100%", padding: "8px 16px" }}>
                                         <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.materialType} <a onClick={() => handleOpenMaterialModal(item)}><FormOutlined /></a></p>
                                     </List.Item>
                                 )}
@@ -498,7 +500,7 @@ fetchDeliveryLocations();
                                 style={{ overflowY: "scroll", height: "180px" }}
                                 dataSource={loadLocation}
                                 renderItem={(item) => (
-                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
+                                    <List.Item style={{ width: "100%", padding: "8px 16px" }}>
                                         <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpenloadLocationModal(item)}><FormOutlined /></a></p>
                                     </List.Item>
                                 )}
@@ -545,13 +547,13 @@ fetchDeliveryLocations();
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "180px" }}
-                           
+
 
                                 dataSource={deliveryLocation}
                                 renderItem={(item) => (
-                                    <List.Item style={{ width: "100%",padding:"8px 16px" }}>
-                                                                        <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpendeliveryLocationModal(item)}><FormOutlined /></a></p>
-                                                                    </List.Item>
+                                    <List.Item style={{ width: "100%", padding: "8px 16px" }}>
+                                        <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpendeliveryLocationModal(item)}><FormOutlined /></a></p>
+                                    </List.Item>
                                 )}
                             />
                         </div>

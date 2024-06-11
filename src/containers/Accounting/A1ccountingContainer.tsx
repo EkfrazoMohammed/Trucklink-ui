@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import moment from "moment";
 import dayjs from 'dayjs';
+import { API } from "../../API/apirequest"
 
-const BASE_URL = 'https://trucklinkuatnew.thestorywallcafe.com/prod/v1/';
 const dateFormat = "DD/MM/YYYY";
 
 const AccountingContainer = () => {
@@ -17,8 +16,8 @@ const AccountingContainer = () => {
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
   const [owners, setOwners] = useState([]);  // State to manage the list of owners
-
   const authToken = localStorage.getItem("token");
+  const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
     headers: {
       "Content-Type": "application/json",
@@ -29,7 +28,8 @@ const AccountingContainer = () => {
   const getTableData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}get-advance-data`, headersOb);
+      // const response = await API.get(`get-advance-data&hubId=${selectedHubId}`, headersOb);
+      const response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
       const { ownersAdavance } = response.data || [];
       if (ownersAdavance && ownersAdavance.length > 0) {
         const dataSource = ownersAdavance.map((data) => {
@@ -59,7 +59,8 @@ const AccountingContainer = () => {
 
   const getOutstandingData = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}get-owner-advance-outstanding-details`, headersOb);
+      // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
+      const response = await API.get(`get-owner-advance-outstanding-details`, headersOb);
       const outstandingEntries = response.data.amountData || "";
       if (outstandingEntries && outstandingEntries.length > 0) {
         setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
@@ -74,7 +75,8 @@ const AccountingContainer = () => {
   // Fetch the list of owners
   const getOwners = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}get-owner-name`, headersOb);
+      // const response = await API.get(`get-owner-name&hubId=${selectedHubId}`, headersOb);
+      const response = await API.get(`get-owner-name/${selectedHubId}`, headersOb);
       setOwners(response.data.ownerDetails || []);
     } catch (err) {
       console.log(err);
@@ -86,7 +88,8 @@ const AccountingContainer = () => {
     if (expanded) {
       try {
         if (record && record.key !== "") {
-          const response = await axios.get(`${BASE_URL}get-ledger-data/${record.key}`, headersOb);
+          // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
+          const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
 
           const dataSource = ledgerEntries.map((data) => {
@@ -118,12 +121,13 @@ const AccountingContainer = () => {
     const vDate = startDate.format("DD/MM/YYYY");
     console.log(newRow)
     try {
-      await axios.post(`${BASE_URL}create-owner-advance`, {
+      await API.post(`create-owner-advance`, {
         ownerId: ownerId,
         ownerName: ownerName,
         entryDate: vDate,
         credit: Number(IntAmount),
         narration: "Vehicle Advance",
+        hubId: selectedHubId
       }, headersOb)
         .then(() => {
           message.success("Successfully Added Owner Advance Outstanding");
@@ -141,11 +145,7 @@ const AccountingContainer = () => {
     }
   };
 
-  useEffect(() => {
-    getTableData();
-    getOutstandingData();
-    getOwners(); 
-  }, []);
+
 
   const handleAdd = () => {
     const newData = {
@@ -208,23 +208,7 @@ const AccountingContainer = () => {
                 ))}
               </Select>
 
-              {/* <Select
-                onChange={(value) => {
-                  const selectedOwner = owners.find(owner => owner.id === value.id);
 
-                  setNewRow({
-                    ...newRow,
-                    ownerName: selectedOwner ? selectedOwner.name : '', // Check if selectedOwner exists
-                    ownerId: selectedOwner ? selectedOwner._id : '', // Use the selected owner's ID directly
-                  });
-                }}
-              >
-                {owners.map((owner, index) => (
-                  <Select.Option key={index} value={owner.name}>
-                    {owner.name}
-                  </Select.Option>
-                ))}
-              </Select> */}
             </Form.Item>
           );
         }
@@ -287,9 +271,9 @@ const AccountingContainer = () => {
               <a><FormOutlined /></a>
             </Tooltip>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
-            <Tooltip placement="top" title="Delete">
-              <a><DeleteOutlined /></a>
-            </Tooltip>
+              <Tooltip placement="top" title="Delete">
+                <a><DeleteOutlined /></a>
+              </Tooltip>
             </Popconfirm>
           </Space>
         );
@@ -351,9 +335,10 @@ const AccountingContainer = () => {
             debit: Number(debit),
             credit: Number(credit),
             narration,
+            hubId: selectedHubId
           };
 
-          await axios.put(`${BASE_URL}create-owner-ledger-entry/${record.key}`, payload, headersOb)
+          await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
               getTableData();
@@ -373,7 +358,7 @@ const AccountingContainer = () => {
 
     const handleDeleteLedgerData = async (key) => {
       try {
-        await axios.delete(`${BASE_URL}delete-ledger-data/${key}`, headersOb)
+        await API.delete(`delete-ledger-data/${key}`, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
             getTableData();
@@ -390,7 +375,7 @@ const AccountingContainer = () => {
       }
     };
 
-   
+
 
     const handleAddInsideRow = (record) => {
       const newEntryKey = `${record.key}-${(ledgerEntries[record.key] || []).length}`;
@@ -430,7 +415,7 @@ const AccountingContainer = () => {
               <DatePicker format={dateFormat} />
             </Form.Item>
           ) : (
-              dayjs(text).format('DD/MM/YYYY')
+            dayjs(text).format('DD/MM/YYYY')
             // dayjs(text).format(dateFormat)
             // dayjs(text).format(dateFormat)
           );
@@ -559,7 +544,7 @@ const AccountingContainer = () => {
   };
   const handleDeleteOwnerData = async (key) => {
     try {
-      await axios.delete(`${BASE_URL}delete-owner-record/${key}`, headersOb)
+      await API.delete(`delete-owner-record/${key}`, headersOb)
         .then(() => {
           message.success("Successfully Deleted Ledger Entry");
           getTableData();
@@ -575,10 +560,16 @@ const AccountingContainer = () => {
       console.log(err);
     }
   };
+  useEffect(() => {
+    getTableData();
+    getOutstandingData();
+    getOwners();
+  }, []);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-      <div className='flex gap-2 items-center'>
+        <div className='flex gap-2 items-center'>
           <Input.Search
             placeholder="Search by Owner Name"
             size='large'
@@ -592,14 +583,14 @@ const AccountingContainer = () => {
             size='large'
             placeholder='To date'
           />
-        </div>  
+        </div>
 
-      <Button
-        onClick={handleAdd}
-        type="primary"
-      >
-        Add Owner Balance
-      </Button>
+        <Button
+          onClick={handleAdd}
+          type="primary"
+        >
+          Add Owner Balance
+        </Button>
       </div>
       <Form form={form} component={false}>
         <Table
@@ -613,9 +604,26 @@ const AccountingContainer = () => {
           }}
           pagination={false}
           loading={loading}
+          summary={() => (
+            <Table.Summary.Row >
+
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+                Total Outstanding
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+                {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+
+              </Table.Summary.Cell>
+
+            </Table.Summary.Row>
+          )}
         />
       </Form>
-      <h1 style={{fontSize:"1rem",padding:"1rem"}}> Total Outstanding : {totalOutstanding}</h1>
     </div>
   );
 };

@@ -95,10 +95,10 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-    setLoading(true);
-
+    
     try {
-
+      
+      setLoading(true);
       const pages = page;
       // const limitData = limit ? limit : null;
 
@@ -133,6 +133,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       console.log(err)
 
     }
+
   };
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
@@ -187,6 +188,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       console.log(err)
       setLoading(false);
     }
+    setLoading(false);
+
   };
   // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
@@ -201,26 +204,44 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     // Update localStorage whenever searchQuery2 changes
     useEffect(() => {
-      localStorage.setItem('searchQuery2', searchQuery2);
-    }, [searchQuery2]);
-
+      if (searchQuery2 !== initialSearchQuery) {
+        localStorage.setItem('searchQuery2', searchQuery2);
+      }
+    }, [searchQuery2, initialSearchQuery]);
+  
     const handleSearch = () => {
       getTableData(searchQuery2, 1, 600, selectedHubId);
     };
 
+    // const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //   setSearchQuery2(e.target.value);
+    //   if (e.target.value == "") {
+    //     onReset()
+    //   }
+    // };
+
+    // const onReset = () => {
+    //   setSearchQuery2("");
+    //   getTableData("", 1, 600, selectedHubId);
+    // }
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery2(e.target.value);
-      if (e.target.value == "") {
-        onReset()
+      const value = e.target.value;
+      setSearchQuery2(value);
+      console.log(value);
+      if (value === "") {
+        onReset();
       }
     };
-
+  
     const onReset = () => {
       setSearchQuery2("");
+      setLoading(false)
+      localStorage.removeItem('searchQuery2');
       getTableData("", 1, 600, selectedHubId);
-    }
+    };
     return (
       <div className='flex gap-2 justify-between  py-3'>
+        {loading}
         <div className='flex items-center gap-2'>
           <Search
             placeholder="Search by Vehicle Number"
@@ -736,7 +757,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             onChange: changePagination,
             onShowSizeChange: changePaginationAll,
           }}
-          loading={loading}
+          // loading={loading}
         />
       </>
     );

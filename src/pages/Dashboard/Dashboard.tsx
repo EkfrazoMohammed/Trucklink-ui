@@ -21,67 +21,60 @@ import ReceiveContainer from '../../containers/Receive/ReceiveContainer';
 import AccountingContainer from '../../containers/Accounting/AccountingContainer';
 import ReportsContainer from '../../containers/Reports/ReportsContainer';
 import SettingsContainer from '../../containers/Settings/SettingsContainer';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+
 
 const { Content, Footer, Sider } = Layout;
-interface RootState {
-  hub: {
-    selectedHub: string; // Assuming selectedHub is of type string
-    // Other properties of the hub slice
-  };
-  // Other slices of the Redux store
-}
-
-
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState('1');
-  const [title, setTitle] = useState('Dashboard');
-  // Usage in useSelector
-const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub);
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
+  const [dataFromChild, setDataFromChild] = useState('');
 
-  useEffect(() => {
-    // Function to navigate to the selected menu item after selecting a hub
-    const navigateToMenu = () => {
-      if (selectedHubRedux !== "") {
-        setSelectedMenuItem('2'); // Set the menu item key for Onboarding
-        setTitle('Onboarding'); // Update the title to reflect the selected menu item
-      }
-    };
+  console.log(dataFromChild)
 
-    navigateToMenu(); // Call navigateToMenu when component mounts or selectedHubRedux changes
-  }, [selectedHubRedux]);
-
-  const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
-    setSelectedMenuItem(menuItemKey);
-    setTitle(menuTitle);
+  const handleDataFromChild = (childData) => {
+    setDataFromChild(childData);
   };
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
+  const [selectedMenuTitle, setSelectedMenuTitle] = useState(localStorage.getItem("selectedMenuItemTitle")|| 'Dashboard')
+  const [title, setTitle] = useState(selectedMenuTitle || 'Dashboard');
+
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
 
   const items = [
     { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer /> },
-    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer /> },
-    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer /> },
-    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer /> },
+    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
+    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
+    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
+    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
     { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
     { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
   ];
 
+  const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
+    setSelectedMenuItem(menuItemKey);
+    setTitle(menuTitle);
+    setSelectedMenuTitle(menuTitle)
+    setDataFromChild("flex")
+  };
+
+  useEffect(() => {
+    localStorage.setItem("selectedMenu", "");
+    localStorage.setItem("selectedMenuItemTitle", selectedMenuTitle);
+    localStorage.setItem('selectedMenuItem', selectedMenuItem); // Store the selected menu item key in localStorage
+  }, [selectedMenuItem]);
+
   // Logout function
   const handleLogout = () => {
     console.log("Logout clicked");
-    
-    setLogoutModalVisible(false);
-    // navigate("/")
-    localStorage.removeItem('token');
-    localStorage.clear();
 
+    setLogoutModalVisible(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('selectedMenuItemTitle');
+    localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
+    localStorage.clear();
     window.location.replace("/");
   };
   return (
@@ -104,7 +97,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
                  }}/>
 
                <img src={truck_logo} alt="truck_logo" className='flex justify-center m-auto truck-top-logo-close' /> 
-                               </div>
+                </div>
                  </>
               : 
               
@@ -124,7 +117,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
                 }
        
           </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"  selectedKeys={[selectedMenuItem]} >
+        <Menu theme="dark" defaultSelectedKeys={[selectedMenuItem]} mode="inline"  selectedKeys={[selectedMenuItem]} >
           {items.map(item => (
             <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)}>
               {item.label}
@@ -162,7 +155,7 @@ const selectedHubRedux = useSelector((state: RootState) => state.hub.selectedHub
               boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <HeaderContainer title={title} />
+            <HeaderContainer title={title} dataFromChild={dataFromChild}/>
             {items.map(item => (
               <React.Fragment key={item.key}>
                 {selectedMenuItem === item.key && (

@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, List, Row, Switch } from 'antd';
-import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
+
 import { API } from "../../API/apirequest"
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 
 
 const OwnerTransferLog = () => {
-  const authToken=localStorage.getItem("token");
+  const authToken = localStorage.getItem("token");
+  const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
     headers: {
       "Content-Type": "application/json",
-      "Authorization":`Bearer ${authToken}`
+      "Authorization": `Bearer ${authToken}`
     }
   }
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +22,7 @@ const OwnerTransferLog = () => {
 
   const TransferLogHeader = () => {
     return (
-<div className='flex gap-2 justify-between  py-3'>
+      <div className='flex gap-2 justify-between  py-3'>
         <Search
           placeholder="Search by Vehicle Number"
           size='large'
@@ -55,7 +54,7 @@ const OwnerTransferLog = () => {
   };
   const [transferData, setTransferData] = useState([])
   const getTransferDetails = async () => {
-    let response = await API.get("get-all-users-logs",headersOb)
+    let response = await API.get(`get-all-users-logs/${selectedHubId}`, headersOb)
       .then((res) => {
         if (res.status == 201) {
           setTransferData(res.data.ownerDetails);
@@ -73,7 +72,7 @@ const OwnerTransferLog = () => {
   }, [])
   const TransferLogTable = ({ transferData }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
     };
 
@@ -123,9 +122,7 @@ const OwnerTransferLog = () => {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
+            
             hour12: true
           };
           return date.toLocaleDateString('en-US', options);
@@ -143,9 +140,7 @@ const OwnerTransferLog = () => {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
+           
             hour12: true
           };
           return date.toLocaleDateString('en-US', options);
@@ -173,7 +168,7 @@ const OwnerTransferLog = () => {
   return (
     <>
 
-      <TransferLogHeader />
+      {/* <TransferLogHeader /> */}
       <TransferLogTable transferData={transferData} />
 
     </>

@@ -100,7 +100,7 @@ margin: 0 auto;
   padding: 0;
   list-style: none;
   min-width: 260px;
-  margin: .6rem;
+  margin: .6rem .6rem .6rem 0;
   border: 2px solid #eee;
   border-top: 4px solid #065AA8 !important;
   padding: 0.4rem;
@@ -144,7 +144,7 @@ margin: 0 auto;
   padding: 0;
   list-style: none;
   min-width: 260px;
-  margin: .6rem;
+  margin: .6rem .6rem .6rem 0;
   border: 2px solid #eee;
   border-top: none !important;
   padding: 0.4rem;
@@ -220,7 +220,7 @@ align-items: center;
 
 .mytab-content {
   overflow-y: scroll !important;
-  height: 66vh !important;
+  height:70vh !important;
   overflow-x: hidden !important;
 }
 
@@ -243,6 +243,33 @@ align-items: center;
   background: #555;
   border-radius: 6px;
 }
+
+
+.mymastertab-content {
+  overflow-y: scroll !important;
+  height:70vh !important;
+  overflow-x: hidden !important;
+}
+
+.mymastertab-content::-webkit-scrollbar {
+  width: 6px; /* Width of the scrollbar */
+  border-radius: 6px;
+}
+
+.mymastertab-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.mymastertab-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.mymastertab-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 6px;
+}
 :where(.css-11xg00t).ant-menu-dark, :where(.css-11xg00t).ant-menu-dark>.ant-menu {
   color: rgba(255, 255, 255, 0.65);
   background: transparent !important;
@@ -259,7 +286,7 @@ align-items: center;
   padding: 0;
   list-style: none;
   min-width: 260px;
-  margin: .6rem;
+  margin: .6rem .6rem .6rem 0;
   border: 2px solid #eee !important;
   border-top: 2px solid #eee !important;
   padding: 0.4rem;
@@ -308,4 +335,26 @@ align-items: center;
   width: 100%;
   height: auto;
   
+}
+
+.onboarding-tabs-hidden .ant-tabs-nav {
+  display: none !important;
+}
+
+.receive-tabs-hidden .ant-tabs-nav {
+  display: none !important;
+}
+:where(.css-11xg00t).ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #000 !important;
+  text-shadow: 0 0 0.25px currentcolor;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-item, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-item-group>.ant-menu-item-group-list>.ant-menu-submenu>.ant-menu-submenu-title, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-inline-collapsed >.ant-menu-submenu>.ant-menu-submenu-title {
+  inset-inline-start: 0;
+  padding-inline: 8px !important;
+  text-overflow: clip;
+}
+:where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+  /* background-color: #1677ff; */
+  background-color: #424242 !important;
 }

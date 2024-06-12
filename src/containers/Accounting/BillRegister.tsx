@@ -25,7 +25,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const [ledgerEntries, setLedgerEntries] = useState({});
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
-  const [owners, setOwners] = useState([]);  // State to manage the list of owners
+
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
@@ -46,7 +46,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
 
       const response = searchData ? await API.get(`get-all-bill-register?searchBNT=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-        : await API.get(`get-all-bill-register?page=${pages}&limit=${limitData}`, headersOb);
+        : await API.get(`get-all-bill-register?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb);
       const { bill, totalValueRaised } = response.data || [];
       setTotalOutstanding(totalValueRaised)
       if (bill && bill[0].data.length > 0) {
@@ -165,44 +165,52 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const columns = [
 
     {
-      title: 'billNumber',
+      title: 'Bill Number',
       dataIndex: 'billNumber',
       key: 'billNumber',
+      width:160,
     },
     {
-      title: 'billType',
+      title: 'Bill Type',
       dataIndex: 'billType',
       key: 'billType',
+      width:160,
     },
     {
-      title: 'valueRaised',
+      title: 'Value Raised',
       dataIndex: 'valueRaised',
       key: 'valueRaised',
+      width:160,
     },
     {
-      title: 'valueReceived',
+      title: 'Value Received',
       dataIndex: 'valueReceived',
       key: 'valueReceived',
+      width:160,
     },
     {
       title: 'tax',
       dataIndex: 'tax',
       key: 'tax',
+      width:160,
     },
     {
-      title: 'difference',
+      title: 'Difference',
       dataIndex: 'difference',
       key: 'difference',
+      width:160,
     },
     {
-      title: 'remarks',
+      title: 'Remarks',
       dataIndex: 'remarks',
       key: 'remarks',
+      width:160,
     },
 
     {
       title: 'Action',
       key: 'operation',
+      fixed:'right',
       render: (_, record) => {
         if (newRow && newRow.key === record.key) {
           return (
@@ -232,7 +240,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
     return (
-      <div className='w-100 h-auto p-2 flex flex-col gap-2 bg-gray-50'>
+      <div className='w-100 h-auto flex flex-col gap-2 bg-gray-50'>
         <LedgerTable record={record} entries={entries} />
       </div>
     );
@@ -496,7 +504,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   };
   const handleDeleteOwnerData = async (key) => {
     try {
-      await API.delete(`delete-owner-record/${key}`, headersOb)
+      await API.delete(`delete-bill-register-data/${key}`, headersOb)
         .then(() => {
           message.success("Successfully Deleted Ledger Entry");
           getTableData("", "1", "500", selectedHubId);
@@ -525,7 +533,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
       try {
 
-        const res = await API.get("get-all-recovery-delivery", headersOb)
+        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
           .then((response) => {
             console.log(response.data)
             if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
@@ -612,6 +620,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         remarks: formData.remarks,
         tax: formData.tax,
         valueRaised: formData.valueRaised,
+        hub:selectedHubId
       };
   
       const headersOb = {
@@ -734,300 +743,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       </div>
     );
   };
-  // const RecoveryCodeFormComponent = () => {
-  //   const [mockData, setMockData] = useState<RecordType[]>([]);
-  //   const [targetKeys, setTargetKeys] = useState<TransferProps['targetKeys']>([]);
-
-  //   const getMock = () => {
-  //     const tempMockData = [];
-  //     for (let i = 0; i < 10; i++) {
-  //       const data = {
-  //         key: i.toString(),
-  //         title: `content ${i + 1}`,
-  //         chosen: i % 2 === 0,
-  //       };
-  //       tempMockData.push(data);
-  //     }
-  //     setMockData(tempMockData);
-  //     setTargetKeys([]);
-  //   };
-
-  //   useEffect(() => {
-  //     getMock();
-  //   }, []);
-
-  //   const handleChangeTransfer: TransferProps['onChange'] = (newTargetKeys) => {
-  //     setTargetKeys(newTargetKeys);
-  //   };
-
-  //   const renderFooter: TransferProps['footer'] = (_, info) => {
-  //     if (info?.direction === 'left') {
-  //       return (
-  //         <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getMock}>
-  //           reload
-  //         </Button>
-  //       );
-  //     }
-  //     return (
-  //       <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getMock}>
-  //         reload
-  //       </Button>
-  //     );
-  //   };
-
-
-  //   const [formData, setFormData] = useState({
-  //     registrationNumber: '',
-  //     commission: 0,
-  //     ownerId: '',
-  //     accountId: null,
-  //     vehicleType: '',
-  //     rcBookProof: null,
-  //     isCommission: true,
-  //     marketRate: '',
-  //     isMarketRate: false,
-  //     hubId: selectedHubId,
-  //   });
-
-  //   const onResetClick = () => {
-  //     console.log('reset clicked')
-  //     setFormData({
-  //       registrationNumber: '',
-  //       commission: 0,
-  //       ownerId: '',
-  //       accountId: null,
-  //       vehicleType: '',
-  //       rcBookProof: null,
-  //       isCommission: true,
-  //       marketRate: '',
-  //       isMarketRate: false,
-  //     });
-  //   }
-  //   const [fileName, setFileName] = useState("");
-  //   const [bankData, setBankdata] = useState([])
-  //   const axiosFileUploadRequest = async (file) => {
-  //     console.log(file)
-
-  //     try {
-  //       const formData = new FormData();
-  //       formData.append("file", file);
-
-  //       const config = {
-  //         headers: {
-  //           "content-type": "multipart/form-data",
-  //           "Authorization": `Bearer ${authToken}`
-  //         },
-  //       };
-  //       const response = await API.post(
-  //         `rc-upload`,
-  //         formData,
-  //         config
-  //       );
-  //       setFileName(file.name)
-  //       const { rcBookProof } = response.data;
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         rcBookProof: rcBookProof,
-  //       }));
-  //       alert("File uploaded successfully");
-  //     } catch (err) {
-  //       console.log(err);
-  //       alert("Failed to upload, retry again!");
-  //     }
-  //   };
-  //   const handleFileChange = (file) => {
-  //     console.log(file)
-  //     axiosFileUploadRequest(file.file);
-
-  //   };
-  //   const handleChange = (name, value) => {
-  //     const headersOb = {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": `Bearer ${authToken}`
-  //       }
-  //     }
-  //     if (name === 'isCommission' && value === true) {
-  //       setFormData(prevFormData => ({
-  //         ...prevFormData,
-  //         isCommission: true,
-  //         isMarketRate: false,
-  //         marketRate: "",
-  //       }));
-  //     }
-  //     else if (name === 'isCommission' && value === false) {
-  //       setFormData(prevFormData => ({
-  //         ...prevFormData,
-  //         isCommission: false,
-  //         isMarketRate: true,
-  //         commission: 0
-  //       }));
-  //     }
-
-  //     else if (name === "ownerId") {
-  //       const request = API.get(`get-owner-bank-details/${value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
-  //         .then((res) => {
-  //           console.log(res)
-
-  //           setBankdata(res.data.ownerDetails[0]['accountIds'])
-  //         })
-  //         .catch((err) => {
-  //           console.log(err)
-  //         })
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         [name]: value,
-  //         accountId: null,
-  //       }));
-  //     }
-
-  //     else if (name === "registrationNumber") {
-  //       const updatedValue = value.toUpperCase();
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         [name]: updatedValue,
-  //       }));
-  //     }
-  //     else {
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         [name]: value,
-  //       }));
-  //     }
-  //   };
-
-  //   const handleSubmit = (e) => {
-  //     e.preventDefault();
-  //     const payload = {
-  //       hubId: selectedHubId,
-  //       accountId: formData.accountId,
-  //       commission: formData.commission,
-  //       ownerId: formData.ownerId,
-  //       rcBookProof: formData.rcBookProof,
-  //       registrationNumber: formData.registrationNumber,
-  //       truckType: formData.vehicleType,
-  //       marketRate: formData.marketRate,
-  //       isMarketRate: formData.isMarketRate,
-  //     };
-  //     const headersOb = {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": `Bearer ${authToken}`
-  //       }
-  //     }
-  //     API.post('create-vehicle', payload, headersOb)
-  //       .then((response) => {
-  //         console.log('Truck data added successfully:', response.data);
-  //         alert("Truck data added successfully")
-  //         window.location.reload();
-  //       })
-  //       .catch((error) => {
-  //         console.error('Error adding truck data:', error);
-  //         let errorResponse = error.response.data
-
-  //         let errorMessages = [];
-
-  //         if (errorResponse.error && errorResponse.error.err && errorResponse.error.err.errors) {
-  //           Object.keys(errorResponse.error.err.errors).forEach((key) => {
-  //             const errorMessage = errorResponse.error.err.errors[key].message;
-  //             errorMessages.push(errorMessage);
-  //           });
-  //         }
-
-
-  //         if (errorMessages.length > 0) {
-  //           console.log("Error:", errorMessages.join(", "));
-  //           alert("error occurred")
-  //         } else {
-  //           alert("error occurred")
-  //           console.log("Something went wrong");
-  //         }
-  //       });
-  //   };
-
-  //   const goBack = () => {
-  //     setShowAddRecoveryForm(false)
-  //   }
-
-  //   return (
-  //     <>
-  //       <div className="flex flex-col gap-2">
-
-
-  //         <div className="flex flex-col gap-1">
-
-  //           <div className="flex items-center gap-4">
-  //             <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
-  //             <div className="flex flex-col">
-  //               <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
-  //               <Breadcrumb
-  //                 items={[
-  //                   {
-  //                     title: 'Bill Register',
-  //                   },
-  //                   {
-  //                     title: 'Create',
-  //                   },
-  //                 ]}
-  //               />
-  //             </div>
-  //           </div>
-  //           <div className="flex flex-col gap-1">
-  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-  //               <Col className="gutter-row mt-6" span={8}>
-  //                 <Input
-  //                   placeholder="Recovery Code*"
-  //                   size="large"
-  //                   name="recoveryCode"
-  //                   onChange={(e) => handleChange('recoveryCode', e.target.value)}
-  //                 />
-  //               </Col>
-
-  //               <Col className="gutter-row mt-6" span={8}>
-  //                 <Input
-  //                   placeholder="Value*"
-  //                   size="large"
-  //                   name="value"
-  //                   onChange={(e) => handleChange('value', e.target.value)}
-  //                 />
-  //               </Col>
-
-  //             </Row>
-
-  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-  //               <Col className="gutter-row mt-6" span={16}>
-
-  //                 <Transfer
-  //                   dataSource={mockData}
-  //                   showSearch
-  //                   listStyle={{
-  //                     width: 650,
-  //                     height: 300,
-  //                   }}
-  //                   operations={['', '']}
-  //                   targetKeys={targetKeys}
-  //                   onChange={handleChangeTransfer}
-  //                   render={(item) => `${item.title}`}
-  //                   footer={renderFooter}
-  //                 />
-  //               </Col>
-  //             </Row>
-  //           </div>
-  //         </div>
-
-
-  //         <div className="flex gap-4 items-center justify-center reset-button-container">
-
-  //           <Button onClick={onResetClick}>Reset</Button>
-  //           <Button type="primary" className="bg-primary" onClick={handleSubmit}>
-  //             Save
-  //           </Button>
-  //         </div>
-  //       </div>
-  //     </>
-
-  //   )
-  // }
 
   return (
     <>

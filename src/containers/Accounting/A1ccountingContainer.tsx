@@ -115,20 +115,19 @@ const AccountingContainer = () => {
   };
 
   const createOwnerAdvance = async (row) => {
-    const { intDate, IntAmount, ownerName, ownerId } = row;
-    const DateString = dayjs(intDate).format("DD/MM/YYYY");
-    const startDate = dayjs(DateString, "DD/MM/YYYY");
-    const vDate = startDate.format("DD/MM/YYYY");
-    console.log(newRow)
+    const { date, IntAmount, ownerName, ownerId } = row;
+   const vDate = dayjs(date).format("DD/MM/YYYY");
     try {
-      await API.post(`create-owner-advance`, {
+      const payload={
         ownerId: ownerId,
         ownerName: ownerName,
         entryDate: vDate,
         credit: Number(IntAmount),
         narration: "Vehicle Advance",
         hubId: selectedHubId
-      }, headersOb)
+      }
+      console.log(payload)
+      await API.post(`create-owner-advance`,payload , headersOb)
         .then(() => {
           message.success("Successfully Added Owner Advance Outstanding");
           getTableData();
@@ -145,8 +144,6 @@ const AccountingContainer = () => {
     }
   };
 
-
-
   const handleAdd = () => {
     const newData = {
       key: count.toString(),
@@ -160,7 +157,6 @@ const AccountingContainer = () => {
   };
 
   const saveNewRow = async () => {
-    console.log(newRow)
     try {
       await form.validateFields().then(values => {
         const newRowData = {
@@ -169,7 +165,7 @@ const AccountingContainer = () => {
           // date: values.intDate.format(dateFormat),
           credit: Number(values.IntAmount)
         };
-        console.log(newRowData);
+
         createOwnerAdvance(newRowData);
         setNewRow(null);
       });
@@ -207,8 +203,6 @@ const AccountingContainer = () => {
                   </Select.Option>
                 ))}
               </Select>
-
-
             </Form.Item>
           );
         }
@@ -217,8 +211,8 @@ const AccountingContainer = () => {
     },
     {
       title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
+      dataIndex: 'intDate',
+      key: 'intDate',
       render: (date, record) => {
         if (newRow && newRow.key === record.key) {
           return (
@@ -285,7 +279,7 @@ const AccountingContainer = () => {
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
     return (
-      <div className='w-100 h-auto p-2 flex flex-col gap-2 bg-gray-50'>
+      <div className='w-100 h-auto flex flex-col gap-2 bg-gray-50'>
         <LedgerTable record={record} entries={entries} />
       </div>
     );
@@ -358,7 +352,8 @@ const AccountingContainer = () => {
 
     const handleDeleteLedgerData = async (key) => {
       try {
-        await API.delete(`delete-ledger-data/${key}`, headersOb)
+        // await API.delete(`delete-ledger-data/${key}`, headersOb)
+        await API.delete(`delete-owner-ledger/${key}`, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
             getTableData();
@@ -532,6 +527,7 @@ const AccountingContainer = () => {
         </Button>
         <Form form={form} component={false}>
           <Table
+                      className='nestedtable-account'
             rowKey={(record) => record.key}
             bordered
             dataSource={entries}

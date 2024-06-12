@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
-import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined,  FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
 import moment from 'moment-timezone';
 
 const { Search } = Input;
@@ -38,7 +38,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
     const [endDateValue, setEndDateValue] = useState("")
     const [loading, setLoading] = useState(false);
 
-    
+
     const convertToIST = (date) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
@@ -55,19 +55,19 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
     // };
     const handleEndDateChange = (date, dateString) => {
         if (date) {
-          // Set endDate to the last minute of the selected day in IST
-          const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-          setEndDateValue(date);
-          setEndDate(endOfDay.valueOf());
+            // Set endDate to the last minute of the selected day in IST
+            const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+            setEndDateValue(date);
+            setEndDate(endOfDay.valueOf());
         } else {
-          setEndDateValue(null);
-          setEndDate(null);
+            setEndDateValue(null);
+            setEndDate(null);
         }
-      };
-      // Disable dates before the selected start date
- const disabledEndDate = (current) => {
-    return current && current < moment(startDate).startOf('day');
-  };
+    };
+    // Disable dates before the selected start date
+    const disabledEndDate = (current) => {
+        return current && current < moment(startDate).startOf('day');
+    };
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -99,8 +99,8 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             data.endDate = endDate;
         }
 
-        console.log(data)
         let queryParams = buildQueryParams(data);
+        setLoading(true)
         console.log(queryParams)
         try {
             const searchData = queryParams ? queryParams : null;
@@ -109,6 +109,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 : await API.get(`get-receive-register?page=1&limit=200&hubId=${selectedHubId}`, headersOb);
 
             let allreceive;
+            setLoading(false)
             if (response.data.dispatchData.length == 0) {
                 allreceive = response.data.disptachData
                 console.log(allreceive)
@@ -130,7 +131,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             }
         } catch (err) {
             console.log(err)
-
+            setLoading(false)
         }
     };
     //    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
@@ -205,43 +206,11 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         );
     };
 
-    // const DispatchChallanComponent = () => {
-
-    //     return (
-    //         <div className='flex gap-2 flex-col justify-between p-2'>
-    //             <div className='flex gap-2'>
-    //                 <Search
-    //                     placeholder="Search by Delivery Number"
-    //                     size='large'
-    //                     onSearch={handleSearch}
-    //                     style={{ width: 320 }}
-    //                 />
-    //                 <DatePicker
-    //                     size='large'
-    //                     onChange={handleStartDateChange}
-    //                     placeholder='From date'
-    //                 /> -
-    //                 <DatePicker
-    //                     size='large'
-    //                     onChange={handleEndDateChange}
-    //                     placeholder='To date'
-    //                 />
-    //             </div>
-    //         </div>
-
-    //     );
-    // };
-
-
-
     const DispatchChallanComponentTable = ({ onEditChallanClick }) => {
-
         const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
         const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
             setSelectedRowKeys(newSelectedRowKeys);
         };
-
 
         const rowSelection = {
             selectedRowKeys,
@@ -250,47 +219,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
 
         const columns = [
 
-            // {
-            //     title: 'Ageing',
-            //     dataIndex: 'ageing',
-            //     key: 'ageing',
-            //     width: 80,
-            //     fixed: 'left',
-            //     onCell: (record) => {
-            //         const givenDate = new Date(record.grISODate);
-            //         const today = new Date();
-            //         const differenceInMs = today - givenDate;
-            //         const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-
-            //         let backgroundColor;
-
-            //         if (differenceInDays < 10) {
-            //             backgroundColor = '#009F23';
-            //         } else if (differenceInDays < 20) {
-            //             backgroundColor = '#FFED4A';
-
-            //         } else if (differenceInDays >= 30) {
-            //             backgroundColor = '#FF0000';
-            //         } else {
-            //             backgroundColor = 'inherit'; // Default background color
-            //         }
-
-            //         return {
-            //             id: `ageing-${record._id}`,
-            //             style: { backgroundColor, color: "#fff", },
-            //         };
-            //     },
-            //     render: (_, record) => {
-            //         const givenDate = new Date(record.grISODate);
-            //         const today = new Date();
-            //         const differenceInMs = today - givenDate;
-            //         const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-
-            //         return (
-            //             <span>{differenceInDays}</span>
-            //         );
-            //     },
-            // },
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
@@ -487,6 +415,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     dataSource={receive}
                     scroll={{ x: 800, y: 320 }}
                     rowKey="_id"
+                    loading={loading}
                     pagination={{
                         position: ['bottomCenter'],
                         showSizeChanger: true,
@@ -864,7 +793,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 console.log("isMarketRate", formData.isMarketRate);
                 const t = totalIncome;
                 const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-                commissionTotal = totalIncome -m;
+                commissionTotal = totalIncome - m;
                 commisionRate = 0;
             } else {
                 console.log("isMarketRate", formData.isMarketRate);

@@ -3,17 +3,16 @@ import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, mes
 import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest";
-
 const dateFormat = "DD/MM/YYYY";
 
 const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
-  const [amountData,setAmountData] = useState([]);
+  const [amountData, setAmountData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(0);
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
-
+  const [selectedDate, setSelectedDate] = useState({ month: 6, year: 2024 });
   const authToken = localStorage.getItem("token");
   const headersOb = {
     headers: {
@@ -21,12 +20,11 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       "Authorization": `Bearer ${authToken}`
     }
   };
-
-  const getTableData = async () => {
+  const getTableData = async (month, year) => {
     try {
       setLoading(true);
-      const response = await API.get(`get-cash-book-by-month/6/2024`, headersOb);
-      const { cashBookEntries,amounts } = response.data || [];
+      const response = await API.get(`get-cash-book-by-month/${month}/${year}`, headersOb);
+      const { cashBookEntries, amounts } = response.data || [];
       if (cashBookEntries && cashBookEntries.length > 0) {
         const dataSource = cashBookEntries.map((entry) => ({
           key: entry._id,
@@ -36,17 +34,17 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           narration: entry.narration,
         }));
         setDataSource(dataSource);
-      setCount(dataSource.length);
+        setCount(dataSource.length);
       }
       else {
         setDataSource([]);
       }
       if (amounts) {
-      
+
         setAmountData(amounts);
-    } else {
-      setAmountData([]);
-    }
+      } else {
+        setAmountData([]);
+      }
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -54,7 +52,6 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
- 
   const createCashBookEntry = async (row) => {
     const { date, debit, credit, narration } = row;
     const formattedDate = dayjs(date).format("DD/MM/YYYY");
@@ -67,7 +64,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       }, headersOb)
         .then(() => {
           message.success("Successfully Added Cash Book Entry");
-          getTableData();
+          const { month, year } = selectedDate;
+          getTableData(month, year);
         })
         .catch((error) => {
           const { response } = error;
@@ -80,9 +78,19 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
+  const handleMonthChange = (date, dateString) => {
+    if (date) {
+      const month = date.month() + 1;
+      const year = date.year();
+      setSelectedDate({ month, year });
+      getTableData(month, year);
+    }
+  };
+
   useEffect(() => {
-    getTableData();
-  }, []);
+    const { month, year } = selectedDate;
+    getTableData(month, year);
+  }, [selectedDate]);
 
   const handleAdd = () => {
     const newData = {
@@ -227,11 +235,11 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
 
   const handleDeleteOwnerData = async (key) => {
     try {
-      await API.delete(`delete-owner-record/${key}`, headersOb)
+      await API.delete(`delete-cash-book/${key}`, headersOb)
         .then(() => {
-          message.success("Successfully Deleted Ledger Entry");
-          getTableData();
-          getOutstandingData();
+          message.success("Successfully Deleted Cashbook Entry");
+          const { month, year } = selectedDate;
+    getTableData(month, year);
         })
         .catch((error) => {
           const { response } = error;
@@ -248,15 +256,13 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className='flex gap-2 items-center'>
-        
           <DatePicker
             size='large'
             placeholder='By Month'
             picker="month"
-          /> 
-        
+            onChange={handleMonthChange}
+          />
         </div>
-
         <Button
           onClick={handleAdd}
           type="primary"
@@ -272,28 +278,26 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           columns={columns}
           pagination={false}
           loading={loading}
-          // scroll={{ x: 800, y: 310 }}
+          // scroll={{  y: 410 }}
           summary={() => (
-            <Table.Summary.Row style={{backgroundColor:"#eee"}}>
-              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold',backgroundColor:"#fff" }}>
-             
+            <Table.Summary.Row style={{ backgroundColor: "#eee" }}>
+              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-              Current Month balance
+                Current Month balance
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-              {(amountData.monthlyTotalDebit)}
+                {(amountData.monthlyTotalDebit)}
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-              {(amountData.monthlyTotalCredit)}
+                {(amountData.monthlyTotalCredit)}
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-              
-              {amountData.monthlyOutstanding >0 ? <p style={{color:"green"}}>{amountData.monthlyOutstanding}</p>:<p style={{color:"red"}}>{amountData.monthlyOutstanding}</p>}
+                {amountData.monthlyOutstanding > 0 ? <p style={{ color: "green" }}>{amountData.monthlyOutstanding}</p> : <p style={{ color: "red" }}>{amountData.monthlyOutstanding}</p>}
               </Table.Summary.Cell>
             </Table.Summary.Row>
           )}
-        />
+        />   
       </Form>
     </div>
   );

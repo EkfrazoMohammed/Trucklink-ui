@@ -135,12 +135,10 @@ const AccountingContainer = ({ onData }) => {
 
   return (
     <>
-
-      {/* <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
+      <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
         <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
-      </div> */}
-
-      <h1>Accounting Container</h1>
+      </div>
+      {/* <h1>Accounting Container</h1> */}
     </>
   );
 };

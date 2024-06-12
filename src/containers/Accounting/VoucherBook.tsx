@@ -55,15 +55,15 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
 
   const handleDeleteVoucherClick = async (rowData) => {
     console.log("deleting", rowData._id)
-    const vehicleId = rowData._id
-    const oldOwnerId = rowData.ownerId[0]._id;
+   
+    const voucherId = rowData._id
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }
     }
-    const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
+    const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
       window.location.reload()
@@ -274,7 +274,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           ownerPhone: selectedVehicle.ownerId.phoneNumber,
           vehicleId: selectedVehicle._id,
           vehicleNumber: selectedVehicle.registrationNumber,
-          vehicleBank:selectedVehicle.accountId
+          vehicleBank: selectedVehicle.accountId
         });
       }
     };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined,ExclamationCircleOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import moment from "moment";
 import dayjs, { locale } from 'dayjs';
 import { API } from "../../API/apirequest"
@@ -43,7 +43,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
 
       const response = searchData ? await API.get(`get-all-recovery-details?searchDN=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
-        : await API.get(`get-all-recovery-details?page=${pages}&limit=${limitData}`, headersOb);
+        : await API.get(`get-all-recovery-details?page=${pages}&limit=${limitData}&hubId=${selectedHubID}`, headersOb);
       const { recovery, totalOutstanding } = response.data || [];
       setTotalOutstanding(totalOutstanding)
       if (recovery && recovery[0].data.length > 0) {
@@ -78,7 +78,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     if (expanded) {
       try {
         if (record && record.key !== "") {
-          // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
+          // const response = await API.get(`get-ledger-data/${record.key}?hubId=${selectedHubId}&page=1&limit=600`, headersOb);
           const response = await API.get(`get-recovery-challan-data/${record.key}`, headersOb);
           const ledgerEntries = response.data.deliveryDetails.challan;
 
@@ -164,25 +164,25 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   };
 
   const columns = [
-  
+
     {
       title: 'Code',
       dataIndex: 'recoveryCode',
       key: 'recoveryCode',
       width: 180,
-    
+
     },
     {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
-      width:200
+      width: 200
     },
     {
       title: 'Recovered',
       dataIndex: 'recovered',
       key: 'recovered',
-      width:180
+      width: 180
     },
     {
       title: 'Outstanding Amount',
@@ -222,7 +222,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
     return (
-      <div className='w-100 h-auto p-2 flex flex-col gap-2 bg-gray-50'>
+      <div className='w-100 h-auto flex flex-col gap-2 bg-gray-50'>
         <LedgerTable record={record} entries={entries} />
       </div>
     );
@@ -475,8 +475,8 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       emptyText: (
         <span>
           <p>
-            <ExclamationCircleOutlined style={{color: "red"}} />
-            <span style={{padding: "5px", textTransform: "initial"}}>
+            <ExclamationCircleOutlined style={{ color: "red" }} />
+            <span style={{ padding: "5px", textTransform: "initial" }}>
               Please, attach DO number to Recovery.
             </span>
           </p>
@@ -488,7 +488,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
         <Form form={form} component={false}>
           <Table
-
+            className='nestedtable-account'
             rowKey={(record) => record.key}
             bordered
             dataSource={entries}
@@ -502,9 +502,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   };
   const handleDeleteOwnerData = async (key) => {
     try {
-      await API.delete(`delete-owner-record/${key}`, headersOb)
+      await API.delete(`delete-recovered-data/${key}`, headersOb)
         .then(() => {
-          message.success("Successfully Deleted Ledger Entry");
+          message.success("Successfully Deleted Recovered Entry");
           getTableData("", "1", "500", selectedHubId);
           getOutstandingData();
         })
@@ -533,10 +533,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     });
 
     const getDONumber = async () => {
-
       try {
 
-        const res = await API.get("get-all-recovery-delivery", headersOb)
+        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
           .then((response) => {
             console.log(response.data)
             if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
@@ -598,6 +597,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         recoveryCode: formData.recoveryCode,
         value: formData.value,
         challan: targetKeys,
+        hubId:selectedHubId
       };
       const headersOb = {
         headers: {
@@ -749,7 +749,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 }}
                 pagination={false}
                 loading={loading}
-               
+
                 summary={() => (
                   <Table.Summary.Row >
 

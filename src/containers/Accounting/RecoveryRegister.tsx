@@ -106,42 +106,25 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
-  const createOwnerAdvance = async (row) => {
-    const { intDate, IntAmount, ownerName, ownerId } = row;
-    const DateString = dayjs(intDate).format("DD/MM/YYYY");
-    const startDate = dayjs(DateString, "DD/MM/YYYY");
-    const vDate = startDate.format("DD/MM/YYYY");
-    console.log(newRow)
-    try {
-      await API.post(`create-owner-advance`, {
-        ownerId: ownerId,
-        ownerName: ownerName,
-        entryDate: vDate,
-        credit: Number(IntAmount),
-        narration: "Vehicle Advance",
-        hubId: selectedHubId
-      }, headersOb)
-        .then(() => {
-          message.success("Successfully Added Owner Advance Outstanding");
-          getTableData("", "1", "500", selectedHubId);
 
-        })
-        .catch((error) => {
-          const { response } = error;
-          const { data } = response;
-          const { message: msg } = data;
-          message.error(msg);
-        });
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
+
+  const [showEditRecoveryForm, setShowEditRecoveryForm] = useState(false);
+
+  const [editRowData,setEditRowData]=useState(null);
 
   const handleAdd = () => {
     setShowTabs(false);
     setShowAddRecoveryForm(true)
+    setShowEditRecoveryForm(false);
+  };
+  const handleEditRow = (data) => {
+    setShowTabs(false);
+    setShowAddRecoveryForm(true)
+    setShowEditRecoveryForm(true);
+    setEditRowData(data);
+
   };
 
   const saveNewRow = async () => {
@@ -155,7 +138,6 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           credit: Number(values.IntAmount)
         };
         console.log(newRowData);
-        createOwnerAdvance(newRowData);
         setNewRow(null);
       });
     } catch (errInfo) {
@@ -205,7 +187,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         return (
           <Space size="middle">
             <Tooltip placement="top" title="Edit">
-              <a><FormOutlined /></a>
+              <a onClick={()=>handleEditRow(record)}><FormOutlined /></a>
             </Tooltip>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
               <Tooltip placement="top" title="Delete">
@@ -236,10 +218,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
     const edit = (record) => {
       form.setFieldsValue({
-        entDate: dayjs(record.entDate),
-        credit: record.credit,
-        debit: record.debit,
-        narration: record.narration,
+        recovery: record.recovery,
         ...record,
       });
       setEditingKeyIn(record.key);
@@ -250,6 +229,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     };
 
     const save = async (key) => {
+      console.log(key)
       try {
         const row = await form.validateFields();
         const newData = [...entries];
@@ -264,18 +244,15 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           }));
           setEditingKeyIn("");
 
-          const { entDate, credit, debit, narration } = row;
-          const formattedDate = dayjs(entDate).format("DD/MM/YYYY");
+          const { recovery } = row;
+          console.log(row)
+
 
           const payload = {
-            entryDate: formattedDate,
-            debit: Number(debit),
-            credit: Number(credit),
-            narration,
-            hubId: selectedHubId
+            recovery: recovery
           };
 
-          await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
+          await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
               getTableData("", "1", "500", selectedHubId);
@@ -317,25 +294,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
 
     const columnsInsideRow = [
-      // {
-      //   title: 'Invoice Date',
-      //   dataIndex: 'entryDate',
-      //   key: 'entryDate',
-      //   render: (text, record) => {
-      //     const editable = isEditing(record);
-      //     return editable ? (
-      //       <Form.Item
-      //         name="entDate"
-      //         style={{ margin: 0 }}
-      //         rules={[{ required: true, message: 'Please input date!' }]}
-      //       >
-      //         <DatePicker format={dateFormat} />
-      //       </Form.Item>
-      //     ) : (
-      //       dayjs(text).format('DD/MM/YYYY')
-      //     );
-      //   },
-      // },
+
       {
         title: 'Truck Number',
         dataIndex: 'vehicleNumber',
@@ -343,13 +302,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
-            <Form.Item
-              name="vehicleNumber"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input vehicleNumber!' }]}
-            >
-              <Input />
-            </Form.Item>
+            text
           ) : (
             text
           );
@@ -362,13 +315,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
-            <Form.Item
-              name="deliveryNumber"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input Delivery Number!' }]}
-            >
-              <Input />
-            </Form.Item>
+            text
           ) : (
             text
           );
@@ -387,13 +334,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
-            <Form.Item
-              name="shortage"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input shortage!' }]}
-            >
-              <InputNumber />
-            </Form.Item>
+            text
           ) : (
             text
           );
@@ -425,13 +366,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
-            <Form.Item
-              name="outstanding"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input outstanding!' }]}
-            >
-              <InputNumber />
-            </Form.Item>
+            text
           ) : (
             text
           );
@@ -597,7 +532,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         recoveryCode: formData.recoveryCode,
         value: formData.value,
         challan: targetKeys,
-        hubId:selectedHubId
+        hubId: selectedHubId
       };
       const headersOb = {
         headers: {
@@ -706,9 +641,242 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
+
+  const EditRecoveryCodeFormComponent = () => {
+    console.log(editRowData)
+    console.log(editRowData.key)
+    const [DONumberData, setDONumberData] = useState([]);
+    const [AddedDONumberData, setAddedDONumberData] = useState([]);
+    const [targetKeys, setTargetKeys] = useState([]);
+    const [formData, setFormData] = useState({
+      recoveryCode: '',
+      value: '',
+      challan: [],
+    });
+    useEffect(() => {
+      const getFormData = async () => {
+        try {
+          const headersOb = {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${authToken}`,
+            },
+          };
+  
+          // Example API call using fetch
+          const response = await fetch(`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-recovery-challan-data/${editRowData.key}`, {
+            headers: headersOb.headers,
+          });
+  
+          if (!response.ok) {
+            throw new Error('Failed to fetch data');
+          }
+  
+          const data = await response.json();
+          console.log('Fetched data:', data);
+  
+          // Assuming 'deliveryNumber' is part of the fetched data structure
+          const deliveryData = data.deliveryDetails.challan.map((item) => ({
+            key: item._id,
+            deliveryNumber: item.deliveryNumber,
+          }));
+          
+          console.log(deliveryData)
+          setAddedDONumberData(deliveryData);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          // Handle error (e.g., show error message to user)
+        }
+      };
+  
+      getFormData();
+    }, [editRowData.key]);
+    const getDONumber = async () => {
+      try {
+
+        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
+          .then((response) => {
+            console.log(response.data)
+            if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
+              const deliveryData = response.data.deliveryData.map((item, index) => ({
+                key: item._id,
+                deliveryNumber: item.deliveryNumber,
+              }));
+              setDONumberData(deliveryData);
+            } else {
+              setDONumberData([]);
+            }
+
+          }).catch((error) => {
+            console.log(error)
+          })
+      } catch (err) {
+        console.log(err);
+      }
+
+    };
+
+    useEffect(() => {
+      getDONumber();
+    }, []);
+
+    const handleChangeTransfer = (newTargetKeys) => {
+      setTargetKeys(newTargetKeys);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: newTargetKeys,
+      }));
+    };
+
+    const renderFooter = (_, info) => {
+      if (info?.direction === 'left') {
+        return (
+          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
+            reload
+          </Button>
+        );
+      }
+      return (
+        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
+          reload
+        </Button>
+      );
+    };
+
+    const handleChange = (name, value) => {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const payload = {
+        recoveryCode: formData.recoveryCode,
+        value: formData.value,
+        challan: targetKeys,
+        hubId: selectedHubId
+      };
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      };
+      try {
+        const response = await API.post(
+          'create-recovery-register',
+          payload,
+          headersOb
+        );
+        console.log('Recovery code created successfully:', response.data);
+        alert("Recovery code created successfully");
+        window.location.reload();
+      } catch (error) {
+        console.error('Error creating recovery code:', error);
+        alert("Error occurred");
+      }
+    };
+
+    const goBack = () => {
+      setShowTabs(true);
+      setShowAddRecoveryForm(false);
+    };
+
+    const onResetClick = () => {
+      setFormData({
+        recoveryCode: '',
+        value: '',
+        challan: [],
+      });
+      setTargetKeys([]);
+    };
+ // Combine DONumberData and AddedDONumberData into a single dataSource
+ const dataSource = DONumberData.concat(AddedDONumberData);
+    console.log(dataSource)
+    return (
+      <>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-4">
+              <div className="flex">
+                <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
+              </div>
+              <div className="flex flex-col">
+                <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Recovery Code</h1>
+                <Breadcrumb
+                  items={[
+                    { title: 'Recovery Register' },
+                    { title: 'Create' },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Recovery Code*"
+                    size="large"
+                    name="recoveryCode"
+                    value={formData.recoveryCode}
+                    onChange={(e) => handleChange('recoveryCode', e.target.value)}
+                  />
+                </Col>
+
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Value*"
+                    size="large"
+                    name="value"
+                    value={formData.value}
+                    onChange={(e) => handleChange('value', e.target.value)}
+                  />
+                </Col>
+              </Row>
+
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={16}>
+                  <Transfer
+                    dataSource={dataSource}
+                    showSearch
+                    listStyle={{
+                      width: 650,
+                      height: 300,
+                    }}
+                    operations={['', '']}
+                    targetKeys={targetKeys}
+                    onChange={handleChangeTransfer}
+                    render={(item) => `${item.deliveryNumber}`}
+                    footer={renderFooter}
+                  />
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button onClick={onResetClick}>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <>
-      {showAddRecoveryForm ? (<RecoveryCodeFormComponent />) :
+      {showAddRecoveryForm ?
+        <>
+          {showEditRecoveryForm ? <EditRecoveryCodeFormComponent />
+            :
+            <RecoveryCodeFormComponent />
+          }
+        </>
+        :
         (
 
           <div>

@@ -14,6 +14,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const [newRow, setNewRow] = useState(null);
   const [selectedDate, setSelectedDate] = useState({ month: 6, year: 2024 });
   const authToken = localStorage.getItem("token");
+  const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
     headers: {
       "Content-Type": "application/json",
@@ -23,7 +24,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const getTableData = async (month, year) => {
     try {
       setLoading(true);
-      const response = await API.get(`get-cash-book-by-month/${month}/${year}`, headersOb);
+      const response = await API.get(`get-cash-book-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb);
       const { cashBookEntries, amounts } = response.data || [];
       if (cashBookEntries && cashBookEntries.length > 0) {
         const dataSource = cashBookEntries.map((entry) => ({
@@ -61,6 +62,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
         debit: debit,
         credit: credit,
         narration: narration,
+        hubId:selectedHubId
+        
       }, headersOb)
         .then(() => {
           message.success("Successfully Added Cash Book Entry");

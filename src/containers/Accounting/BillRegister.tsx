@@ -620,7 +620,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         remarks: formData.remarks,
         tax: formData.tax,
         valueRaised: formData.valueRaised,
-        hub:selectedHubId
+        hubId:selectedHubId
       };
   
       const headersOb = {

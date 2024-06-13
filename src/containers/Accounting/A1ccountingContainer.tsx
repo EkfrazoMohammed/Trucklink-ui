@@ -60,7 +60,7 @@ const AccountingContainer = () => {
   const getOutstandingData = async () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
-      const response = await API.get(`get-owner-advance-outstanding-details`, headersOb);
+      const response = await API.get(`get-owner-advance-outstanding-details/${selectedHubId}`, headersOb);
       const outstandingEntries = response.data.amountData || "";
       if (outstandingEntries && outstandingEntries.length > 0) {
         setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
@@ -261,9 +261,9 @@ const AccountingContainer = () => {
         }
         return (
           <Space size="middle">
-            <Tooltip placement="top" title="Edit">
+            {/* <Tooltip placement="top" title="Edit">
               <a><FormOutlined /></a>
-            </Tooltip>
+            </Tooltip> */}
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
               <Tooltip placement="top" title="Delete">
                 <a><DeleteOutlined /></a>
@@ -331,8 +331,7 @@ const AccountingContainer = () => {
             narration,
             hubId: selectedHubId
           };
-
-          await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
+          await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
               getTableData();

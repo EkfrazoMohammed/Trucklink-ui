@@ -116,9 +116,9 @@ const AccountingContainer = () => {
 
   const createOwnerAdvance = async (row) => {
     const { date, IntAmount, ownerName, ownerId } = row;
-   const vDate = dayjs(date).format("DD/MM/YYYY");
+    const vDate = dayjs(date).format("DD/MM/YYYY");
     try {
-      const payload={
+      const payload = {
         ownerId: ownerId,
         ownerName: ownerName,
         entryDate: vDate,
@@ -127,7 +127,7 @@ const AccountingContainer = () => {
         hubId: selectedHubId
       }
       console.log(payload)
-      await API.post(`create-owner-advance`,payload , headersOb)
+      await API.post(`create-owner-advance`, payload, headersOb)
         .then(() => {
           message.success("Successfully Added Owner Advance Outstanding");
           getTableData();
@@ -173,8 +173,30 @@ const AccountingContainer = () => {
       console.log("Validate Failed:", errInfo);
     }
   };
-
+  const cancel = () => {
+    getTableData()
+  };
   const columns = [
+   
+    {
+      title: 'Date',
+      dataIndex: 'intDate',
+      key: 'intDate',
+      render: (date, record) => {
+        if (newRow && newRow.key === record.key) {
+          return (
+            <Form.Item
+              name="date"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input date!' }]}
+            >
+              <DatePicker format={dateFormat} />
+            </Form.Item>
+          );
+        }
+        return dayjs(date).format('DD/MM/YYYY');
+      }
+    },
     {
       title: 'Owner Name',
       dataIndex: 'ownerName',
@@ -210,26 +232,7 @@ const AccountingContainer = () => {
       }
     },
     {
-      title: 'Date',
-      dataIndex: 'intDate',
-      key: 'intDate',
-      render: (date, record) => {
-        if (newRow && newRow.key === record.key) {
-          return (
-            <Form.Item
-              name="date"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input date!' }]}
-            >
-              <DatePicker format={dateFormat} />
-            </Form.Item>
-          );
-        }
-        return dayjs(date).format('DD/MM/YYYY');
-      }
-    },
-    {
-      title: 'Amount',
+      title: 'Outstanding Amount',
       dataIndex: 'IntAmount',
       key: 'IntAmount',
       render: (text, record) => {
@@ -255,7 +258,7 @@ const AccountingContainer = () => {
           return (
             <Space size="middle">
               <Button onClick={saveNewRow} type="link">Save</Button>
-              <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
+              <Button onClick={cancel} type="link">Cancel</Button>
             </Space>
           );
         }
@@ -288,52 +291,69 @@ const AccountingContainer = () => {
   const LedgerTable = ({ record, entries }) => {
     const [form] = Form.useForm();
     const [editingKeyIn, setEditingKeyIn] = useState("");
+    const [isAddingNew, setIsAddingNew] = useState(false);
 
     const isEditing = (record) => record.key === editingKeyIn;
 
     const edit = (record) => {
+      console.log(record.key)
       form.setFieldsValue({
-        entDate: dayjs(record.entDate),
+        entDate: dayjs(record.entryDate, "DD/MM/YYYY"),
         credit: record.credit,
         debit: record.debit,
         narration: record.narration,
         ...record,
       });
       setEditingKeyIn(record.key);
+      if (record.key == 'new') {
+        setIsAddingNew(true);
+      } else {
+        setIsAddingNew(false);
+      }
     };
+
 
     const cancel = () => {
       setEditingKeyIn("");
+      setIsAddingNew(false);
+      getTableData()
     };
 
     const save = async (key) => {
+      console.log(key)
       try {
         const row = await form.validateFields();
         const newData = [...entries];
         const index = newData.findIndex((item) => key === item.key);
 
-        if (index > -1) {
-          const item = newData[index];
-          newData.splice(index, 1, { ...item, ...row });
+        if (isAddingNew) {
+          // Logic for adding new entry
+          const newEntry = {
+            key: Date.now().toString(), // Generate a unique key
+            ...row,
+            entryDate: dayjs(row.entDate).format("DD/MM/YYYY"),
+            // dayjs(date).format("DD/MM/YYYY")
+          };
+          // newData.push(newEntry);
           setLedgerEntries((prevEntries) => ({
             ...prevEntries,
             [record.key]: newData,
           }));
           setEditingKeyIn("");
-
-          const { entDate, credit, debit, narration } = row;
-          const formattedDate = dayjs(entDate).format("DD/MM/YYYY");
-
+          console.log(newEntry.entryDate)
           const payload = {
-            entryDate: formattedDate,
-            debit: Number(debit),
-            credit: Number(credit),
-            narration,
+            entryDate: newEntry.entryDate,
+            debit: Number(newEntry.debit),
+            credit: Number(newEntry.credit),
+            narration: newEntry.narration,
             hubId: selectedHubId
+
           };
-          await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
+          // await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
+          await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
-              message.success("Successfully Updated Ledger Entry");
+              message.success("Successfully added Ledger Entry");
+              window.location.reload();
               getTableData();
               getOutstandingData();
             })
@@ -343,6 +363,43 @@ const AccountingContainer = () => {
               const { message: msg } = data;
               message.error(msg);
             });
+
+        } else {
+          // Logic for updating existing entry
+          if (index > -1) {
+            const item = newData[index];
+            newData.splice(index, 1, { ...item, ...row });
+            setLedgerEntries((prevEntries) => ({
+              ...prevEntries,
+              [record.key]: newData,
+            }));
+            setEditingKeyIn("");
+
+            const { entDate, credit, debit, narration } = row;
+            const formattedDate = dayjs(entDate).format("DD/MM/YYYY");
+
+            const payload = {
+              entryDate: formattedDate,
+              debit: Number(debit),
+              credit: Number(credit),
+              narration,
+              hubId: selectedHubId,
+            };
+
+            // await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
+            await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
+              .then(() => {
+                message.success("Successfully updated Ledger Entry");
+                getTableData();
+                getOutstandingData();
+              })
+              .catch((error) => {
+                const { response } = error;
+                const { data } = response;
+                const { message: msg } = data;
+                message.error(msg);
+              });
+          }
         }
       } catch (errInfo) {
         console.log("Validate Failed:", errInfo);
@@ -351,7 +408,6 @@ const AccountingContainer = () => {
 
     const handleDeleteLedgerData = async (key) => {
       try {
-        // await API.delete(`delete-ledger-data/${key}`, headersOb)
         await API.delete(`delete-owner-ledger/${key}`, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
@@ -369,29 +425,37 @@ const AccountingContainer = () => {
       }
     };
 
-
-
     const handleAddInsideRow = (record) => {
-      const newEntryKey = `${record.key}-${(ledgerEntries[record.key] || []).length}`;
-      console.log(newEntryKey)
+      const newEntryKey = `new`;
       const newEntry = {
         key: newEntryKey,
         entryDate: null,
         narration: '',
         debit: '',
         credit: '',
-        ownerOutstanding: ''
+        ownerOutstanding: '',
       };
 
-      setLedgerEntries((prevEntries) => ({
-        ...prevEntries,
-        [record.key]: [...(prevEntries[record.key] || []), newEntry]
-      }));
+      setLedgerEntries((prevEntries) => {
+        const updatedEntries = {
+          ...prevEntries,
+          [record.key]: [...(prevEntries[record.key] || []), newEntry],
+        };
 
-      // Set the editingKey to the key of the newly added entry
+        setEditingKeyIn(newEntryKey);
+        form.setFieldsValue({
+          entDate: null,
+          credit: '',
+          debit: '',
+          narration: '',
+          ...newEntry,
+        });
+
+        return updatedEntries;
+      });
+
       setEditingKeyIn(newEntryKey);
     };
-
 
     const columnsInsideRow = [
       {
@@ -526,12 +590,13 @@ const AccountingContainer = () => {
         </Button>
         <Form form={form} component={false}>
           <Table
-                      className='nestedtable-account'
+            className='nestedtable-account'
             rowKey={(record) => record.key}
             bordered
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
+
           />
         </Form>
       </div>
@@ -565,7 +630,7 @@ const AccountingContainer = () => {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className='flex gap-2 items-center'>
-          <Input.Search
+          {/* <Input.Search
             placeholder="Search by Owner Name"
             size='large'
             style={{ width: 320 }}
@@ -577,7 +642,7 @@ const AccountingContainer = () => {
           <DatePicker
             size='large'
             placeholder='To date'
-          />
+          /> */}
         </div>
 
         <Button
@@ -597,27 +662,48 @@ const AccountingContainer = () => {
             expandedRowRender: (record) => expandedRowRender(record),
             onExpand: handleTableRowExpand,
           }}
-          pagination={false}
+          pagination={{
+            position: ['bottomCenter'],
+            showSizeChanger: false,
+            total: dataSource.length,
+            // defaultPageSize: currentPageSize, // Set the default page size
+
+          }}
+          // pagination={false}
           loading={loading}
-          summary={() => (
-            <Table.Summary.Row >
+        // summary={() => (
+        //   <Table.Summary.Row >
 
-              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
 
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                Total Outstanding
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
+        //     </Table.Summary.Cell>
+        //     <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+        //       Total Outstanding
+        //     </Table.Summary.Cell>
+        //     <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
+        //       {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+        //     </Table.Summary.Cell>
+        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
 
-              </Table.Summary.Cell>
+        //     </Table.Summary.Cell>
 
-            </Table.Summary.Row>
-          )}
+        //   </Table.Summary.Row>
+        // )}
         />
+         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+
+<div style={{ textAlign: 'right', width: '200px' }}>
+</div>
+<div style={{ textAlign: 'right', width: '200px' }}>
+</div>
+<div style={{ fontWeight: 'bold', width: '260px' }}>
+Total Outstanding Amount
+</div>
+<div style={{ fontWeight: 'bold', width: '160px' }}>
+  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+</div>
+
+</div>
       </Form>
     </div>
   );

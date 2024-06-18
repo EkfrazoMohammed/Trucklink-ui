@@ -240,7 +240,7 @@
 
 .mytab-content {
   overflow-y: scroll !important;
-  height: 70vh !important;
+  height: 62vh !important;
   overflow-x: hidden !important;
 }
 
@@ -421,4 +421,12 @@
 .ant-table-expanded-row>td.ant-table-cell{
   padding: 0 !important;
   background-color: #BBE2FF !important;
+}
+.master-data-maindiv {
+  border: solid 1px #cecece;
+  height: 260px;
+  padding: 10px;
+}
+.delivery-number-drag-area {
+  min-width: 100%;
 }

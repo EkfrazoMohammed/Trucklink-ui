@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer } from 'antd';
+import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
 import { FormOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import moment from "moment";
@@ -112,7 +112,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
   const [showEditRecoveryForm, setShowEditRecoveryForm] = useState(false);
 
-  const [editRowData,setEditRowData]=useState(null);
+  const [editRowData, setEditRowData] = useState(null);
 
   const handleAdd = () => {
     setShowTabs(false);
@@ -158,7 +158,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
-      width: 200
+      width: 180
     },
     {
       title: 'Recovered',
@@ -170,6 +170,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       title: 'Outstanding Amount',
       dataIndex: 'outstanding',
       key: 'outstanding',
+
     },
 
     {
@@ -187,7 +188,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         return (
           <Space size="middle">
             <Tooltip placement="top" title="Edit">
-              <a onClick={()=>handleEditRow(record)}><FormOutlined /></a>
+              <a onClick={() => handleEditRow(record)}><FormOutlined /></a>
             </Tooltip>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
               <Tooltip placement="top" title="Delete">
@@ -392,9 +393,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </span>
           ) : (
             <Space size="middle">
-              <Tooltip placement="top" title="Edit">
+              {/* <Tooltip placement="top" title="Edit">
                 <a onClick={() => edit(record)}><FormOutlined /></a>
-              </Tooltip>
+              </Tooltip> */}
               <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
                 <Tooltip placement="top" title="Delete">
                   <a><DeleteOutlined /></a>
@@ -458,66 +459,81 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
   }, []);
 
+
   const RecoveryCodeFormComponent = () => {
     const [DONumberData, setDONumberData] = useState([]);
-    const [targetKeys, setTargetKeys] = useState([]);
+    const [selectedDONumberData, setSelectedDONumberData] = useState([]);
     const [formData, setFormData] = useState({
       recoveryCode: '',
       value: '',
       challan: [],
     });
+    const [loading, setLoading] = useState(false);
+    const [loadingoutside, setLoadingOutside] = useState(false);
+    const [originalSearchText, setOriginalSearchText] = useState('');
+    const [derivedSearchText, setDerivedSearchText] = useState('');
+
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
 
     const getDONumber = async () => {
       try {
-
-        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
-          .then((response) => {
-            console.log(response.data)
-            if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
-              const deliveryData = response.data.deliveryData.map((item, index) => ({
-                key: item._id,
-                deliveryNumber: item.deliveryNumber,
-              }));
-              setDONumberData(deliveryData);
-            } else {
-              setDONumberData([]);
-            }
-
-          }).catch((error) => {
-            console.log(error)
-          })
+        setLoading(true);
+        const response = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb);
+        if (response.status === 201 && response.data.message === "Successfully retrived all delivery numbers informations") {
+          const deliveryData = response.data.deliveryData.map((item) => ({
+            key: item._id,
+            deliveryNumber: item.deliveryNumber,
+          }));
+          setDONumberData(deliveryData);
+        } else {
+          setDONumberData([]);
+        }
+        setLoading(false);
       } catch (err) {
         console.log(err);
+        setLoading(false);
       }
-
     };
 
     useEffect(() => {
       getDONumber();
     }, []);
 
-    const handleChangeTransfer = (newTargetKeys) => {
-      setTargetKeys(newTargetKeys);
+    const addDerivedDoList = (item) => {
+      setSelectedDONumberData((prevKeys) => [...prevKeys, item]);
+      const deliveryNumbersList = this.state.deliveryNumbersList.filter(
+        (item) => item._id !== data._id
+      );
+      console.log(deliveryNumbersList)
       setFormData((prevFormData) => ({
         ...prevFormData,
-        challan: newTargetKeys,
+        challan: [...prevFormData.challan, item.key],
       }));
     };
 
-    const renderFooter = (_, info) => {
-      if (info?.direction === 'left') {
-        return (
-          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
-            reload
-          </Button>
-        );
-      }
-      return (
-        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
-          reload
-        </Button>
-      );
+    // const removeDerivedDoList = (item) => {
+    //   setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+    //   setFormData((prevFormData) => ({
+    //     ...prevFormData,
+    //     challan: prevFormData.challan.filter(key => key !== item.key),
+    //   }));
+    // };
+    // Remove item from selected list (RHS)
+    const removeDerivedDoList = (item) => {
+      setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: prevFormData.challan.filter(key => key !== item.key),
+      }));
+      // Add removed item back to DONumberData
+      setDONumberData((prevData) => [...prevData, item]);
     };
+  
 
     const handleChange = (name, value) => {
       setFormData((prevFormData) => ({
@@ -525,33 +541,25 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         [name]: value,
       }));
     };
-
     const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
         recoveryCode: formData.recoveryCode,
         value: formData.value,
-        challan: targetKeys,
-        hubId: selectedHubId
+        challan: selectedDONumberData.map(item => item.key),
+        hubId: selectedHubId,
       };
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      };
+      console.log(payload)
       try {
-        const response = await API.post(
-          'create-recovery-register',
-          payload,
-          headersOb
-        );
+        const response = await API.post('create-recovery-register', payload, headersOb);
         console.log('Recovery code created successfully:', response.data);
-        alert("Recovery code created successfully");
-        window.location.reload();
+        message.success("Recovery code created successfully");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000)
       } catch (error) {
         console.error('Error creating recovery code:', error);
-        alert("Error occurred");
+        message.error("Error occurred");
       }
     };
 
@@ -566,11 +574,11 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         value: '',
         challan: [],
       });
-      setTargetKeys([]);
+      setSelectedDONumberData([]);
     };
 
     return (
-      <>
+      <Spin spinning={loadingoutside} delay={100}>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4">
@@ -611,25 +619,79 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
               </Row>
 
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={16}>
-                  <Transfer
-                    dataSource={DONumberData}
-                    showSearch
-                    listStyle={{
-                      width: 650,
-                      height: 300,
-                    }}
-                    operations={['', '']}
-                    targetKeys={targetKeys}
-                    onChange={handleChangeTransfer}
-                    render={(item) => `${item.deliveryNumber}`}
-                    footer={renderFooter}
-                  />
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Add DO number to Recovery Code</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setOriginalSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={originalSearchText}
+                      />
+                    </div>
+                    {/* <div className="materialTable"> */}
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={DONumberData.filter(item =>
+                        item.deliveryNumber.includes(originalSearchText) &&
+                        !selectedDONumberData.some(selectedItem => selectedItem.key === item.key)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          // style={{padding:0,margin:0}}
+                          actions={[
+                            <Button type="primary" onClick={() => addDerivedDoList(item)}>
+                              ADD
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                    {/* </div> */}
+                  </div>
+                </Col>
+
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">DO List</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setDerivedSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={derivedSearchText}
+                      />
+                    </div>
+                    <div className="materialTable" style={{ height: "10px", width: "100%" }}>
+                      <List
+                        style={{ height: "180px", overflowY: "scroll" }}
+                        dataSource={selectedDONumberData.filter(item =>
+                          item.deliveryNumber.includes(derivedSearchText)
+                        )}
+                        renderItem={item => (
+                          <List.Item
+                            actions={[
+                              <Button type="primary" onClick={() => removeDerivedDoList(item)}>
+                                REMOVE
+                              </Button>
+                            ]}
+                          >
+                            <List.Item.Meta title={item.deliveryNumber} />
+                          </List.Item>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </Col>
               </Row>
+
             </div>
           </div>
-
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={onResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
@@ -637,166 +699,141 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </Button>
           </div>
         </div>
-      </>
+      </Spin>
     );
   };
-
-
   const EditRecoveryCodeFormComponent = () => {
-    console.log(editRowData)
-    console.log(editRowData.key)
     const [DONumberData, setDONumberData] = useState([]);
-    const [AddedDONumberData, setAddedDONumberData] = useState([]);
-    const [targetKeys, setTargetKeys] = useState([]);
+    const [selectedDONumberData, setSelectedDONumberData] = useState([]);
     const [formData, setFormData] = useState({
-      recoveryCode: '',
-      value: '',
+      recoveryCode: editRowData.recoveryCode || '',
+      value: editRowData.value || '',
       challan: [],
     });
-    useEffect(() => {
-      const getFormData = async () => {
-        try {
-          const headersOb = {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-          };
+    const [loading, setLoading] = useState(false);
+    const [loadingoutside, setLoadingOutside] = useState(false);
+    const [originalSearchText, setOriginalSearchText] = useState('');
+    const [derivedSearchText, setDerivedSearchText] = useState('');
   
-          // Example API call using fetch
-          const response = await fetch(`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-recovery-challan-data/${editRowData.key}`, {
-            headers: headersOb.headers,
-          });
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
   
-          if (!response.ok) {
-            throw new Error('Failed to fetch data');
-          }
-  
-          const data = await response.json();
-          console.log('Fetched data:', data);
-  
-          // Assuming 'deliveryNumber' is part of the fetched data structure
-          const deliveryData = data.deliveryDetails.challan.map((item) => ({
+    // Fetch all available DO numbers
+    const getDONumber = async () => {
+      try {
+        setLoading(true);
+        const response = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb);
+        if (response.status === 201 && response.data.message === "Successfully retrived all delivery numbers informations") {
+          const deliveryData = response.data.deliveryData.map((item) => ({
             key: item._id,
             deliveryNumber: item.deliveryNumber,
           }));
-          
-          console.log(deliveryData)
-          setAddedDONumberData(deliveryData);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-          // Handle error (e.g., show error message to user)
+          setDONumberData(deliveryData);
+        } else {
+          setDONumberData([]);
         }
-      };
-  
-      getFormData();
-    }, [editRowData.key]);
-    const getDONumber = async () => {
-      try {
-
-        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
-          .then((response) => {
-            console.log(response.data)
-            if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
-              const deliveryData = response.data.deliveryData.map((item, index) => ({
-                key: item._id,
-                deliveryNumber: item.deliveryNumber,
-              }));
-              setDONumberData(deliveryData);
-            } else {
-              setDONumberData([]);
-            }
-
-          }).catch((error) => {
-            console.log(error)
-          })
+        setLoading(false);
       } catch (err) {
         console.log(err);
+        setLoading(false);
       }
-
     };
-
+  
+    // Fetch existing data related to the recovery code
+    const getExistingData = async () => {
+      try {
+        const response = await API.get(`get-recovery-challan-data/${editRowData.key}`, headersOb);
+        if (response.status === 201) {
+          const deliveryData = response.data.deliveryDetails.challan.map((item) => ({
+            key: item._id,
+            deliveryNumber: item.deliveryNumber,
+          }));
+          setSelectedDONumberData(deliveryData);
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            challan: deliveryData.map(item => item.key),
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching existing data:', error);
+      }
+    };
+  
     useEffect(() => {
-      getDONumber();
+      getExistingData(); // Fetch existing data first
+      getDONumber(); // Fetch all DO numbers
     }, []);
-
-    const handleChangeTransfer = (newTargetKeys) => {
-      setTargetKeys(newTargetKeys);
+  
+    // Add item to selected list (RHS)
+    const addDerivedDoList = (item) => {
+      setSelectedDONumberData((prevKeys) => [...prevKeys, item]);
       setFormData((prevFormData) => ({
         ...prevFormData,
-        challan: newTargetKeys,
+        challan: [...prevFormData.challan, item.key],
       }));
     };
-
-    const renderFooter = (_, info) => {
-      if (info?.direction === 'left') {
-        return (
-          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
-            reload
-          </Button>
-        );
-      }
-      return (
-        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
-          reload
-        </Button>
-      );
+  
+    // Remove item from selected list (RHS)
+    const removeDerivedDoList = (item) => {
+      setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: prevFormData.challan.filter(key => key !== item.key),
+      }));
     };
-
+  
+    // Handle input change
     const handleChange = (name, value) => {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value,
       }));
     };
-
+  
+    // Handle form submission
     const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
         recoveryCode: formData.recoveryCode,
         value: formData.value,
-        challan: targetKeys,
-        hubId: selectedHubId
-      };
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
+        challan: selectedDONumberData.map(item => item.key),
+        hubId: selectedHubId,
       };
       try {
-        const response = await API.post(
-          'create-recovery-register',
-          payload,
-          headersOb
-        );
-        console.log('Recovery code created successfully:', response.data);
-        alert("Recovery code created successfully");
-        window.location.reload();
+        const response = await API.put(`update-recovered-data/${editRowData.key}`, payload, headersOb);
+        console.log('Recovery code updated successfully:', response.data);
+        message.success("Recovery code updated successfully");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } catch (error) {
         console.error('Error creating recovery code:', error);
-        alert("Error occurred");
+        message.error("Error occurred");
       }
     };
-
+  
+    // Go back to the previous view
     const goBack = () => {
       setShowTabs(true);
       setShowAddRecoveryForm(false);
     };
-
+  
+    // Reset the form
     const onResetClick = () => {
       setFormData({
         recoveryCode: '',
         value: '',
         challan: [],
       });
-      setTargetKeys([]);
+      setSelectedDONumberData([]);
     };
- // Combine DONumberData and AddedDONumberData into a single dataSource
- const dataSource = DONumberData.concat(AddedDONumberData);
-    console.log(dataSource)
+  
     return (
-      <>
+      <Spin spinning={loadingoutside} delay={100}>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4">
@@ -808,7 +845,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 <Breadcrumb
                   items={[
                     { title: 'Recovery Register' },
-                    { title: 'Create' },
+                    { title: 'Edit' },
                   ]}
                 />
               </div>
@@ -824,7 +861,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                     onChange={(e) => handleChange('recoveryCode', e.target.value)}
                   />
                 </Col>
-
+  
                 <Col className="gutter-row mt-6" span={8}>
                   <Input
                     placeholder="Value*"
@@ -835,27 +872,79 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   />
                 </Col>
               </Row>
-
+  
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={16}>
-                  <Transfer
-                    dataSource={dataSource}
-                    showSearch
-                    listStyle={{
-                      width: 650,
-                      height: 300,
-                    }}
-                    operations={['', '']}
-                    targetKeys={targetKeys}
-                    onChange={handleChangeTransfer}
-                    render={(item) => `${item.deliveryNumber}`}
-                    footer={renderFooter}
-                  />
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Add DO number to Recovery Code</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setOriginalSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={originalSearchText}
+                      />
+                    </div>
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={DONumberData.filter(item =>
+                        item.deliveryNumber.includes(originalSearchText) &&
+                        !selectedDONumberData.some(selectedItem => selectedItem.key === item.key)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          actions={[
+                            <Button type="primary" onClick={() => addDerivedDoList(item)}>
+                              ADD
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Col>
+  
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">DO List</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setDerivedSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={derivedSearchText}
+                      />
+                    </div>
+                    <div className="materialTable" style={{ height: "10px", width: "100%" }}>
+                      <List
+                        style={{ height: "180px", overflowY: "scroll" }}
+                        dataSource={selectedDONumberData.filter(item =>
+                          item.deliveryNumber.includes(derivedSearchText)
+                        )}
+                        renderItem={item => (
+                          <List.Item
+                            actions={[
+                              <Button type="primary" onClick={() => removeDerivedDoList(item)}>
+                                REMOVE
+                              </Button>
+                            ]}
+                          >
+                            <List.Item.Meta title={item.deliveryNumber} />
+                          </List.Item>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </Col>
               </Row>
+  
             </div>
+          
           </div>
-
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={onResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
@@ -863,9 +952,10 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </Button>
           </div>
         </div>
-      </>
+      </Spin>
     );
   };
+
 
   return (
     <>
@@ -882,8 +972,8 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className='flex gap-2 items-center'>
-                <Input.Search
-                  placeholder="Search by Owner Name"
+                {/* <Input.Search
+                  placeholder="Search by Delivery  No or Truck No"
                   size='large'
                   style={{ width: 320 }}
                 />
@@ -894,7 +984,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 <DatePicker
                   size='large'
                   placeholder='To date'
-                />
+                /> */}
               </div>
 
               <Button
@@ -906,7 +996,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </div>
             <Form form={form} component={false}>
               <Table
-                scroll={{ x: "auto", y: 400 }}
+                scroll={{ x: "auto", y: 300 }}
                 rowKey={(record) => record.key}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
@@ -918,25 +1008,20 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 pagination={false}
                 loading={loading}
 
-                summary={() => (
-                  <Table.Summary.Row >
-
-                    <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                      Total Outstanding
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                      {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-                    </Table.Summary.Cell>
-
-                  </Table.Summary.Row>
-                )}
               />
+              <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+
+                <div style={{ textAlign: 'right', width: '260px' }}>
+                </div>
+                <div style={{ fontWeight: 'bold', width: '330px' }}>
+                  Total Outstanding Amount
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+                </div>
+
+              </div>
+
             </Form>
           </div>
         )

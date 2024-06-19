@@ -1,26 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer } from 'antd';
+import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
 import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
-import moment from "moment";
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
 const dateFormat = "DD/MM/YYYY";
-const filterOption = (input, option) =>
-  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-
-interface RecordType {
-  key: string;
-  title: string;
-  description: string;
-  chosen: boolean;
-}
 
 const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalOutstanding, setTotalOutstanding] = useState(0);
+  const [totalValueRaised, setTotalValueRaised] = useState(0)
+  const [totalValueReceived, setTotalValueReceived] = useState(0)
+  const [totalValueDifference, setTotalValueDifference] = useState(0)
+  const [totalValueTax, setTotalValueTax] = useState(0)
+
   const [count, setCount] = useState(0);
   const [ledgerEntries, setLedgerEntries] = useState({});
   const [form] = Form.useForm();
@@ -41,7 +36,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   };
   const [showEditRecoveryForm, setShowEditRecoveryForm] = useState(false);
 
-  const [editRowData,setEditRowData]=useState(null);
+  const [editRowData, setEditRowData] = useState(null);
   const handleEditRow = (data) => {
     setShowTabs(false);
     setShowAddRecoveryForm(true)
@@ -53,17 +48,18 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     try {
       setLoading(true);
-
       const pages = page;
       const limitData = limit ? limit : null;
-
       const searchData = searchQuery ? searchQuery : null;
-
-
       const response = searchData ? await API.get(`get-all-bill-register?searchBNT=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
         : await API.get(`get-all-bill-register?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb);
-      const { bill, totalValueRaised } = response.data || [];
-      setTotalOutstanding(totalValueRaised)
+      const { bill, totalValueRaised, totalValueReceived, totalDifference, totalTax } = response.data || [];
+      setTotalValueRaised(totalValueRaised)
+      setTotalValueReceived(totalValueReceived)
+      setTotalValueDifference(totalDifference)
+      setTotalValueTax(totalTax)
+
+
       if (bill && bill[0].data.length > 0) {
         const dataSource = bill[0].data.map((data) => {
           const { valueRaised, valueReceived, tax, difference, billNumber, billType, remarks } = data;
@@ -81,11 +77,9 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      message.error("Error fetching data. Please try again later", 2);
+      // message.error("Error fetching data. Please try again later", 2);
     }
   };
-
-
 
   const handleTableRowExpand = async (expanded, record) => {
     if (expanded) {
@@ -154,9 +148,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
   const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
 
-
   const saveNewRow = async () => {
-   try {
+    try {
       await form.validateFields().then(values => {
         const newRowData = {
           ...newRow,
@@ -174,54 +167,53 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   };
 
   const columns = [
-
     {
       title: 'Bill Number',
       dataIndex: 'billNumber',
       key: 'billNumber',
-      width:160,
+      width: 160,
     },
     {
       title: 'Bill Type',
       dataIndex: 'billType',
       key: 'billType',
-      width:160,
+      width: 160,
     },
     {
       title: 'Value Raised',
       dataIndex: 'valueRaised',
       key: 'valueRaised',
-      width:160,
+      width: 160,
     },
     {
       title: 'Value Received',
       dataIndex: 'valueReceived',
       key: 'valueReceived',
-      width:160,
+      width: 160,
     },
     {
       title: 'tax',
       dataIndex: 'tax',
       key: 'tax',
-      width:160,
+      width: 160,
     },
     {
       title: 'Difference',
       dataIndex: 'difference',
       key: 'difference',
-      width:160,
+      width: 160,
     },
     {
       title: 'Remarks',
       dataIndex: 'remarks',
       key: 'remarks',
-      width:160,
+      width: 160,
     },
 
     {
       title: 'Action',
       key: 'operation',
-      fixed:'right',
+      fixed: 'right',
       render: (_, record) => {
         if (newRow && newRow.key === record.key) {
           return (
@@ -235,7 +227,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           <Space size="middle">
             <Tooltip placement="top" title="Edit">
               {/* <a><FormOutlined /></a> */}
-              <a onClick={()=>handleEditRow(record)}><FormOutlined /></a>
+              <a onClick={() => handleEditRow(record)}><FormOutlined /></a>
             </Tooltip>
             <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
               <Tooltip placement="top" title="Delete">
@@ -247,7 +239,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     }
   ];
-
 
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
@@ -261,9 +252,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const LedgerTable = ({ record, entries }) => {
     const [form] = Form.useForm();
     const [editingKeyIn, setEditingKeyIn] = useState("");
-
     const isEditing = (record) => record.key === editingKeyIn;
-
     const edit = (record) => {
       form.setFieldsValue({
         entDate: dayjs(record.entDate),
@@ -309,7 +298,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
               getTableData("", "1", "500", selectedHubId);
-
             })
             .catch((error) => {
               const { response } = error;
@@ -324,11 +312,42 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     };
 
     const handleDeleteLedgerData = async (key) => {
+      console.log("row", record)
+      console.log("challan", key)
       try {
-        await API.delete(`delete-ledger-data/${key}`, headersOb)
+        // Retrieve the existing data to prepare the payload
+        const response = await API.get(`get-delivery-data/${record.key}`, headersOb);
+        const existingData = response.data.deliveryDetails;
+        console.log(existingData)
+        // Remove the item from the challan list
+        const updatedChallan = existingData.challan.filter(challanItem => challanItem._id !== key);
+        console.log(updatedChallan)
+        // Prepare the payload
+        const payload = {
+          _id: existingData._id,
+          valueRaised: existingData.valueRaised.toFixed(2),
+          valueReceived: existingData.valueReceived.toFixed(2),
+          tax: existingData.tax.toFixed(2),
+          difference: existingData.difference.toFixed(2),
+          challan: updatedChallan.map(item => item._id),
+          billNumber: existingData.billNumber,
+          billType: existingData.billType,
+          remarks: existingData.remarks,
+          hubId: existingData.hubId,
+          createdAt: existingData.createdAt,
+          modifiedAt: new Date().toISOString(), // update the modifiedAt field
+          __v: existingData.__v,
+          // slno: existingData.slno
+        };
+        console.log(payload)
+
+        // // Send the PUT request to update the bill register data
+        await API.put(`update-bill-register-data/${existingData._id}`, payload, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
-            getTableData("", "1", "500", selectedHubId);
+            setTimeout(() => {
+              window.location.reload()
+            }, 1000)
 
           })
           .catch((error) => {
@@ -341,8 +360,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log(err);
       }
     };
-
-
 
 
 
@@ -487,17 +504,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               {/* <Tooltip placement="top" title="Edit">
                 <a onClick={() => edit(record)}><FormOutlined /></a>
               </Tooltip> */}
-              {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
+              <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
                 <Tooltip placement="top" title="Delete">
                   <a><DeleteOutlined /></a>
                 </Tooltip>
-              </Popconfirm> */}
+              </Popconfirm>
             </Space>
           );
         },
       },
     ];
-
 
     return (
       <div className='bg-[#BBE2FF] p-4'>
@@ -520,7 +536,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         .then(() => {
           message.success("Successfully Deleted Ledger Entry");
           getTableData("", "1", "500", selectedHubId);
-          getOutstandingData();
+
         })
         .catch((error) => {
           const { response } = error;
@@ -536,62 +552,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     getTableData("", "1", "500", selectedHubId);
 
   }, []);
-
   const BillRegisterFormComponent = () => {
     const [DONumberData, setDONumberData] = useState([]);
-    const [targetKeys, setTargetKeys] = useState([]);
-  
-    const getDONumber = async () => {
-
-      try {
-
-        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
-          .then((response) => {
-            console.log(response.data)
-            if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
-              const deliveryData = response.data.deliveryData.map((item, index) => ({
-                key: item._id,
-                deliveryNumber: item.deliveryNumber,
-              }));
-              setDONumberData(deliveryData);
-            } else {
-              setDONumberData([]);
-            }
-
-          }).catch((error) => {
-            console.log(error)
-          })
-      } catch (err) {
-        console.log(err);
-      }
-
-    };
-
-    useEffect(() => {
-      getDONumber();
-    }, []);
-  
-    const handleChangeTransfer = (newTargetKeys) => {
-      setTargetKeys(newTargetKeys);
-    };
-  
-    const renderFooter = (_, info) => {
-      if (info?.direction === 'left') {
-        return (
-          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
-            reload
-          </Button>
-        );
-      }
-      return (
-        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
-          reload
-        </Button>
-      );
-    };
-  
+    const [selectedDONumberData, setSelectedDONumberData] = useState([]);
     const [formData, setFormData] = useState({
-    
       billNumber: '',
       billType: '',
       challan: [],
@@ -600,11 +564,102 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       valueRaised: '',
       hubId: selectedHubId,
     });
-  
+    const [loading, setLoading] = useState(false);
+    const [availableSearchText, setAvailableSearchText] = useState('');
+    const [selectedSearchText, setSelectedSearchText] = useState('');
+
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+
+    const getDONumber = async () => {
+      try {
+        setLoading(true);
+        const response = await API.get(`get-all-bill-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb);
+        if (response.status === 201 && response.data.message === "Successfully retrived all delivery numbers informations") {
+          const deliveryData = response.data.deliveryData.map((item) => ({
+            key: item._id,
+            deliveryNumber: item.deliveryNumber,
+          }));
+          setDONumberData(deliveryData);
+        } else {
+          setDONumberData([]);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching delivery numbers:', err);
+        setLoading(false);
+        message.error("Failed to fetch delivery numbers");
+      }
+    };
+
+    useEffect(() => {
+      getDONumber();
+    }, []);
+
+    const addDerivedDoList = (item) => {
+      setSelectedDONumberData((prevData) => [...prevData, item]);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: [...prevFormData.challan, item.key],
+      }));
+      setDONumberData((prevData) => prevData.filter(dataItem => dataItem.key !== item.key));
+    };
+
+    const removeDerivedDoList = (item) => {
+      setSelectedDONumberData((prevData) => prevData.filter(dataItem => dataItem.key !== item.key));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: prevFormData.challan.filter(key => key !== item.key),
+      }));
+      setDONumberData((prevData) => [...prevData, item]);
+    };
+
+    const handleChange = (name, value) => {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    };
+    const [pay, setPay] = useState(null)
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const payload = {
+        billNumber: formData.billNumber,
+        billType: formData.billType,
+        challan: formData.challan,
+        remarks: formData.remarks,
+        tax: formData.tax,
+        valueRaised: formData.valueRaised,
+        hubId: formData.hubId,
+      };
+
+      try {
+        const response = await API.post('create-bill-register', payload, headersOb);
+        console.log('Bill registered successfully:', response.data);
+        message.success("Bill registered successfully");
+        window.location.reload();
+      } catch (error) {
+        console.error('Error registering bill:', error);
+        if (error.response.data.message == "This billNumber already exists") {
+          message.error("This Bill Number already exists");
+        } else {
+
+          message.error("Error occurred while registering bill");
+        }
+      }
+    };
+
+    const goBack = () => {
+      setShowTabs(true);
+      setShowAddRecoveryForm(false);
+    };
+
     const onResetClick = () => {
-      console.log('reset clicked')
       setFormData({
-       
         billNumber: '',
         billType: '',
         challan: [],
@@ -613,162 +668,186 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         valueRaised: '',
         hubId: selectedHubId,
       });
-      setTargetKeys([]);
+      setSelectedDONumberData([]);
+      setDONumberData([]);
+      getDONumber();
     };
-  
-    const handleChange = (name, value) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    };
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const payload = {
-        billNumber: formData.billNumber,
-        billType: formData.billType,
-        challan: targetKeys,
-        remarks: formData.remarks,
-        tax: formData.tax,
-        valueRaised: formData.valueRaised,
-        hubId:selectedHubId
-      };
-  
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      };
-  
-      try {
-        const response = await API.post('create-bill-register', payload, headersOb);
-        console.log('Bill registered successfully:', response.data);
-        alert("Bill registered successfully");
-        window.location.reload();
-      } catch (error) {
-        console.error('Error registering bill:', error);
-        alert("Error occurred while registering bill");
-      }
-    };
-  
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
-  
+
     return (
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-4">
-            <div className="flex">
-              <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
-            </div>
-            <div className="flex flex-col">
-              <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
-              <Breadcrumb
-                items={[
-                  { title: 'Bill Register' },
-                  { title: 'Create' },
-                ]}
-              />
-            </div>
-          </div>
+      <Spin spinning={loading} delay={100}>
+        <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Bill Number*"
-                  size="large"
-                  name="billNumber"
-                  onChange={(e) => handleChange('billNumber', e.target.value)}
+            <div className="flex items-center gap-4">
+              <div className="flex">
+                <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
+              </div>
+              <div className="flex flex-col">
+                <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
+                <Breadcrumb
+                  items={[
+                    { title: 'Bill Register' },
+                    { title: 'Create' },
+                  ]}
                 />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Select
-                  style={{ width: "100%" }}
-                  placeholder="Bill Type*"
-                  size="large"
-                  name="billType"
-                  onChange={(value) => handleChange('billType', value)}
-                  filterOption={filterOption}
-                >
-                  <Option key={1} value="Physical">Physical</Option>
-                  <Option key={2} value="Epod">Epod</Option>
-                  <Option key={3} value="Incentive">Incentive</Option>
-                </Select>
-              </Col>
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Value Raised*"
-                  size="large"
-                  name="valueRaised"
-                  onChange={(e) => handleChange('valueRaised', e.target.value)}
-                />
-              </Col>
-            </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-             
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Tax*"
-                  size="large"
-                  name="tax"
-                  onChange={(e) => handleChange('tax', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={14}>
-                <Input
-                  placeholder="Remarks"
-                  size="large"
-                  name="remarks"
-                  onChange={(e) => handleChange('remarks', e.target.value)}
-                />
-              </Col>
-              
-            </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row mt-6" span={16}>
-              <Transfer
-                    dataSource={DONumberData}
-                    showSearch
-                    listStyle={{
-                      width: 650,
-                      height: 300,
-                    }}
-                    operations={['', '']}
-                    targetKeys={targetKeys}
-                    onChange={handleChangeTransfer}
-                    render={(item) => `${item.deliveryNumber}`}
-                    footer={renderFooter}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Bill Number*"
+                    size="large"
+                    name="billNumber"
+                    value={formData.billNumber}
+                    onChange={(e) => handleChange('billNumber', e.target.value)}
                   />
-              </Col>
-            </Row>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    style={{ width: "100%" }}
+                    placeholder="Bill Type*"
+                    size="large"
+                    name="billType"
+                    onChange={(value) => handleChange('billType', value)}
+                  >
+                    <Select.Option key={1} value="Physical">Physical</Select.Option>
+                    <Select.Option key={2} value="Epod">Epod</Select.Option>
+                    <Select.Option key={3} value="Incentive">Incentive</Select.Option>
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Value Raised*"
+                    size="large"
+                    name="valueRaised"
+                    value={formData.valueRaised}
+                    onChange={(e) => handleChange('valueRaised', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Tax*"
+                    size="large"
+                    name="tax"
+                    value={formData.tax}
+                    onChange={(e) => handleChange('tax', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={14}>
+                  <Input
+                    placeholder="Remarks"
+                    size="large"
+                    name="remarks"
+                    value={formData.remarks}
+                    onChange={(e) => handleChange('remarks', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Available Delivery Numbers</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setAvailableSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={availableSearchText}
+                      />
+                    </div>
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={DONumberData.filter(item =>
+                        item.deliveryNumber.includes(availableSearchText)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          actions={[
+                            <Button type="primary" onClick={() => addDerivedDoList(item)}>
+                              ADD
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Selected Delivery Numbers</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setSelectedSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={selectedSearchText}
+                      />
+                    </div>
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={selectedDONumberData.filter(item =>
+                        item.deliveryNumber.includes(selectedSearchText)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          actions={[
+                            <Button type="primary" onClick={() => removeDerivedDoList(item)}>
+                              REMOVE
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button onClick={onResetClick}>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>Save</Button>
           </div>
         </div>
-        <div className="flex gap-4 items-center justify-center reset-button-container">
-          <Button onClick={onResetClick}>Reset</Button>
-          <Button type="primary" className="bg-primary" onClick={handleSubmit}>Save</Button>
-        </div>
-      </div>
+      </Spin>
     );
   };
-
-  
   const EditBillRegisterFormComponent = () => {
-    console.log(editRowData)
     const [DONumberData, setDONumberData] = useState([]);
-    const [targetKeys, setTargetKeys] = useState([]);
-  
+    const [selectedDONumberData, setSelectedDONumberData] = useState([]);
+    const [formData, setFormData] = useState({
+      billNumber: editRowData.billNumber,
+      billType: editRowData.billType,
+      challan: [],
+      remarks: editRowData.remarks,
+      tax: editRowData.tax,
+      valueRaised: editRowData.valueRaised,
+      hubId: selectedHubId,
+    });
+    const [loading, setLoading] = useState(false);
+    const [availableSearchText, setAvailableSearchText] = useState('');
+    const [selectedSearchText, setSelectedSearchText] = useState('');
+
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+
     const getDONumber = async () => {
 
       try {
 
-        const res = await API.get(`get-all-recovery-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
+        const res = await API.get(`get-all-bill-delivery?hubId=${selectedHubId}&page=1&limit=600`, headersOb)
           .then((response) => {
-            console.log(response.data)
             if (response.status == 201 && response.data.message == "Successfully retrived all delivery numbers informations") {
               const deliveryData = response.data.deliveryData.map((item, index) => ({
                 key: item._id,
@@ -778,7 +857,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             } else {
               setDONumberData([]);
             }
-
           }).catch((error) => {
             console.log(error)
           })
@@ -788,44 +866,94 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
     };
 
+
+    const getExistingData = async () => {
+      try {
+        const response = await API.get(`get-delivery-data/${editRowData.key}`, headersOb);
+        if (response.status === 201) {
+          const deliveryData = response.data.deliveryDetails.challan.map((item) => ({
+            key: item._id,
+            deliveryNumber: item.deliveryNumber,
+          }));
+          setSelectedDONumberData(deliveryData);
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            challan: deliveryData.map(item => ({ id: item.key, deliveryNumber: item.deliveryNumber })),
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching existing data:', error);
+      }
+    };
+
     useEffect(() => {
+      getExistingData();
       getDONumber();
     }, []);
-  
-    const handleChangeTransfer = (newTargetKeys) => {
-      setTargetKeys(newTargetKeys);
+
+    const addDerivedDoList = (item) => {
+      setSelectedDONumberData((prevData) => [...prevData, item]);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: [...prevFormData.challan, { id: item.key, deliveryNumber: item.deliveryNumber }],
+      }));
+      setDONumberData((prevData) => prevData.filter(dataItem => dataItem.key !== item.key));
     };
-  
-    const renderFooter = (_, info) => {
-      if (info?.direction === 'left') {
-        return (
-          <Button size="small" style={{ float: 'left', margin: 5 }} onClick={getDONumber}>
-            reload
-          </Button>
-        );
+
+    const removeDerivedDoList = (item) => {
+      setSelectedDONumberData((prevData) => prevData.filter(dataItem => dataItem.key !== item.key));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: prevFormData.challan.filter(key => key !== item.key),
+      }));
+      setDONumberData((prevData) => [...prevData, item]);
+    };
+
+    const handleChange = (name, value) => {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    };
+    const [pay, setPay] = useState(null)
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const payload = {
+        billNumber: formData.billNumber,
+        billType: formData.billType,
+        // challan: formData.challan,
+        challan: formData.challan.map(challanItem => challanItem.id),
+        remarks: formData.remarks,
+        tax: formData.tax,
+        valueRaised: formData.valueRaised,
+        hubId: formData.hubId,
+      };
+
+      setPay(payload)
+
+      try {
+        const response = await API.put(`update-bill-register-data/${editRowData.key}`, payload, headersOb);
+        console.log('Bill updated successfully:', response.data);
+        message.success("Bill updated successfully");
+        window.location.reload();
+      } catch (error) {
+        console.error('Error registering bill:', error);
+        if (error.response.data.message == "This billNumber already exists") {
+          message.error("This Bill Number already exists");
+        } else {
+
+          message.error("Error occurred while registering bill");
+        }
       }
-      return (
-        <Button size="small" style={{ float: 'right', margin: 5 }} onClick={getDONumber}>
-          reload
-        </Button>
-      );
     };
-  
-    const [formData, setFormData] = useState({
-    
-      billNumber: '',
-      billType: '',
-      challan: [],
-      remarks: '',
-      tax: '',
-      valueRaised: '',
-      hubId: selectedHubId,
-    });
-  
+
+    const goBack = () => {
+      setShowTabs(true);
+      setShowAddRecoveryForm(false);
+    };
+
     const onResetClick = () => {
-      console.log('reset clicked')
       setFormData({
-       
         billNumber: '',
         billType: '',
         challan: [],
@@ -834,158 +962,169 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         valueRaised: '',
         hubId: selectedHubId,
       });
-      setTargetKeys([]);
+      setSelectedDONumberData([]);
+      setDONumberData([]);
+      getDONumber();
     };
-  
-    const handleChange = (name, value) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    };
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const payload = {
-        billNumber: formData.billNumber,
-        billType: formData.billType,
-        challan: targetKeys,
-        remarks: formData.remarks,
-        tax: formData.tax,
-        valueRaised: formData.valueRaised,
-        hubId:selectedHubId
-      };
-  
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      };
-  
-      try {
-        const response = await API.post('create-bill-register', payload, headersOb);
-        console.log('Bill registered successfully:', response.data);
-        alert("Bill registered successfully");
-        window.location.reload();
-      } catch (error) {
-        console.error('Error registering bill:', error);
-        alert("Error occurred while registering bill");
-      }
-    };
-  
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
-  
+
     return (
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-4">
-            <div className="flex">
-              <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
-            </div>
-            <div className="flex flex-col">
-              <h1 className='font-bold' style={{ fontSize: "16px" }}>Create Bill</h1>
-              <Breadcrumb
-                items={[
-                  { title: 'Bill Register' },
-                  { title: 'Create' },
-                ]}
-              />
-            </div>
-          </div>
+      <Spin spinning={loading} delay={100}>
+        <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Bill Number*"
-                  size="large"
-                  name="billNumber"
-                  onChange={(e) => handleChange('billNumber', e.target.value)}
+            <div className="flex items-center gap-4">
+              <div className="flex">
+                <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
+              </div>
+              <div className="flex flex-col">
+                <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit Bill</h1>
+                <Breadcrumb
+                  items={[
+                    { title: 'Bill Register' },
+                    { title: 'Edit' },
+                  ]}
                 />
-              </Col>
-              <Col className="gutter-row mt-6" span={6}>
-                <Select
-                  style={{ width: "100%" }}
-                  placeholder="Bill Type*"
-                  size="large"
-                  name="billType"
-                  onChange={(value) => handleChange('billType', value)}
-                  filterOption={filterOption}
-                >
-                  <Option key={1} value="Physical">Physical</Option>
-                  <Option key={2} value="Epod">Epod</Option>
-                  <Option key={3} value="Incentive">Incentive</Option>
-                </Select>
-              </Col>
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Value Raised*"
-                  size="large"
-                  name="valueRaised"
-                  onChange={(e) => handleChange('valueRaised', e.target.value)}
-                />
-              </Col>
-            </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-             
-              <Col className="gutter-row mt-6" span={8}>
-                <Input
-                  placeholder="Tax*"
-                  size="large"
-                  name="tax"
-                  onChange={(e) => handleChange('tax', e.target.value)}
-                />
-              </Col>
-              <Col className="gutter-row mt-6" span={14}>
-                <Input
-                  placeholder="Remarks"
-                  size="large"
-                  name="remarks"
-                  onChange={(e) => handleChange('remarks', e.target.value)}
-                />
-              </Col>
-              
-            </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row mt-6" span={16}>
-              <Transfer
-                    dataSource={DONumberData}
-                    showSearch
-                    listStyle={{
-                      width: 650,
-                      height: 300,
-                    }}
-                    operations={['', '']}
-                    targetKeys={targetKeys}
-                    onChange={handleChangeTransfer}
-                    render={(item) => `${item.deliveryNumber}`}
-                    footer={renderFooter}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Bill Number*"
+                    size="large"
+                    name="billNumber"
+                    value={formData.billNumber}
+                    onChange={(e) => handleChange('billNumber', e.target.value)}
                   />
-              </Col>
-            </Row>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    style={{ width: "100%" }}
+                    placeholder="Bill Type*"
+                    size="large"
+                    name="billType"
+                    value={editRowData.billType}
+                    onChange={(value) => handleChange('billType', value)}
+                  >
+                    <Select.Option key={1} value="Physical">Physical</Select.Option>
+                    <Select.Option key={2} value="Epod">Epod</Select.Option>
+                    <Select.Option key={3} value="Incentive">Incentive</Select.Option>
+                  </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Value Raised*"
+                    size="large"
+                    name="valueRaised"
+                    value={formData.valueRaised}
+                    onChange={(e) => handleChange('valueRaised', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <Input
+                    placeholder="Tax*"
+                    size="large"
+                    name="tax"
+                    value={formData.tax}
+                    onChange={(e) => handleChange('tax', e.target.value)}
+                  />
+                </Col>
+                <Col className="gutter-row mt-6" span={14}>
+                  <Input
+                    placeholder="Remarks"
+                    size="large"
+                    name="remarks"
+                    value={formData.remarks}
+                    onChange={(e) => handleChange('remarks', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Available Delivery Numbers</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setAvailableSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={availableSearchText}
+                      />
+                    </div>
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={DONumberData.filter(item =>
+                        item.deliveryNumber.includes(availableSearchText)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          actions={[
+                            <Button type="primary" onClick={() => addDerivedDoList(item)}>
+                              ADD
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Col>
+                <Col className="gutter-row mt-6" span={8}>
+                  <h3 className="title">Selected Delivery Numbers</h3>
+                  <div className="master-data-maindiv delivery-number-drag-area">
+                    <div className="searchdiv">
+                      <Input.Search
+                        className="searchdata"
+                        onChange={(e) => setSelectedSearchText(e.target.value)}
+                        placeholder="Search"
+                        size='large'
+                        value={selectedSearchText}
+                      />
+                    </div>
+                    <List
+                      style={{ height: "180px", overflowY: "scroll" }}
+                      dataSource={selectedDONumberData.filter(item =>
+                        item.deliveryNumber.includes(selectedSearchText)
+                      )}
+                      renderItem={item => (
+                        <List.Item
+                          actions={[
+                            <Button type="primary" onClick={() => removeDerivedDoList(item)}>
+                              REMOVE
+                            </Button>
+                          ]}
+                        >
+                          <List.Item.Meta title={item.deliveryNumber} />
+                        </List.Item>
+                      )}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          <div className="flex gap-4 items-center justify-center reset-button-container">
+            <Button onClick={onResetClick}>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>Save</Button>
           </div>
         </div>
-        <div className="flex gap-4 items-center justify-center reset-button-container">
-          <Button onClick={onResetClick}>Reset</Button>
-          <Button type="primary" className="bg-primary" onClick={handleSubmit}>Save</Button>
-        </div>
-      </div>
+      </Spin>
     );
   };
   return (
     <>
-    {showAddRecoveryForm ?
-      <>
-        {showEditRecoveryForm ? <EditBillRegisterFormComponent />
-          :
-          <BillRegisterFormComponent />
-        }
-      </>
-      :
+      {showAddRecoveryForm ?
+        <>
+          {showEditRecoveryForm ? <EditBillRegisterFormComponent />
+            :
+            <BillRegisterFormComponent />
+          }
+        </>
+        :
         (
 
           <div>
@@ -1026,37 +1165,28 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                 }}
                 pagination={false}
                 loading={loading}
-                // summary={() => (
-                //   <Table.Summary.Row >
 
-                //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-                //     </Table.Summary.Cell>
-                //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                //       Total Outstanding
-                //     </Table.Summary.Cell>
-                //     <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-                //       {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-                //     </Table.Summary.Cell>
-                //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-                //     </Table.Summary.Cell>
-
-                //   </Table.Summary.Row>
-                // )}
               />
-               <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+              <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-<div style={{ textAlign: 'right', width: '260px' }}>
-</div>
-<div style={{ fontWeight: 'bold', width: '330px' }}>
-Total Outstanding Amount
-</div>
-<div style={{ fontWeight: 'bold', width: '160px' }}>
-  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-</div>
-
-</div>
+                <div style={{ textAlign: 'right', width: '250px' }}>
+                </div>
+                <div style={{ fontWeight: 'bold', width: '150px' }}>
+                  Total
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueDifference}</p> : <p style={{ color: "red" }}>{totalValueDifference}</p>}
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueTax}</p> : <p style={{ color: "red" }}>{totalValueTax}</p>}
+                </div>
+              </div>
             </Form>
           </div>
         )

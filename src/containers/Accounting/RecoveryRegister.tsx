@@ -68,7 +68,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      message.error("Error fetching data. Please try again later", 2);
+      // message.error("Error fetching data. Please try again later", 2);
     }
   };
 
@@ -257,7 +257,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
               getTableData("", "1", "500", selectedHubId);
-
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000)
             })
             .catch((error) => {
               const { response } = error;
@@ -270,28 +272,117 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log("Validate Failed:", errInfo);
       }
     };
-
     const handleDeleteLedgerData = async (key) => {
+      console.log("ledgerEntries=>", ledgerEntries);
       try {
-        await API.delete(`delete-ledger-data/${key}`, headersOb)
-          .then(() => {
-            message.success("Successfully Deleted Ledger Entry");
-            getTableData("", "1", "500", selectedHubId);
-
-          })
-          .catch((error) => {
-            const { response } = error;
-            const { data } = response;
-            const { message: msg } = data;
-            message.error(msg);
-          });
-      } catch (err) {
-        console.log(err);
+          const row = await form.validateFields();
+          const newData = [...entries];
+          const index = newData.findIndex((item) => key === item.key);
+  
+          if (index > -1) {
+              const item = newData[index];
+              newData.splice(index, 1, { ...item, ...row });
+              setLedgerEntries((prevEntries) => ({
+                  ...prevEntries,
+                  [record.key]: newData,
+              }));
+              setEditingKeyIn("");
+  
+              const payload = {
+                  recovery: 0
+              };
+              console.log(`update-recovered-value/${record.key}/${key}`);
+              console.log(payload);
+  
+              try {
+                  // Make the first API call
+                  const response = await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb);
+                  const recoverResult = response.data.recoverResult;
+                  console.log("First API Response:", recoverResult);
+  
+                  // Filter out the deleted challan from the challan list
+                  const filteredChallan = recoverResult.challan.filter(challanId => challanId !== key);
+  
+                  // Prepare payload for the second API call
+                  const secondPayload = {
+                      challan: filteredChallan,
+                      createdAt: recoverResult.createdAt,
+                      hubId: recoverResult.hubId,
+                      modifiedAt: recoverResult.modifiedAt,
+                      outstanding: (recoverResult.outstanding + 10).toFixed(2), // Adjust as needed
+                      recovered: (recoverResult.recovered + 10).toFixed(2), // Adjust as needed
+                      recoveryCode: recoverResult.recoveryCode,
+                      value: recoverResult.value,
+                      _id: recoverResult._id
+                  };
+  
+                  console.log(`update-recovered-data/${recoverResult._id}`);
+                  console.log(secondPayload);
+  
+                  // Make the second API call
+                  const secondResponse = await API.put(`update-recovered-data/${recoverResult._id}`, secondPayload, headersOb);
+                  console.log("Second API Response:", secondResponse.data);
+  
+                  message.success("Successfully Updated Ledger Entry");
+                  getTableData("", "1", "500", selectedHubId);
+                  setTimeout(() => {
+                      window.location.reload();
+                  }, 1000);
+              } catch (error) {
+                  const { response } = error;
+                  const { data } = response;
+                  const { message: msg } = data;
+                  message.error(msg);
+              }
+          }
+      } catch (errInfo) {
+          console.log("Validate Failed:", errInfo);
       }
-    };
+  };
+  
+  
+    // const handleDeleteLedgerData = async (key) => {
+    //   console.log("ledgerEntries=>",ledgerEntries)
+    //   try {
+    //     const row = await form.validateFields();
+    //     const newData = [...entries];
+    //     const index = newData.findIndex((item) => key === item.key);
+
+    //     if (index > -1) {
+    //       const item = newData[index];
+    //       newData.splice(index, 1, { ...item, ...row });
+    //       setLedgerEntries((prevEntries) => ({
+    //         ...prevEntries,
+    //         [record.key]: newData,
+    //       }));
+    //       setEditingKeyIn("");
 
 
 
+    //       const payload = {
+    //         recovery: 0
+    //       };
+    //       console.log(`update-recovered-value/${record.key}/${key}`)
+    //       console.log(payload)
+    //       // await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
+    //       //   .then(() => {
+    //       //     message.success("Successfully Updated Ledger Entry");
+    //       //     getTableData("", "1", "500", selectedHubId);
+    //       //     setTimeout(() => {
+    //       //       window.location.reload();
+    //       //     }, 1000)
+    //       //   })
+    //       //   .catch((error) => {
+    //       //     const { response } = error;
+    //       //     const { data } = response;
+    //       //     const { message: msg } = data;
+    //       //     message.error(msg);
+    //       //   });
+    //     }
+    //   } catch (errInfo) {
+    //     console.log("Validate Failed:", errInfo);
+    //   }
+    // };
 
 
     const columnsInsideRow = [
@@ -393,9 +484,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </span>
           ) : (
             <Space size="middle">
-              {/* <Tooltip placement="top" title="Edit">
+              <Tooltip placement="top" title="Edit">
                 <a onClick={() => edit(record)}><FormOutlined /></a>
-              </Tooltip> */}
+              </Tooltip>
               <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
                 <Tooltip placement="top" title="Delete">
                   <a><DeleteOutlined /></a>
@@ -515,6 +606,23 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         challan: [...prevFormData.challan, item.key],
       }));
     };
+    // Remove item from selected list (RHS) and add it back to LHS
+    const removeDerivedDoList = (item) => {
+      // Remove from selectedDONumberData
+      setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+
+      // Remove from form data
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        challan: prevFormData.challan.filter(key => key !== item.key),
+      }));
+
+      // Check if the item already exists in DONumberData
+      if (!DONumberData.some(existingItem => existingItem.key === item.key)) {
+        // Add removed item back to DONumberData
+        setDONumberData((prevData) => [...prevData, item]);
+      }
+    };
 
     // const removeDerivedDoList = (item) => {
     //   setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
@@ -524,16 +632,16 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     //   }));
     // };
     // Remove item from selected list (RHS)
-    const removeDerivedDoList = (item) => {
-      setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        challan: prevFormData.challan.filter(key => key !== item.key),
-      }));
-      // Add removed item back to DONumberData
-      setDONumberData((prevData) => [...prevData, item]);
-    };
-  
+    // const removeDerivedDoList = (item) => {
+    //   setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+    //   setFormData((prevFormData) => ({
+    //     ...prevFormData,
+    //     challan: prevFormData.challan.filter(key => key !== item.key),
+    //   }));
+    //   // Add removed item back to DONumberData
+    //   setDONumberData((prevData) => [...prevData, item]);
+    // };
+
 
     const handleChange = (name, value) => {
       setFormData((prevFormData) => ({
@@ -714,14 +822,14 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     const [loadingoutside, setLoadingOutside] = useState(false);
     const [originalSearchText, setOriginalSearchText] = useState('');
     const [derivedSearchText, setDerivedSearchText] = useState('');
-  
+
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }
     };
-  
+
     // Fetch all available DO numbers
     const getDONumber = async () => {
       try {
@@ -742,7 +850,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         setLoading(false);
       }
     };
-  
+
     // Fetch existing data related to the recovery code
     const getExistingData = async () => {
       try {
@@ -762,12 +870,12 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.error('Error fetching existing data:', error);
       }
     };
-  
+
     useEffect(() => {
       getExistingData(); // Fetch existing data first
       getDONumber(); // Fetch all DO numbers
     }, []);
-  
+
     // Add item to selected list (RHS)
     const addDerivedDoList = (item) => {
       setSelectedDONumberData((prevKeys) => [...prevKeys, item]);
@@ -776,16 +884,32 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         challan: [...prevFormData.challan, item.key],
       }));
     };
-  
-    // Remove item from selected list (RHS)
+    // Remove item from selected list (RHS) and add it back to LHS
     const removeDerivedDoList = (item) => {
+      // Remove from selectedDONumberData
       setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+
+      // Remove from form data
       setFormData((prevFormData) => ({
         ...prevFormData,
         challan: prevFormData.challan.filter(key => key !== item.key),
       }));
+
+      // Check if the item already exists in DONumberData
+      if (!DONumberData.some(existingItem => existingItem.key === item.key)) {
+        // Add removed item back to DONumberData
+        setDONumberData((prevData) => [...prevData, item]);
+      }
     };
-  
+    // Remove item from selected list (RHS)
+    // const removeDerivedDoList = (item) => {
+    //   setSelectedDONumberData((prevKeys) => prevKeys.filter(key => key.key !== item.key));
+    //   setFormData((prevFormData) => ({
+    //     ...prevFormData,
+    //     challan: prevFormData.challan.filter(key => key !== item.key),
+    //   }));
+    // };
+
     // Handle input change
     const handleChange = (name, value) => {
       setFormData((prevFormData) => ({
@@ -793,7 +917,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         [name]: value,
       }));
     };
-  
+
     // Handle form submission
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -815,13 +939,13 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         message.error("Error occurred");
       }
     };
-  
+
     // Go back to the previous view
     const goBack = () => {
       setShowTabs(true);
       setShowAddRecoveryForm(false);
     };
-  
+
     // Reset the form
     const onResetClick = () => {
       setFormData({
@@ -831,7 +955,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       });
       setSelectedDONumberData([]);
     };
-  
+
     return (
       <Spin spinning={loadingoutside} delay={100}>
         <div className="flex flex-col gap-2">
@@ -861,7 +985,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                     onChange={(e) => handleChange('recoveryCode', e.target.value)}
                   />
                 </Col>
-  
+
                 <Col className="gutter-row mt-6" span={8}>
                   <Input
                     placeholder="Value*"
@@ -872,7 +996,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   />
                 </Col>
               </Row>
-  
+
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
                   <h3 className="title">Add DO number to Recovery Code</h3>
@@ -906,7 +1030,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                     />
                   </div>
                 </Col>
-  
+
                 <Col className="gutter-row mt-6" span={8}>
                   <h3 className="title">DO List</h3>
                   <div className="master-data-maindiv delivery-number-drag-area">
@@ -941,9 +1065,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   </div>
                 </Col>
               </Row>
-  
+
             </div>
-          
+
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={onResetClick}>Reset</Button>

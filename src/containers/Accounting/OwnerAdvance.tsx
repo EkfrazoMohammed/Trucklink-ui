@@ -7,7 +7,7 @@ import { API } from "../../API/apirequest"
 
 const dateFormat = "DD/MM/YYYY";
 
-const AccountingContainer = () => {
+const OwnerAdvance = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalOutstanding, setTotalOutstanding] = useState('0.00');
@@ -177,7 +177,7 @@ const AccountingContainer = () => {
     getTableData()
   };
   const columns = [
-   
+
     {
       title: 'Date',
       dataIndex: 'intDate',
@@ -349,7 +349,6 @@ const AccountingContainer = () => {
             hubId: selectedHubId
 
           };
-          // await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
           await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully added Ledger Entry");
@@ -386,18 +385,24 @@ const AccountingContainer = () => {
               hubId: selectedHubId,
             };
 
-            // await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
               .then(() => {
                 message.success("Successfully updated Ledger Entry");
                 getTableData();
                 getOutstandingData();
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1000)
               })
               .catch((error) => {
                 const { response } = error;
                 const { data } = response;
                 const { message: msg } = data;
-                message.error(msg);
+                if (msg == "Invalid ledger entry") {
+                  message.error("Enter only Debit or Credit");
+                } else {
+                  message.error(msg);
+                }
               });
           }
         }
@@ -690,23 +695,23 @@ const AccountingContainer = () => {
         //   </Table.Summary.Row>
         // )}
         />
-         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+        <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-<div style={{ textAlign: 'right', width: '200px' }}>
-</div>
-<div style={{ textAlign: 'right', width: '200px' }}>
-</div>
-<div style={{ fontWeight: 'bold', width: '260px' }}>
-Total Outstanding Amount
-</div>
-<div style={{ fontWeight: 'bold', width: '160px' }}>
-  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-</div>
+          <div style={{ textAlign: 'right', width: '200px' }}>
+          </div>
+          <div style={{ textAlign: 'right', width: '200px' }}>
+          </div>
+          <div style={{ fontWeight: 'bold', width: '260px' }}>
+            Total Outstanding Amount
+          </div>
+          <div style={{ fontWeight: 'bold', width: '160px' }}>
+            {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+          </div>
 
-</div>
+        </div>
       </Form>
     </div>
   );
 };
 
-export default AccountingContainer;
+export default OwnerAdvance;

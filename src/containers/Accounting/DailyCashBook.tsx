@@ -105,7 +105,11 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           const { response } = error;
           const { data } = response;
           const { message: msg } = data;
-          message.error(msg);
+          if (msg == "Invalid ledger entry") {
+            message.error("Enter only Debit or Credit");
+          } else {
+            message.error(msg);
+          }
         });
     } catch (err) {
       console.log(err);
@@ -346,6 +350,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           columns={columns}
           pagination={false}
           loading={loading}
+          scroll={{ y: 310 }}
         // summary={() => (
         //   <Table.Summary.Row style={{ backgroundColor: "#eee" }}>
         //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>

@@ -12,7 +12,7 @@ import VoucherBook from './VoucherBook';
 import DailyCashBook from './DailyCashBook';
 import RecoveryRegister from './RecoveryRegister';
 import BillRegister from './BillRegister';
-import A1ccountingContainer from './A1ccountingContainer';
+import OwnerAdvance from './OwnerAdvance';
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -84,13 +84,13 @@ const AccountingContainer = ({ onData }) => {
   };
 
 
-  const OwnerAdvance = ({ showTabs, setShowTabs }) => {
+  const OwnerAdvanceContainer = ({ showTabs, setShowTabs }) => {
 
     return (
       <>
 
         <div className="mytab-content">
-          <A1ccountingContainer />
+          <OwnerAdvance />
 
         </div>
       </>
@@ -109,7 +109,7 @@ const AccountingContainer = ({ onData }) => {
     {
       key: '1',
       label: `Owner Advance`,
-      children: <OwnerAdvance showTabs={showTabs} setShowTabs={setShowTabs} />,
+      children: <OwnerAdvanceContainer showTabs={showTabs} setShowTabs={setShowTabs} />,
     },
     {
       key: '2',

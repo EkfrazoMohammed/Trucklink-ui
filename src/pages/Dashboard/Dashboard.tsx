@@ -33,6 +33,8 @@ const Dashboard: React.FC = () => {
   const handleDataFromChild = (childData) => {
     setDataFromChild(childData);
   };
+  const currentHub=localStorage.getItem("selectedHubName")
+  console.log(currentHub)
 
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
@@ -43,14 +45,23 @@ const Dashboard: React.FC = () => {
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
 
+  // const items = [
+  //   { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+  //   { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
+  //   { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
+  //   { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
+  //   { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
+  //   { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
+  //   { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
+  // ];
   const items = [
     { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
-    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
-    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
-    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
-    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
-    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
+    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
+    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
+    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild}/>, disabled: !currentHub },
+    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer />, disabled: !currentHub },
+    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer />, disabled: !currentHub },
   ];
 
   const handleMenuClick = (menuItemKey: string, menuTitle: string) => {
@@ -119,7 +130,7 @@ const Dashboard: React.FC = () => {
           </div>
         <Menu theme="dark" defaultSelectedKeys={[selectedMenuItem]} mode="inline"  selectedKeys={[selectedMenuItem]} >
           {items.map(item => (
-            <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)}>
+            <Menu.Item key={item.key} icon={item.icon} onClick={() => handleMenuClick(item.key, item.label)} disabled={item.disabled}>
               {item.label}
             </Menu.Item>
           ))}

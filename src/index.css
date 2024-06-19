@@ -190,7 +190,7 @@ margin: 0 auto;
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-dev-only-do-not-override-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
   /* background-color: #1677ff; */
-  background-color: #424242;
+  background-color: #424242 !important;
 
 }
 :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-trigger {
@@ -373,4 +373,8 @@ margin: 0 auto;
 .ant-table-expanded-row>td.ant-table-cell{
   padding: 0 !important;
   background-color: #BBE2FF !important;
+}
+
+:where(.css-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+  background-color: #424242 !important;
 }

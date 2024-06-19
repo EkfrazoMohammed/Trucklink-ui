@@ -1,5 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import "../../App.css";
+import {API} from "../../API/apirequest"
 import truck_logo from "../../assets/logo.png"
 import dark_logo from "../../assets/dark_logo.png"
 import dashboard_logo from "../../assets/Dashboard.png"
@@ -78,15 +79,34 @@ const Dashboard: React.FC = () => {
   }, [selectedMenuItem]);
 
   // Logout function
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const loginId=JSON.parse(localStorage.getItem("loginID"));
     console.log("Logout clicked");
+    const authToken=localStorage.getItem("token");
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${authToken}`
+      }
+    }
+try{
 
-    setLogoutModalVisible(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('selectedMenuItemTitle');
-    localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
-    localStorage.clear();
-    window.location.replace("/");
+let res=await API.put(`logout/${loginId}`,{},headersOb)
+.then((res)=>{
+  console.log(res)
+  setLogoutModalVisible(false);
+  localStorage.removeItem('token');
+  localStorage.removeItem('selectedMenuItemTitle');
+  localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
+  localStorage.removeItem('loginID')
+  localStorage.clear();
+  window.location.replace("/");
+})
+}catch(err){
+  console.log(err)
+
+}
+
   };
   return (
     <Layout style={{ minHeight: '95vh' }}>

@@ -83,16 +83,12 @@ const AccountingContainer = ({ onData }) => {
     }
   };
 
-
   const OwnerAdvanceContainer = ({ showTabs, setShowTabs }) => {
-
     return (
       <>
-
-        <div className="mytab-content">
+        
           <OwnerAdvance />
-
-        </div>
+        
       </>
     );
   };

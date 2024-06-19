@@ -240,7 +240,7 @@
 
 .mytab-content {
   overflow-y: scroll !important;
-  height: 62vh !important;
+  height: 60vh !important;
   overflow-x: hidden !important;
 }
 
@@ -261,6 +261,33 @@
 }
 
 .mytab-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 6px;
+}
+
+.myowneradvancetab-content {
+  overflow-y: scroll !important;
+  height: 50vh !important;
+  overflow-x: hidden !important;
+}
+
+.myowneradvancetab-content::-webkit-scrollbar {
+  width: 6px;
+  /* Width of the scrollbar */
+  border-radius: 6px;
+}
+
+.myowneradvancetab-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.myowneradvancetab-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.myowneradvancetab-content::-webkit-scrollbar-thumb:hover {
   background: #555;
   border-radius: 6px;
 }

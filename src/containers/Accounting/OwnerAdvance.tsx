@@ -657,6 +657,7 @@ const OwnerAdvance = () => {
           Add Owner Balance
         </Button>
       </div>
+      <div className="myowneradvancetab-content">  
       <Form form={form} component={false}>
         <Table
           rowKey={(record) => record.key}
@@ -694,22 +695,23 @@ const OwnerAdvance = () => {
 
         //   </Table.Summary.Row>
         // )}
-        />
-        <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
-
-          <div style={{ textAlign: 'right', width: '200px' }}>
-          </div>
-          <div style={{ textAlign: 'right', width: '200px' }}>
-          </div>
-          <div style={{ fontWeight: 'bold', width: '260px' }}>
-            Total Outstanding Amount
-          </div>
-          <div style={{ fontWeight: 'bold', width: '160px' }}>
-            {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-          </div>
-
-        </div>
+        />      
       </Form>
+      </div>
+      <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+
+<div style={{ textAlign: 'right', width: '200px' }}>
+</div>
+<div style={{ textAlign: 'right', width: '200px' }}>
+</div>
+<div style={{ fontWeight: 'bold', width: '260px' }}>
+  Total Outstanding Amount
+</div>
+<div style={{ fontWeight: 'bold', width: '160px' }}>
+  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+</div>
+
+</div>
     </div>
   );
 };

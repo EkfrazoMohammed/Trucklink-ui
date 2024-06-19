@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -11,6 +11,7 @@ import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
 import OwnerActivityLog from './OwnerActivityLog';
+import axios from "axios"
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -154,15 +155,6 @@ const OnboardingContainer = ({ onData }) => {
         window.location.reload()
       }, 1000)
 
-      // if (response.status === 201) {
-      //   setTimeout(() => {
-      //     window.location.reload()
-      //   }, 1000)
-      // } else {
-      //   alert(`unable to delete data`)
-      //   console.log(response.data)
-
-      // }
     }
     return (
       <>
@@ -217,7 +209,43 @@ const OnboardingContainer = ({ onData }) => {
         onReset();
       }
     };
-
+    const axiosFileUploadRequest = async (file) => {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+  
+        const config = {
+          headers: {
+            "content-type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          },
+        };
+        console.log(formData)
+  
+        // const response = await API.post('create-owner-by-xsl', formData, config);
+        const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
+        console.log(response);
+        message.success("Successfully Uploaded");
+        setTimeout(()=>{
+          window.location.reload();
+        },1000)
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.message) {
+          message.error(error.response.data.message);
+        } else {
+          message.error("Network Failed, Please Try Again");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const handleBeforeUpload = (file) => {
+      console.log(file)
+      axiosFileUploadRequest(file);
+      return false; // Prevent automatic upload
+    };
     const onReset = () => {
       setSearchQuery1("");
       localStorage.removeItem('searchQuery1');
@@ -238,9 +266,15 @@ const OnboardingContainer = ({ onData }) => {
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-          <Upload>
-            <Button icon={<UploadOutlined />}></Button>
-          </Upload>
+          {/* <Upload>
+            <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
+          </Upload> */}
+          <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+      <Button icon={<UploadOutlined />} loading={loading}>
+        {/* {loading ? "Uploading" : "Click to Upload"} */}
+        {loading ? "Uploading" : ""}
+      </Button>
+    </Upload>
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
@@ -394,7 +428,7 @@ const OnboardingContainer = ({ onData }) => {
     );
   };
 
- 
+
   const AddTruckOwnerForm = () => {
     const [formData, setFormData] = useState({
       name: '',
@@ -576,7 +610,7 @@ const OnboardingContainer = ({ onData }) => {
           .then((response) => {
 
             if (response.status == 201) {
-              
+
               alert('Owner data added successfully!');
               setTimeout(() => {
                 window.location.reload();

@@ -1149,7 +1149,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                 onClick={handleAdd}
                 type="primary"
               >
-                Create Bill
+                CREATE BILL
               </Button>
             </div>
             <Form form={form} component={false}>

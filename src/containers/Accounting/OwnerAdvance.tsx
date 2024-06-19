@@ -631,6 +631,40 @@ const OwnerAdvance = () => {
     getOwners();
   }, []);
 
+  // const onDateChange = async (dates) => {
+  //   const defaultDataSource = dataSource;
+  //   console.log(dataSource)
+  //   const filterDateFormat = "YYYY-MM-DD";
+  //   if (dates) {
+  //     try {
+  //       const [a, b] = dates;
+  //       const st = (a && moment(a || "").format(filterDateFormat)) || "";
+  //       const et = (b && moment(b || "").format(filterDateFormat)) || "";
+  //       const dataSource = defaultDataSource.filter(({ownerDetails}) => {
+  //         const {initialISODate} = ownerDetails[0];
+  //         const dt = moment(new Date(initialISODate)).format(filterDateFormat);
+  //         if (st && et) {
+  //           return (
+  //             moment(dt).isSameOrAfter(st) && moment(dt).isSameOrBefore(et)
+  //           );
+  //         }
+  //         if (st) {
+  //           return moment(dt).isSameOrAfter(st);
+  //         }
+  //         if (et) {
+  //           return moment(dt).isSameOrBefore(et);
+  //         }
+  //       });
+  //       await this.setState({dataSource});
+  //     } catch (error) {
+  //       console.log({error});
+  //       message.error("Unable to fetch data");
+  //     }
+  //   } else {
+  //     await this.setState({dataSource: defaultDataSource});
+  //   }
+  // };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -654,7 +688,7 @@ const OwnerAdvance = () => {
           onClick={handleAdd}
           type="primary"
         >
-          Add Owner Balance
+          ADD OWNER BALANCE
         </Button>
       </div>
       <div className="myowneradvancetab-content">  

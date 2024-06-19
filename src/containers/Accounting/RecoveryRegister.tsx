@@ -1096,8 +1096,8 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className='flex gap-2 items-center'>
-                {/* <Input.Search
-                  placeholder="Search by Delivery  No or Truck No"
+                <Input.Search
+                  placeholder="Search by Code"
                   size='large'
                   style={{ width: 320 }}
                 />
@@ -1108,14 +1108,14 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 <DatePicker
                   size='large'
                   placeholder='To date'
-                /> */}
+                />
               </div>
 
               <Button
                 onClick={handleAdd}
                 type="primary"
               >
-                Add Recovery Code
+                ADD RECOVERY CODE
               </Button>
             </div>
             <Form form={form} component={false}>

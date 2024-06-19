@@ -79,7 +79,13 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           const { response } = error;
           const { data } = response;
           const { message: msg } = data;
-          message.error(msg);
+          console.log(msg)
+
+          if (msg == "Invalid ledger entry" || msg == "Invalid cash book entry." || msg == "Unable to create cash book.") {
+            message.error("Enter only Debit or Credit")
+          } else {
+            message.error(msg)
+          }
         });
     } catch (err) {
       console.log(err);
@@ -105,10 +111,10 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           const { response } = error;
           const { data } = response;
           const { message: msg } = data;
-          if (msg == "Invalid ledger entry") {
-            message.error("Enter only Debit or Credit");
+          if (msg == "Invalid ledger entry" || msg == "Invalid cash book entry.") {
+            message.error("Enter only Debit or Credit")
           } else {
-            message.error(msg);
+            message.error(msg)
           }
         });
     } catch (err) {
@@ -294,11 +300,11 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             <Tooltip placement="top" title="Edit">
               <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
             </Tooltip>
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
+            {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
               <Tooltip placement="top" title="Delete">
                 <a><DeleteOutlined /></a>
               </Tooltip>
-            </Popconfirm>
+            </Popconfirm> */}
           </Space>
         );
       }
@@ -339,7 +345,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           onClick={handleAdd}
           type="primary"
         >
-          Create Daily Cash
+          CREATE DAILY CASH
+
         </Button>
       </div>
       <Form form={form} component={false}>

@@ -10,7 +10,6 @@ const dateFormat = "DD/MM/YYYY";
 const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [totalOutstanding, setTotalOutstanding] = useState(0);
   const [totalValueRaised, setTotalValueRaised] = useState(0)
   const [totalValueReceived, setTotalValueReceived] = useState(0)
   const [totalValueDifference, setTotalValueDifference] = useState(0)
@@ -81,91 +80,53 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
-  const handleTableRowExpand = async (expanded, record) => {
-    if (expanded) {
-      try {
-        if (record && record.key !== "") {
-          // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
-          const response = await API.get(`get-delivery-data/${record.key}`, headersOb);
-          const ledgerEntries = response.data.deliveryDetails.challan;
+  const [editingKey, setEditingKey] = useState('');
+  const [showSaveButton, setShowSaveButton] = useState(false)
+  const isEditing = (record) => record.key === editingKey;
 
-          const dataSource = ledgerEntries.map((data) => {
+  const editValueReceived = (record) => {
+    form.setFieldsValue({ ...record });
+    setEditingKey(record.key);
+    setShowSaveButton(true)
+  };
 
-            return {
-              ...data,
-              "quantityInMetricTons": data.quantityInMetricTons,
-              "rate": data.rate,
-              "totalExpense": data.totalExpense,
-              "deliveryLocation": data.deliveryLocation,
-              "vehicleNumber": data.vehicleNumber,
-              "deliveryNumber": data.deliveryNumber,
-              "invoiceDate": data.invoiceDate,
-              key: data._id
-            };
-          });
 
-          setLedgerEntries((prevEntries) => ({
-            ...prevEntries,
-            [record.key]: dataSource
-          }));
+  const saveValueReceived = async (rowData) => {
+    console.log(rowData)
+    try {
+      const row = await form.validateFields();
+      const newData = [...dataSource];
+      const index = newData.findIndex((item) => rowData.key === item.key);
+
+      if (index > -1) {
+        const item = newData[index];
+        const updatedItem = { ...item, ...row };
+
+        console.log(updatedItem)
+
+        const payload = { valueRaised: updatedItem.valueRaised, valueReceived: updatedItem.valueReceived }
+
+        // // Update backend API with the updatedItem values
+        let res = await API.put(`update-difference-data/${rowData.key}`, payload, headersOb);  // Replace with your API endpoint
+        console.log(res)
+        if (res.status === 201) {
+          console.log(res.data)
+          alert("updated")
+          newData.splice(index, 1, updatedItem);
+          setEditingKey('');
+          setShowSaveButton(false)
+          window.location.reload()
+        } else {
+          setShowSaveButton(false)
+          console.log('error')
         }
-      } catch (err) {
-        console.error(err);
+
       }
-    }
-  };
-
-  const createOwnerAdvance = async (row) => {
-    const { intDate, IntAmount, ownerName, ownerId } = row;
-    const DateString = dayjs(intDate).format("DD/MM/YYYY");
-    const startDate = dayjs(DateString, "DD/MM/YYYY");
-    const vDate = startDate.format("DD/MM/YYYY");
-    console.log(newRow)
-    try {
-      await API.post(`create-owner-advance`, {
-        ownerId: ownerId,
-        ownerName: ownerName,
-        entryDate: vDate,
-        credit: Number(IntAmount),
-        narration: "Vehicle Advance",
-        hubId: selectedHubId
-      }, headersOb)
-        .then(() => {
-          message.success("Successfully Added Owner Advance Outstanding");
-          getTableData("", "1", "500", selectedHubId);
-
-        })
-        .catch((error) => {
-          const { response } = error;
-          const { data } = response;
-          const { message: msg } = data;
-          message.error(msg);
-        });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
-
-  const saveNewRow = async () => {
-    try {
-      await form.validateFields().then(values => {
-        const newRowData = {
-          ...newRow,
-          ...values,
-          // date: values.intDate.format(dateFormat),
-          credit: Number(values.IntAmount)
-        };
-        console.log(newRowData);
-        createOwnerAdvance(newRowData);
-        setNewRow(null);
-      });
     } catch (errInfo) {
-      console.log("Validate Failed:", errInfo);
+      setShowSaveButton(false)
+      console.log('Validate Failed:', errInfo);
     }
   };
-
   const columns = [
     {
       title: 'Bill Number',
@@ -189,7 +150,45 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       title: 'Value Received',
       dataIndex: 'valueReceived',
       key: 'valueReceived',
-      width: 160,
+      width: 200,
+      editable: true,  // Enable editing for this column
+      render: (_, record) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <>
+            <div className='flex gap-2 items-center justify-center'>
+              <Form.Item
+                name="valueReceived"
+                style={{ margin: 0 }}
+                rules={[{ required: true, message: 'Please input value received!' }]}
+              >
+                <InputNumber style={{ width: '100%' }} />
+              </Form.Item>
+
+              {showSaveButton ? <>
+                <Tooltip placement="top" title="Save Value received">
+                  {/* <a><FormOutlined /></a> */}
+                  <Button onClick={() => saveValueReceived(record)}>save</Button>
+                </Tooltip>
+              </> : null}
+
+            </div>
+
+          </>
+
+        ) : (
+          <>
+            <div className='flex gap-2 items-center justify-center'>
+
+              {record.valueReceived}
+              <Tooltip placement="top" title="Edit Value received">
+                {/* <a><FormOutlined /></a> */}
+                <a onClick={() => editValueReceived(record)} className='p-0 m-0'><FormOutlined /></a>
+              </Tooltip>
+            </div>
+          </>
+        );
+      },
     },
     {
       title: 'tax',
@@ -239,6 +238,60 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     }
   ];
+  const handleTableRowExpand = async (expanded, record) => {
+    if (expanded) {
+      try {
+        if (record && record.key !== "") {
+          // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
+          const response = await API.get(`get-delivery-data/${record.key}`, headersOb);
+          const ledgerEntries = response.data.deliveryDetails.challan;
+
+          const dataSource = ledgerEntries.map((data) => {
+
+            return {
+              ...data,
+              "quantityInMetricTons": data.quantityInMetricTons,
+              "rate": data.rate,
+              "totalExpense": data.totalExpense,
+              "deliveryLocation": data.deliveryLocation,
+              "vehicleNumber": data.vehicleNumber,
+              "deliveryNumber": data.deliveryNumber,
+              "invoiceDate": data.invoiceDate,
+              key: data._id
+            };
+          });
+
+          setLedgerEntries((prevEntries) => ({
+            ...prevEntries,
+            [record.key]: dataSource
+          }));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+
+
+  const [showAddRecoveryForm, setShowAddRecoveryForm] = useState(false);
+
+  const saveNewRow = async () => {
+    try {
+      await form.validateFields().then(values => {
+        const newRowData = {
+          ...newRow,
+          ...values,
+          // date: values.intDate.format(dateFormat),
+          credit: Number(values.IntAmount)
+        };
+        console.log(newRowData);
+        setNewRow(null);
+      });
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
 
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
@@ -941,7 +994,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         if (error.response.data.message == "This billNumber already exists") {
           message.error("This Bill Number already exists");
         } else {
-
           message.error("Error occurred while registering bill");
         }
       }
@@ -1158,7 +1210,17 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                 scroll={{ x: "auto", y: 290 }}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
-                columns={columns}
+                // columns={columns}
+                columns={columns.map((col) => ({
+                  ...col,
+                  onCell: (record) => ({
+                    record,
+                    editable: col.editable,
+                    dataIndex: col.dataIndex,
+                    title: col.title,
+                    editing: isEditing(record),
+                  }),
+                }))}
                 expandable={{
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
@@ -1169,21 +1231,21 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               />
               <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-                <div style={{ textAlign: 'right', width: '250px' }}>
+                <div style={{ textAlign: 'right', width: '220px' }}>
                 </div>
-                <div style={{ fontWeight: 'bold', width: '150px' }}>
+                <div style={{ fontWeight: 'bold', width: '120px' }}>
                   Total
                 </div>
-                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                <div style={{ fontWeight: 'bold', width: '120px' }}>
                   {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                <div style={{ fontWeight: 'bold', width: '120px' }}>
                   {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                <div style={{ fontWeight: 'bold', width: '120px' }}>
                   {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueTax}</p> : <p style={{ color: "red" }}>{totalValueTax}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                <div style={{ fontWeight: 'bold', width: '120px' }}>
                   {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueDifference}</p> : <p style={{ color: "red" }}>{totalValueDifference}</p>}
                 </div>
               </div>

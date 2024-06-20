@@ -4,6 +4,7 @@ import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from "moment";
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
+import axios from 'axios';
 
 const dateFormat = "DD/MM/YYYY";
 
@@ -16,6 +17,10 @@ const OwnerAdvance = () => {
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
   const [owners, setOwners] = useState([]);  // State to manage the list of owners
+  const [ownerId, setOwnerId] = useState('');  // State to manage the selected owner name
+  const [startDate, setStartDate] = useState(null);  // State to manage the start date
+  const [endDate, setEndDate] = useState(null);  // State to manage the end date
+
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const headersOb = {
@@ -25,11 +30,15 @@ const OwnerAdvance = () => {
     }
   };
 
-  const getTableData = async () => {
+
+  const getTableData = async (filters) => {
     try {
       setLoading(true);
-      // const response = await API.get(`get-advance-data&hubId=${selectedHubId}`, headersOb);
-      const response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
+      // const response = await API.post(`get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, filters, headersOb);
+      const searchData = filters ? filters : null;
+      const response = searchData ? await API.post(`get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, filters, headersOb)
+        : await API.get(`get-advance-data/${selectedHubId}`, headersOb)
+      // const response = await axios.post(`http://localhost:3000/prod/v1/get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, filters, headersOb);
       const { ownersAdavance } = response.data || [];
       if (ownersAdavance && ownersAdavance.length > 0) {
         const dataSource = ownersAdavance.map((data) => {
@@ -56,7 +65,6 @@ const OwnerAdvance = () => {
       message.error("Error fetching data. Please try again later", 2);
     }
   };
-
   const getOutstandingData = async () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
@@ -281,22 +289,20 @@ const OwnerAdvance = () => {
 
   const expandedRowRender = (record) => {
     const entries = ledgerEntries[record.key] || [];
+    const hideLedgerAction = entries.length - 1;
     return (
       <div className='w-100 h-auto flex flex-col gap-2 bg-gray-50'>
-        <LedgerTable record={record} entries={entries} />
+        <LedgerTable record={record} entries={entries} hideLedgerAction={hideLedgerAction} />
       </div>
     );
   };
-
-  const LedgerTable = ({ record, entries }) => {
+  const LedgerTable = ({ record, entries, hideLedgerAction }) => {
     const [form] = Form.useForm();
     const [editingKeyIn, setEditingKeyIn] = useState("");
     const [isAddingNew, setIsAddingNew] = useState(false);
-
     const isEditing = (record) => record.key === editingKeyIn;
 
     const edit = (record) => {
-      console.log(record.key)
       form.setFieldsValue({
         entDate: dayjs(record.entryDate, "DD/MM/YYYY"),
         credit: record.credit,
@@ -311,7 +317,6 @@ const OwnerAdvance = () => {
         setIsAddingNew(false);
       }
     };
-
 
     const cancel = () => {
       setEditingKeyIn("");
@@ -332,7 +337,6 @@ const OwnerAdvance = () => {
             key: Date.now().toString(), // Generate a unique key
             ...row,
             entryDate: dayjs(row.entDate).format("DD/MM/YYYY"),
-            // dayjs(date).format("DD/MM/YYYY")
           };
           // newData.push(newEntry);
           setLedgerEntries((prevEntries) => ({
@@ -347,7 +351,6 @@ const OwnerAdvance = () => {
             credit: Number(newEntry.credit),
             narration: newEntry.narration,
             hubId: selectedHubId
-
           };
           await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
@@ -360,7 +363,12 @@ const OwnerAdvance = () => {
               const { response } = error;
               const { data } = response;
               const { message: msg } = data;
-              message.error(msg);
+              console.log(msg)
+              if (msg == "Invalid ledger entry") {
+                message.error("Enter only Debit or Credit");
+              } else {
+                message.error(msg);
+              }
             });
 
         } else {
@@ -417,6 +425,9 @@ const OwnerAdvance = () => {
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
             getTableData();
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000)
             getOutstandingData();
           })
           .catch((error) => {
@@ -434,7 +445,7 @@ const OwnerAdvance = () => {
       const newEntryKey = `new`;
       const newEntry = {
         key: newEntryKey,
-        entryDate: null,
+        entDate: null,
         narration: '',
         debit: '',
         credit: '',
@@ -468,6 +479,7 @@ const OwnerAdvance = () => {
         dataIndex: 'entryDate',
         key: 'entryDate',
         render: (text, record) => {
+          console.log(record)
           const editable = isEditing(record);
           return editable ? (
             <Form.Item
@@ -479,8 +491,7 @@ const OwnerAdvance = () => {
             </Form.Item>
           ) : (
             dayjs(text).format('DD/MM/YYYY')
-            // dayjs(text).format(dateFormat)
-            // dayjs(text).format(dateFormat)
+
           );
         },
       },
@@ -545,42 +556,82 @@ const OwnerAdvance = () => {
         title: 'Outstanding',
         dataIndex: 'ownerOutstanding',
         key: 'ownerOutstanding',
-
       },
       {
         title: 'Action',
         key: 'operation',
-        render: (_, record) => {
+        render: (_, record, index) => {
+          console.log(record.key)
           const editable = isEditing(record);
-          return editable ? (
-            <span>
-              <Button
-                type="link"
-                onClick={() => save(record.key, record)}
-                style={{ marginRight: 8 }}
-              >
-                Save
-              </Button>
-              <Button type="link" onClick={cancel}>
-                Cancel
-              </Button>
-            </span>
-          ) : (
+          const lastRow = record.key == "new" ? hideLedgerAction + 1 : hideLedgerAction;
+          return editable || index !== lastRow ? (
             <Space size="middle">
-              <Tooltip placement="top" title="Edit">
-                <a onClick={() => edit(record)}><FormOutlined /></a>
-              </Tooltip>
-              <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
-                <Tooltip placement="top" title="Delete">
-                  <a><DeleteOutlined /></a>
-                </Tooltip>
-              </Popconfirm>
+              {editable ? (
+                <>
+                  <Button
+                    type="link"
+                    onClick={() => save(record.key)}
+                    style={{ marginRight: 8 }}
+                  >
+                    Save
+                  </Button>
+                  <Button type="link" onClick={cancel}>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Tooltip placement="top" title="Edit">
+                    <a onClick={() => edit(record)}><FormOutlined /></a>
+                  </Tooltip>
+                  <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
+                    <Tooltip placement="top" title="Delete">
+                      <a><DeleteOutlined /></a>
+                    </Tooltip>
+                  </Popconfirm>
+                </>
+              )}
             </Space>
-          );
+          ) : null
         },
       },
-    ];
+      // {
+      //   title: 'Action',
+      //   key: 'operation',
+      //   render: (_, record, index) => {
+      //     console.log(index)
+      //     const editable = isEditing(record);
+      //     return editable ? (
+      //       <span>
+      //         <Button
+      //           type="link"
+      //           onClick={() => save(record.key, record)}
+      //           style={{ marginRight: 8 }}
+      //         >
+      //           Save
+      //         </Button>
+      //         <Button type="link" onClick={cancel}>
+      //           Cancel
+      //         </Button>
+      //       </span>
+      //     ) : (
+      //       <Space size="middle">
+      //         {!editable && index !== hideLedgerAction  ?
+      //           <Tooltip placement="top" title="Edit">
+      //             <a onClick={() => edit(record)}><FormOutlined /></a>
+      //           </Tooltip>
+      //           : null}
+      //         <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteLedgerData(record.key)}>
+      //           <Tooltip placement="top" title="Delete">
+      //             <a><DeleteOutlined /></a>
+      //           </Tooltip>
+      //         </Popconfirm>
+      //       </Space>
+      //     )
 
+      //   },
+      // },
+    ];
 
     return (
       <div className='bg-[#BBE2FF] p-4'>
@@ -601,18 +652,20 @@ const OwnerAdvance = () => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
-
           />
         </Form>
       </div>
     );
   };
+
   const handleDeleteOwnerData = async (key) => {
     try {
       await API.delete(`delete-owner-record/${key}`, headersOb)
         .then(() => {
           message.success("Successfully Deleted Ledger Entry");
-          getTableData();
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000)
           getOutstandingData();
         })
         .catch((error) => {
@@ -631,40 +684,34 @@ const OwnerAdvance = () => {
     getOwners();
   }, []);
 
-  // const onDateChange = async (dates) => {
-  //   const defaultDataSource = dataSource;
-  //   console.log(dataSource)
-  //   const filterDateFormat = "YYYY-MM-DD";
-  //   if (dates) {
-  //     try {
-  //       const [a, b] = dates;
-  //       const st = (a && moment(a || "").format(filterDateFormat)) || "";
-  //       const et = (b && moment(b || "").format(filterDateFormat)) || "";
-  //       const dataSource = defaultDataSource.filter(({ownerDetails}) => {
-  //         const {initialISODate} = ownerDetails[0];
-  //         const dt = moment(new Date(initialISODate)).format(filterDateFormat);
-  //         if (st && et) {
-  //           return (
-  //             moment(dt).isSameOrAfter(st) && moment(dt).isSameOrBefore(et)
-  //           );
-  //         }
-  //         if (st) {
-  //           return moment(dt).isSameOrAfter(st);
-  //         }
-  //         if (et) {
-  //           return moment(dt).isSameOrBefore(et);
-  //         }
-  //       });
-  //       await this.setState({dataSource});
-  //     } catch (error) {
-  //       console.log({error});
-  //       message.error("Unable to fetch data");
-  //     }
-  //   } else {
-  //     await this.setState({dataSource: defaultDataSource});
-  //   }
-  // };
 
+  const handleOwnerNameChange = (value) => {
+    console.log(value)
+    setOwnerId(value);
+  };
+
+  const handleStartDateChange = (date, dateString) => {
+
+    const unixTimestamp = new Date(dateString).getTime();
+    console.log(unixTimestamp)
+    setStartDate(unixTimestamp);
+  };
+
+  const handleEndDateChange = (date, dateString) => {
+
+    const unixTimestamp = new Date(dateString).getTime();
+    console.log(unixTimestamp)
+    setEndDate(unixTimestamp);
+  };
+  const handleFilter = () => {
+    const filters = {
+      ownerId,
+      startDate: startDate,
+      endDate: endDate
+    };
+    console.log(filters)
+    getTableData(filters);
+  };
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -681,7 +728,37 @@ const OwnerAdvance = () => {
           <DatePicker
             size='large'
             placeholder='To date'
-          /> */}
+          />  */}
+          {/* <div className="filter-container">
+            <Select
+              showSearch
+              placeholder="Select Owner"
+              optionFilterProp="children"
+              onChange={handleOwnerNameChange}
+              style={{ width: 200, marginRight: 16 }}
+            >
+              {owners.map((owner) => (
+                <Select.Option key={owner._id} value={owner._id}>
+                  {owner.name}
+                </Select.Option>
+              ))}
+            </Select>
+            <DatePicker
+              placeholder="Start Date"
+              format={dateFormat}
+              onChange={handleStartDateChange}
+              style={{ marginRight: 16 }}
+            />
+            <DatePicker
+              placeholder="End Date"
+              format={dateFormat}
+              onChange={handleEndDateChange}
+              style={{ marginRight: 16 }}
+            />
+            <Button type="primary" onClick={handleFilter}>
+              Filter
+            </Button>
+          </div> */}
         </div>
 
         <Button
@@ -691,61 +768,41 @@ const OwnerAdvance = () => {
           ADD OWNER BALANCE
         </Button>
       </div>
-      <div className="myowneradvancetab-content">  
-      <Form form={form} component={false}>
-        <Table
-          rowKey={(record) => record.key}
-          bordered
-          dataSource={newRow ? [newRow, ...dataSource] : dataSource}
-          columns={columns}
-          expandable={{
-            expandedRowRender: (record) => expandedRowRender(record),
-            onExpand: handleTableRowExpand,
-          }}
-          pagination={{
-            position: ['bottomCenter'],
-            showSizeChanger: false,
-            total: dataSource.length,
-            // defaultPageSize: currentPageSize, // Set the default page size
+      <div className="myowneradvancetab-content">
+        <Form form={form} component={false}>
+          <Table
+            rowKey={(record) => record.key}
+            bordered
+            dataSource={newRow ? [newRow, ...dataSource] : dataSource}
+            columns={columns}
+            expandable={{
+              expandedRowRender: (record) => expandedRowRender(record),
+              onExpand: handleTableRowExpand,
+            }}
+            pagination={{
+              position: ['bottomCenter'],
+              showSizeChanger: false,
+              total: dataSource.length,
+            }}
+            loading={loading}
 
-          }}
-          // pagination={false}
-          loading={loading}
-        // summary={() => (
-        //   <Table.Summary.Row >
-
-        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-        //       Total Outstanding
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={0} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#eee" }}>
-        //       {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-
-        //     </Table.Summary.Cell>
-
-        //   </Table.Summary.Row>
-        // )}
-        />      
-      </Form>
+          />
+        </Form>
       </div>
       <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-<div style={{ textAlign: 'right', width: '200px' }}>
-</div>
-<div style={{ textAlign: 'right', width: '200px' }}>
-</div>
-<div style={{ fontWeight: 'bold', width: '260px' }}>
-  Total Outstanding Amount
-</div>
-<div style={{ fontWeight: 'bold', width: '160px' }}>
-  {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
-</div>
+        <div style={{ textAlign: 'right', width: '200px' }}>
+        </div>
+        <div style={{ textAlign: 'right', width: '200px' }}>
+        </div>
+        <div style={{ fontWeight: 'bold', width: '260px' }}>
+          Total Outstanding Amount
+        </div>
+        <div style={{ fontWeight: 'bold', width: '160px' }}>
+          {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
+        </div>
 
-</div>
+      </div>
     </div>
   );
 };

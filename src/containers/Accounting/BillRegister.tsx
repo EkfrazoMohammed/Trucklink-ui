@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined,RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -1168,6 +1168,37 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       </Spin>
     );
   };
+
+  const initialSearchQuery = localStorage.getItem('searchQuery8') || '';
+  const [searchQuery8, setSearchQuery8] = useState<string>(initialSearchQuery);
+
+  // Update localStorage whenever searchQuery8 changes
+  useEffect(() => {
+    if (searchQuery8 !== initialSearchQuery) {
+      localStorage.setItem('searchQuery8', searchQuery8);
+    }
+  }, [searchQuery8, initialSearchQuery]);
+
+  const handleSearch = () => {
+    getTableData(searchQuery8, 1, 600, selectedHubId);
+  };
+
+  const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery8(value);
+    console.log(value);
+    if (value === "") {
+      onReset();
+    }
+  };
+
+  const onReset = () => {
+    setSearchQuery8("");
+    setLoading(false)
+    localStorage.removeItem('searchQuery8');
+    getTableData("", 1, 600, selectedHubId);
+  };
+
   return (
     <>
       {showAddRecoveryForm ?
@@ -1183,12 +1214,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className='flex gap-2 items-center'>
-                {/* <Input.Search
-                 placeholder="Search by Delivery  No or Truck No"
+                <Input.Search
+                  placeholder="Search by Bill No or Bill Type"
                   size='large'
+                  value={searchQuery8}
+                  onChange={onChangeSearch}
+                  onSearch={handleSearch}
                   style={{ width: 320 }}
                 />
-                <DatePicker
+
+                {/* <DatePicker
                   size='large'
                   placeholder='From date'
                 /> -
@@ -1196,6 +1231,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                   size='large'
                   placeholder='To date'
                 /> */}
+                {searchQuery8 !== null && searchQuery8 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+
               </div>
 
               <Button

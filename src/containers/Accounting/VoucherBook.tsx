@@ -88,7 +88,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const [currentPageSize, setCurrentPageSize] = useState(50);
   const [totalVoucherData, setTotalVoucherData] = useState(null)
 
-  const getTableData = async (month, year) => {
+  const getTableData = async (searchData, month, year) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
@@ -98,8 +98,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     try {
       const month = selectedDate.month
       const year = selectedDate.year
+      const text = searchData;
+      console.log(text)
 
-      const response = await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb);
+
+
+      const response = text ? await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}&searchDN=${searchData}`, headersOb)
+        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb)
       // const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb)
       //   : await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb);
 
@@ -130,7 +135,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   useEffect(() => {
     const month = selectedDate.month
     const year = selectedDate.year
-    getTableData(month, year);
+    getTableData("", month, year);
   }, []);
   // useEffect(() => {
   //   getTableData(searchQuery);
@@ -138,73 +143,70 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
 
   // Truck master
   const Truck = ({ onAddVoucherClick }: { onAddVoucherClick: () => void }) => {
-    const initialSearchQuery = localStorage.getItem('searchQuery2') || '';
-    const [searchQuery2, setSearchQuery2] = useState<string>(initialSearchQuery);
+    const initialSearchQuery = localStorage.getItem('searchQuery6') || '';
+    const [searchQuery6, setSearchQuery6] = useState<string>(initialSearchQuery);
 
-    // Update localStorage whenever searchQuery2 changes
+    // Update localStorage whenever searchQuery6 changes
     useEffect(() => {
-      localStorage.setItem('searchQuery2', searchQuery2);
-    }, [searchQuery2]);
+      localStorage.setItem('searchQuery6', searchQuery6);
+    }, [searchQuery6]);
+    console.log(searchQuery6)
 
-    // const handleSearch = () => {
-    //   getTableData(searchQuery2);
-    // };
     const handleSearch = (value) => {
       const query = value;
       setSearchQuery(query);
       const searchFilteredData = filteredVoucherData.filter(voucher => {
         return (
-          voucher.vehicleNumber.includes(query)
+          // voucher.vehicleNumber.includes(query)
+          voucher
         );
       });
+      const month = selectedDate.month
+      const year = selectedDate.year
+      getTableData(searchQuery6, month, year)
       console.log(searchFilteredData)
-      setFilteredVoucherData(searchFilteredData);
+      // setFilteredVoucherData(searchFilteredData);
     };
     const handleMonthChange = (date, dateString) => {
       if (date) {
         const month = date.month() + 1;
         const year = date.year();
         setSelectedDate({ month, year });
-        getTableData(month, year);
+        getTableData(searchQuery6, month, year);
       }
     };
 
-    // useEffect(() => {
-    //   const { month, year } = selectedDate;
-    //   getTableData(month, year);
-    // }, [selectedDate]);
-
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery2(e.target.value);
+      setSearchQuery6(e.target.value);
       if (e.target.value == "") {
         onReset()
       }
     };
 
     const onReset = () => {
-      setSearchQuery2("");
+      setSearchQuery6("");
       const month = selectedDate.month
       const year = selectedDate.year
-      getTableData(month, year);
+      getTableData("", month, year);
     }
     return (
       <div className='flex gap-2 justify-between  py-3'>
         <div className='flex items-center gap-2'>
           {/* <Search
-            placeholder="Search by Truck No"
+            placeholder="Search by Truck No / Owner Name"
             size='large'
-            value={searchQuery2}
+            value={searchQuery6}
             onChange={onChangeSearch}
             onSearch={handleSearch}
             style={{ width: 320 }}
           />
-            <DatePicker
+          <DatePicker
             size='large'
             placeholder='By Month'
             picker="month"
             onChange={handleMonthChange}
-          /> 
-          {searchQuery2 !== null && searchQuery2 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} */}
+          />
+          {searchQuery6 !== null && searchQuery6 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} */}
         </div>
         <div className='flex gap-2'>
           <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> CREATE VOUCHER</Button>

@@ -1,19 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import moment from "moment";
+import { FormOutlined, DeleteOutlined, ExclamationCircleOutlined, RedoOutlined } from '@ant-design/icons';
+
 import dayjs, { locale } from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
-import axios from "axios"
-
-interface RecordType {
-  key: string;
-  title: string;
-  description: string;
-  chosen: boolean;
-}
 
 const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   const [dataSource, setDataSource] = useState([]);
@@ -35,18 +27,15 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     try {
       setLoading(true);
-
       const pages = page;
       const limitData = limit ? limit : null;
-
       const searchData = searchQuery ? searchQuery : null;
-
-
       const response = searchData ? await API.get(`get-all-recovery-details?searchDN=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
         : await API.get(`get-all-recovery-details?page=${pages}&limit=${limitData}&hubId=${selectedHubID}`, headersOb);
       const { recovery, totalOutstanding } = response.data || [];
       setTotalOutstanding(totalOutstanding)
-      if (recovery && recovery[0].data.length > 0) {
+
+      if (recovery.length > 0 && recovery[0].data.length > 0) {
         const dataSource = recovery[0].data.map((data) => {
           const { recovered, outstanding, recoveryCode, value } = data;
           const intDate = dayjs(data.createdAt, "DD/MM/YYYY");
@@ -275,72 +264,72 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     const handleDeleteLedgerData = async (key) => {
       console.log("ledgerEntries=>", ledgerEntries);
       try {
-          const row = await form.validateFields();
-          const newData = [...entries];
-          const index = newData.findIndex((item) => key === item.key);
-  
-          if (index > -1) {
-              const item = newData[index];
-              newData.splice(index, 1, { ...item, ...row });
-              setLedgerEntries((prevEntries) => ({
-                  ...prevEntries,
-                  [record.key]: newData,
-              }));
-              setEditingKeyIn("");
-  
-              const payload = {
-                  recovery: 0
-              };
-              console.log(`update-recovered-value/${record.key}/${key}`);
-              console.log(payload);
-  
-              try {
-                  // Make the first API call
-                  const response = await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb);
-                  const recoverResult = response.data.recoverResult;
-                  console.log("First API Response:", recoverResult);
-  
-                  // Filter out the deleted challan from the challan list
-                  const filteredChallan = recoverResult.challan.filter(challanId => challanId !== key);
-  
-                  // Prepare payload for the second API call
-                  const secondPayload = {
-                      challan: filteredChallan,
-                      createdAt: recoverResult.createdAt,
-                      hubId: recoverResult.hubId,
-                      modifiedAt: recoverResult.modifiedAt,
-                      outstanding: (recoverResult.outstanding + 10).toFixed(2), // Adjust as needed
-                      recovered: (recoverResult.recovered + 10).toFixed(2), // Adjust as needed
-                      recoveryCode: recoverResult.recoveryCode,
-                      value: recoverResult.value,
-                      _id: recoverResult._id
-                  };
-  
-                  console.log(`update-recovered-data/${recoverResult._id}`);
-                  console.log(secondPayload);
-  
-                  // Make the second API call
-                  const secondResponse = await API.put(`update-recovered-data/${recoverResult._id}`, secondPayload, headersOb);
-                  console.log("Second API Response:", secondResponse.data);
-  
-                  message.success("Successfully Updated Ledger Entry");
-                  getTableData("", "1", "500", selectedHubId);
-                  setTimeout(() => {
-                      window.location.reload();
-                  }, 1000);
-              } catch (error) {
-                  const { response } = error;
-                  const { data } = response;
-                  const { message: msg } = data;
-                  message.error(msg);
-              }
+        const row = await form.validateFields();
+        const newData = [...entries];
+        const index = newData.findIndex((item) => key === item.key);
+
+        if (index > -1) {
+          const item = newData[index];
+          newData.splice(index, 1, { ...item, ...row });
+          setLedgerEntries((prevEntries) => ({
+            ...prevEntries,
+            [record.key]: newData,
+          }));
+          setEditingKeyIn("");
+
+          const payload = {
+            recovery: 0
+          };
+          console.log(`update-recovered-value/${record.key}/${key}`);
+          console.log(payload);
+
+          try {
+            // Make the first API call
+            const response = await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb);
+            const recoverResult = response.data.recoverResult;
+            console.log("First API Response:", recoverResult);
+
+            // Filter out the deleted challan from the challan list
+            const filteredChallan = recoverResult.challan.filter(challanId => challanId !== key);
+
+            // Prepare payload for the second API call
+            const secondPayload = {
+              challan: filteredChallan,
+              createdAt: recoverResult.createdAt,
+              hubId: recoverResult.hubId,
+              modifiedAt: recoverResult.modifiedAt,
+              outstanding: (recoverResult.outstanding + 10).toFixed(2), // Adjust as needed
+              recovered: (recoverResult.recovered + 10).toFixed(2), // Adjust as needed
+              recoveryCode: recoverResult.recoveryCode,
+              value: recoverResult.value,
+              _id: recoverResult._id
+            };
+
+            console.log(`update-recovered-data/${recoverResult._id}`);
+            console.log(secondPayload);
+
+            // Make the second API call
+            const secondResponse = await API.put(`update-recovered-data/${recoverResult._id}`, secondPayload, headersOb);
+            console.log("Second API Response:", secondResponse.data);
+
+            message.success("Successfully Updated Ledger Entry");
+            getTableData("", "1", "500", selectedHubId);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } catch (error) {
+            const { response } = error;
+            const { data } = response;
+            const { message: msg } = data;
+            message.error(msg);
           }
+        }
       } catch (errInfo) {
-          console.log("Validate Failed:", errInfo);
+        console.log("Validate Failed:", errInfo);
       }
-  };
-  
-  
+    };
+
+
     // const handleDeleteLedgerData = async (key) => {
     //   console.log("ledgerEntries=>",ledgerEntries)
     //   try {
@@ -1080,7 +1069,35 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
+  const initialSearchQuery = localStorage.getItem('searchQuery7') || '';
+  const [searchQuery7, setSearchQuery7] = useState<string>(initialSearchQuery);
 
+  // Update localStorage whenever searchQuery7 changes
+  useEffect(() => {
+    if (searchQuery7 !== initialSearchQuery) {
+      localStorage.setItem('searchQuery7', searchQuery7);
+    }
+  }, [searchQuery7, initialSearchQuery]);
+
+  const handleSearch = () => {
+    getTableData(searchQuery7, 1, 600, selectedHubId);
+  };
+
+  const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery7(value);
+    console.log(value);
+    if (value === "") {
+      onReset();
+    }
+  };
+
+  const onReset = () => {
+    setSearchQuery7("");
+    setLoading(false)
+    localStorage.removeItem('searchQuery7');
+    getTableData("", 1, 600, selectedHubId);
+  };
   return (
     <>
       {showAddRecoveryForm ?
@@ -1096,11 +1113,20 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className='flex gap-2 items-center'>
-                <Input.Search
+                {/* <Input.Search
                   placeholder="Search by Code"
                   size='large'
                   style={{ width: 320 }}
+                /> */}
+                <Input.Search
+                  placeholder="Search by Code"
+                  size='large'
+                  value={searchQuery7}
+                  onChange={onChangeSearch}
+                  onSearch={handleSearch}
+                  style={{ width: 320 }}
                 />
+                {/* 
                 <DatePicker
                   size='large'
                   placeholder='From date'
@@ -1108,7 +1134,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 <DatePicker
                   size='large'
                   placeholder='To date'
-                />
+                /> */}
+                {searchQuery7 !== null && searchQuery7 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+
               </div>
 
               <Button

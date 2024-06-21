@@ -110,12 +110,13 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         let res = await API.put(`update-difference-data/${rowData.key}`, payload, headersOb);  // Replace with your API endpoint
         console.log(res)
         if (res.status === 201) {
-          console.log(res.data)
-          alert("updated")
+          message.success("Updated Value Received")
           newData.splice(index, 1, updatedItem);
           setEditingKey('');
           setShowSaveButton(false)
-          window.location.reload()
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
         } else {
           setShowSaveButton(false)
           console.log('error')

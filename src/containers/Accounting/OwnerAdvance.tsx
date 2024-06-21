@@ -490,7 +490,8 @@ const OwnerAdvance = () => {
               <DatePicker format={dateFormat} />
             </Form.Item>
           ) : (
-            dayjs(text).format('DD/MM/YYYY')
+            // dayjs(text).format('DD/MM/YYYY')
+            text
 
           );
         },

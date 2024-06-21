@@ -1,0 +1,18 @@
+{
+    "root":{
+        "users":[
+            {
+                "userId":1,
+                "firstName":"abc"
+            },
+            {
+                "userId":2,
+                "firstName":"pqr"
+            },
+            {
+                "userId":3,
+                "firstName":"xyz"
+            }
+        ]
+    }
+}

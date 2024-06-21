@@ -45,61 +45,24 @@ const OwnerAdvance = () => {
     setEndDate(unixTimestamp);
   };
   const handleFilter = () => {
-    const filters = {
+    updateFilterAndFetchData({
       ownerId,
-      startDate: startDate,
-      endDate: endDate
-    };
-
-    setFilterRequest(filters)
-    getTableData();
+      startDate,
+      endDate
+    });
   };
 
   const onReset = () => {
     setOwnerId('');
     setFilterRequest(null);
-    // getTableData();
   };
-  // const getTableData = async () => {
-  //   try {
 
-  //     console.log('called')
-  //     setLoading(true);
-  //     // const response = await API.post(`get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, filters, headersOb);
-  //     const searchData = filterRequest ? filterRequest : null;
-  //     console.log(searchData)
-  //     const response = searchData ? await API.post(`get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, searchData, headersOb)
-  //       : await API.get(`get-advance-data/${selectedHubId}`, headersOb)
-  //     // // const response = await axios.post(`http://localhost:3000/prod/v1/get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, filters, headersOb);
-  //     const { ownersAdavance } = response.data || [];
-  //     if (ownersAdavance && ownersAdavance.length > 0) {
-  //       const dataSource = ownersAdavance.map((data) => {
-  //         const { ownerDetails, outStandingAmount } = data;
-  //         const { initialDate, ownerName } = ownerDetails[0];
-  //         const intDate = dayjs(initialDate, "DD/MM/YYYY");
-  //         return {
-  //           key: data._id,
-  //           ownerName: ownerName[0], // Adjusted for array structure
-  //           initialDate,
-  //           intDate,
-  //           IntAmount: outStandingAmount,
-  //           entries: [] // Initialize empty, will fetch on expand
-  //         };
-  //       });
-  //       setDataSource(dataSource);
-  //       setCount(dataSource.length);
-  //     } else {
-  //       setDataSource([]);
-  //     }
-  //     setLoading(false);
-  //   } catch (err) {
-  //     setLoading(false);
-  //     message.error("Error fetching data. Please try again later", 2);
-  //   }
-  // };
+  const updateFilterAndFetchData = async (filters) => {
+    setFilterRequest(filters);
+    await getTableData(filters);
+  };
   const getTableData = async () => {
     try {
-      console.log('called');
       setLoading(true);
 
       const searchData = filterRequest ? filterRequest : null;
@@ -107,51 +70,41 @@ const OwnerAdvance = () => {
 
       let response;
       if (searchData) {
-        response = await API.post(`get-filterOwnerAdvanceData?page=1&limit=50&hubId=${selectedHubId}`, searchData, headersOb);
+        response = await API.post(`get-filter-owner-advance-data?page=1&limit=50&hubId=${selectedHubId}`, searchData, headersOb);
       } else {
         response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
       }
 
       if (response.data) {
-        // const dataSource = response.data.ownersAdavance.map((data) => {
-        //   const { ownerDetails, outStandingAmount } = data;
 
         // Handle the structure for get-filterOwnerAdvanceData response
         if (searchData) {
           console.log("searchData")
           console.log(response.data)
-          const dataSource = response.data.disptachData[0].data.map((data) => {
-            console.log(data)
-            const { initialDate, ownerName,ownerId,ownerDetails,initialAmount
-            } = data;
-            const intDate = dayjs(initialDate, "DD-MM-YYYY");
-            return {
-              key: data._id,
-              ownerName, // Assuming ownerName is not an array here
-              initialDate,
-              intDate,
-              IntAmount: initialAmount,
-              entries: [] // Initialize empty, will fetch on expand
-            };
-          });
-            //     const { ownerDetails, outStandingAmount } = data;
-            //   const { initialDate, ownerName } = ownerDetails[0];
-            //   const intDate = dayjs(initialDate, "DD/MM/YYYY");
-            //   return {
-            //     key: data._id,
-            //     ownerName: ownerName[0], // Adjusted for array structure
-            //     initialDate,
-            //     intDate,
-            //     IntAmount: outStandingAmount,
-            //     entries: [] // Initialize empty, will fetch on expand
-            //   };
-          // });
-          console.log(dataSource)
-          setDataSource(dataSource);
-          setCount(dataSource.length);
-        }
+          if (response.data.disptachData.length > 0) {
+            const dataSource = response.data.disptachData[0].data.map((data) => {
+              console.log(data)
+              const { initialDate, ownerName, ownerId, ownerDetails, initialAmount
+              } = data;
+              const intDate = dayjs(initialDate, "DD-MM-YYYY");
+              return {
+                key: data._id,
+                ownerName, // Assuming ownerName is not an array here
+                initialDate,
+                intDate,
+                IntAmount: initialAmount,
+                entries: [] // Initialize empty, will fetch on expand
+              };
+            });
+            console.log(dataSource)
+            setDataSource(dataSource);
+            setCount(dataSource.length);
+          } else {
+            setDataSource([]);
+            setCount(0);
+          }
 
-        // Handle the structure for get-advance-data response
+        }
         else {
           const dataSource = response.data.ownersAdavance.map((data) => {
             const { ownerDetails, outStandingAmount } = data;
@@ -171,8 +124,6 @@ const OwnerAdvance = () => {
           setDataSource(dataSource);
           setCount(dataSource.length);
         }
-
-
       } else {
         setDataSource([]);
       }
@@ -188,7 +139,7 @@ const OwnerAdvance = () => {
     if (filterRequest == null) {
       getTableData();
     }
-  }, [filterRequest,ownerId]);
+  }, [filterRequest, ownerId]);
   const getOutstandingData = async () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
@@ -781,7 +732,7 @@ const OwnerAdvance = () => {
       <div className="flex items-center justify-between mb-4">
         <div className='flex gap-2 items-center'>
 
-          {/* <div className="filter-container">
+          <div className="filter-container">
             <Select
               showSearch
               placeholder="Select Owner"
@@ -812,7 +763,7 @@ const OwnerAdvance = () => {
               Filter
             </Button>
           </div>
-            {ownerId !== null && ownerId !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} */}
+          {ownerId !== null && ownerId !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
 
         <Button

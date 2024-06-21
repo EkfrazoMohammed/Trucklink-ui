@@ -431,7 +431,13 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             <Form.Item
               name="recovery"
               style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input recovery!' }]}
+              rules={[
+                {
+                  required: true, type: 'number',
+                  min: 0,
+                  transform: value => Number(value),
+                },
+              ]}
             >
               <InputNumber />
             </Form.Item>

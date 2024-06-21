@@ -99,10 +99,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       const month = selectedDate.month
       const year = selectedDate.year
       const text = searchData;
-      console.log(text)
-
-
-
+      
       const response = text ? await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}&searchDN=${searchData}`, headersOb)
         : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb)
       // const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb)
@@ -192,7 +189,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     return (
       <div className='flex gap-2 justify-between  py-3'>
         <div className='flex items-center gap-2'>
-          {/* <Search
+          <Search
             placeholder="Search by Truck No / Owner Name"
             size='large'
             value={searchQuery6}
@@ -206,7 +203,8 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
             picker="month"
             onChange={handleMonthChange}
           />
-          {searchQuery6 !== null && searchQuery6 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} */}
+          {searchQuery6 !== null && searchQuery6 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} 
+          
         </div>
         <div className='flex gap-2'>
           <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> CREATE VOUCHER</Button>

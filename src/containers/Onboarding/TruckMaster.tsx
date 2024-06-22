@@ -410,9 +410,9 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
-          let errorResponse = error.response.data
+          const errorResponse = error.response.data
 
-          let errorMessages = [];
+          const errorMessages = [];
 
           if (errorResponse.error && errorResponse.error.err && errorResponse.error.err.errors) {
             Object.keys(errorResponse.error.err.errors).forEach((key) => {
@@ -420,12 +420,15 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               errorMessages.push(errorMessage);
             });
           }
-
+          console.log(errorMessages)
 
           if (errorMessages.length > 0) {
             console.log("Error:", errorMessages.join(", "));
             alert("error occurred")
-          } else {
+          } else if(errorResponse.error.message == "This vehicle number already exists"){
+            alert("This vehicle number already exists")
+            console.log('This vehicle number already exists')
+          }else {
             alert("error occurred")
             console.log("Something went wrong");
           }

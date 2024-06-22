@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Assuming states.json is located in the same directory as your component
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -11,6 +11,7 @@ import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
 import OwnerActivityLog from './OwnerActivityLog';
+import axios from "axios"
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -51,7 +52,7 @@ const OnboardingContainer = ({ onData }) => {
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
-   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
+  const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
@@ -114,10 +115,10 @@ const OnboardingContainer = ({ onData }) => {
       }
       try {
         const dispatcher = API.get(`/get-challan-data/${rowData._id}`, headersOb)
-     
+
         let res = API.get(`get-owner-details/${rowData._id}`, headersOb)
           .then((res) => {
-            console.log(res.data.ownerDetails)
+
             setRowDataForEdit(res.data.ownerDetails[0]);
             setRowDataForView(res.data.ownerDetails[0]);
             setShowOwnerTable(false);
@@ -153,16 +154,7 @@ const OnboardingContainer = ({ onData }) => {
       setTimeout(() => {
         window.location.reload()
       }, 1000)
-      console.log(response)
-      // if (response.status === 201) {
-      //   setTimeout(() => {
-      //     window.location.reload()
-      //   }, 1000)
-      // } else {
-      //   alert(`unable to delete data`)
-      //   console.log(response.data)
 
-      // }
     }
     return (
       <>
@@ -198,12 +190,12 @@ const OnboardingContainer = ({ onData }) => {
     // useEffect(() => {
     //   localStorage.setItem('searchQuery1', searchQuery1);
     // }, [searchQuery1]);
-  // Update localStorage whenever searchQuery1 changes
-  useEffect(() => {
-    if (searchQuery1 !== initialSearchQuery) {
-      localStorage.setItem('searchQuery1', searchQuery1);
-    }
-  }, [searchQuery1, initialSearchQuery]);
+    // Update localStorage whenever searchQuery1 changes
+    useEffect(() => {
+      if (searchQuery1 !== initialSearchQuery) {
+        localStorage.setItem('searchQuery1', searchQuery1);
+      }
+    }, [searchQuery1, initialSearchQuery]);
 
     const handleSearch = () => {
       getTableData(searchQuery1, 1, 600, selectedHubId);
@@ -212,12 +204,48 @@ const OnboardingContainer = ({ onData }) => {
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearchQuery1(value);
-      console.log(value);
+
       if (value === "") {
         onReset();
       }
     };
+    const axiosFileUploadRequest = async (file) => {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
   
+        const config = {
+          headers: {
+            "content-type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          },
+        };
+        console.log(formData)
+  
+        // const response = await API.post('create-owner-by-xsl', formData, config);
+        const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
+        console.log(response);
+        message.success("Successfully Uploaded");
+        setTimeout(()=>{
+          window.location.reload();
+        },1000)
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.message) {
+          message.error(error.response.data.message);
+        } else {
+          message.error("Network Failed, Please Try Again");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const handleBeforeUpload = (file) => {
+      console.log(file)
+      axiosFileUploadRequest(file);
+      return false; // Prevent automatic upload
+    };
     const onReset = () => {
       setSearchQuery1("");
       localStorage.removeItem('searchQuery1');
@@ -226,7 +254,7 @@ const OnboardingContainer = ({ onData }) => {
     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
-        
+
           <Search
             placeholder="Search by Owner Name"
             size='large'
@@ -238,9 +266,15 @@ const OnboardingContainer = ({ onData }) => {
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-          <Upload>
-            <Button icon={<UploadOutlined />}></Button>
-          </Upload>
+          {/* <Upload>
+            <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
+          </Upload> */}
+          <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+      <Button icon={<UploadOutlined />} loading={loading}>
+        {/* {loading ? "Uploading" : "Click to Upload"} */}
+        {loading ? "Uploading" : ""}
+      </Button>
+    </Upload>
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
@@ -394,166 +428,6 @@ const OnboardingContainer = ({ onData }) => {
     );
   };
 
-  // const ViewOwnerDataRow = ({ rowData }) => {
-  //   const [dispatchDetails, setDispatchDetails] = useState(null);
-
-  //   const getDispatchDetails = () => {
-  //     const headersOb = {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Authorization": `Bearer ${authToken}`
-  //       }
-  //     }
-  //     try {
-  //       API.get(`/get-challan-data/${rowData._id}`, headersOb)
-  //         .then(res => {
-  //           if (res.status === 201) {
-  //             setDispatchDetails(res.data.dispatchData);
-  //           } else {
-  //             console.log('error');
-  //           }
-  //         })
-  //         .catch(err => {
-  //           console.log(err);
-  //         });
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   };
-
-  //   useEffect(() => {
-  //     getDispatchDetails();
-  //   }, []);
-
-  //   const aggregateDispatchData = (data) => {
-  //     if (!data) return {};
-  //     const aggregatedData = {};
-
-  //     data.forEach((dispatch) => {
-  //       const { vehicleNumber, createdAt } = dispatch;
-  //       if (!aggregatedData[vehicleNumber]) {
-  //         aggregatedData[vehicleNumber] = {
-  //           totalTrips: 0,
-  //           lastTrip: null
-  //         };
-  //       }
-
-  //       aggregatedData[vehicleNumber].totalTrips += 1;
-  //       if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
-  //         aggregatedData[vehicleNumber].lastTrip = createdAt;
-  //       }
-  //     });
-
-  //     return aggregatedData;
-  //   };
-
-  //   const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
-
-  //   const goBack = () => {
-  //     setShowOwnerTable(true);
-  //     setShowTabs(true);
-  //     onData('flex');
-  //   };
-
-
-  //   const LastTripComponent = ({ dispatchData }) => {
-  //     if (!dispatchData) return <p className="flex flex-col w-100 font-normal m-2"><span className="label text-sm">Last trip</span> - </p>;
-
-  //     const isoDate = dispatchData;
-  //     const date = new Date(isoDate);
-  //     const formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
-
-  //     return (
-  //       <p className="flex flex-col w-100 font-normal m-2">
-  //         <span className="label text-sm">Last trip</span>
-  //         {formattedDate}
-  //       </p>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="owner-details">
-  //       <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
-  //       <div className="section mx-2 my-4">
-  //         <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
-  //         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
-  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
-  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowData.email}</p></Col>
-  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowData.panNumber}</p></Col>
-  //           <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowData.district}</p></Col>
-  //           <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowData.state}</p> </Col>
-  //           <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Address</span> {rowData.address}</p></Col>
-  //         </Row>
-  //       </div>
-  //       <div className="section mx-2 my-4">
-  //         <h2 className='font-semibold text-md'>Owner Bank Details</h2>
-  //         {rowData.accountIds.map((account, index) => (
-  //           <div key={index}>
-  //             <h3>Bank Account {index + 1}</h3>
-  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-  //               <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code</span> {account.ifscCode}</p> </Col>
-  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name</span> {account.bankName}</p></Col>
-  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name</span> {account.branchName}</p></Col>
-  //               <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number</span> {account.accountNumber}</p> </Col>
-  //               <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
-  //             </Row>
-  //           </div>
-  //         ))}
-  //       </div>
-  //       <div className="section mx-2 my-4">
-  //         <h2 className="font-semibold text-md">Vehicle Details</h2>
-  //         {rowData.vehicleIds.length === 0 && rowData.oldVehicleDetails.length > 0 ? (
-  //           rowData.oldVehicleDetails.map((vehicle, index) => {
-  //             const dispatchData = aggregatedDispatchData[vehicle.vehicleNumber] || { totalTrips: '-', lastTrip: '-' };
-
-  //             return (
-  //               <div key={index}>
-  //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
-  //                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
-  //                     <p>{index + 1}</p>
-  //                     <p className="flex flex-col w-100 font-normal m-2">
-  //                       <span className="label text-sm">Vehicle No</span>
-  //                       {vehicle.vehicleNumber}
-  //                     </p>
-  //                     <p className="flex flex-col w-100 font-normal m-2">
-  //                       <span className="label text-sm">Total trips</span>
-  //                       {dispatchData.totalTrips}
-  //                     </p>
-  //                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
-  //                   </Col>
-  //                 </Row>
-  //               </div>
-  //             );
-  //           })
-  //         ) : (
-  //           rowData.vehicleIds.map((vehicle, index) => {
-  //             const dispatchData = aggregatedDispatchData[vehicle.registrationNumber] || { totalTrips: '-', lastTrip: '-' };
-
-  //             return (
-
-  //                 <Row gutter={{ xs: 8, sm: 16, md: 32, lg: 32 }}>
-  //                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
-  //                     <p>{index + 1}</p>
-  //                     <p className="flex flex-col w-100 font-normal m-2">
-  //                       <span className="label text-sm">Vehicle No</span>
-  //                       {vehicle.registrationNumber}
-  //                     </p>
-  //                     <p className="flex flex-col w-100 font-normal m-2">
-  //                       <span className="label text-sm">Total trips</span>
-  //                       {dispatchData.totalTrips}
-  //                     </p>
-  //                     <LastTripComponent dispatchData={dispatchData.lastTrip} />
-  //                   </Col>
-  //                 </Row>
-
-  //             );
-  //           })
-  //         )}
-  //       </div>
-  //     </div>
-  //   );
-  // };
 
   const AddTruckOwnerForm = () => {
     const [formData, setFormData] = useState({
@@ -734,9 +608,9 @@ const OnboardingContainer = ({ onData }) => {
       const postData = async () => {
         await API.post("create-owner", payload, headersOb)
           .then((response) => {
-            console.log(response)
+
             if (response.status == 201) {
-              console.log(response)
+
               alert('Owner data added successfully!');
               setTimeout(() => {
                 window.location.reload();
@@ -758,7 +632,7 @@ const OnboardingContainer = ({ onData }) => {
             }, 1000)
           });
       }
-     
+
 
       // Validation for phone number
       if (formData.name == "") {
@@ -772,14 +646,14 @@ const OnboardingContainer = ({ onData }) => {
         return;
       }
 
-      
+
       let errors = [];
 
       // Validation for phone number
       if (formData.phoneNumber.length !== 10) {
         errors.push("Mobile number must be exactly 10 digits");
       }
-    
+
       // Validation for the first bank account
       if (!formData.bankAccounts[0].accountHolderName) {
         errors.push("First bank account: Account Holder Name is required");
@@ -797,7 +671,7 @@ const OnboardingContainer = ({ onData }) => {
       if (!formData.bankAccounts[0].accountNumber) {
         errors.push("First bank account: Account number is required");
       }
-      
+
       // Check if the second bank account exists and validate it
       if (formData.bankAccounts.length > 1) {
         if (!formData.bankAccounts[1].accountHolderName) {
@@ -816,38 +690,38 @@ const OnboardingContainer = ({ onData }) => {
           errors.push("Second bank account: Account number is required");
         }
       }
-    
+
       if (errors.length > 0) {
         alert(errors.join("\n"));
         return;
       }
-// Validation for bank accounts
-const noFirstAccount = 
-!formData.bankAccounts[0].ifscCode ||
-!formData.bankAccounts[0].bankName ||
-!formData.bankAccounts[0].branchName ||
-!formData.bankAccounts[0].accountNumber ||
-!formData.bankAccounts[0].accountHolderName ;
+      // Validation for bank accounts
+      const noFirstAccount =
+        !formData.bankAccounts[0].ifscCode ||
+        !formData.bankAccounts[0].bankName ||
+        !formData.bankAccounts[0].branchName ||
+        !formData.bankAccounts[0].accountNumber ||
+        !formData.bankAccounts[0].accountHolderName;
 
-if (noFirstAccount) {
-alert("Enter required bank account details for the first account");
-return;
-}
+      if (noFirstAccount) {
+        alert("Enter required bank account details for the first account");
+        return;
+      }
 
-// Check if the second bank account exists and if it has any empty required fields
-if (formData.bankAccounts.length > 1) {
-const noSecondAccount = 
-!formData.bankAccounts[1].ifscCode ||
-!formData.bankAccounts[1].bankName ||
-!formData.bankAccounts[1].branchName ||
-!formData.bankAccounts[1].accountNumber ||
-!formData.bankAccounts[1].accountHolderName ;
+      // Check if the second bank account exists and if it has any empty required fields
+      if (formData.bankAccounts.length > 1) {
+        const noSecondAccount =
+          !formData.bankAccounts[1].ifscCode ||
+          !formData.bankAccounts[1].bankName ||
+          !formData.bankAccounts[1].branchName ||
+          !formData.bankAccounts[1].accountNumber ||
+          !formData.bankAccounts[1].accountHolderName;
 
-if (noSecondAccount) {
-  alert("Enter required bank account details for the second account");
-  return;
-}
-}
+        if (noSecondAccount) {
+          alert("Enter required bank account details for the second account");
+          return;
+        }
+      }
       postData();
     }
     const goBack = () => {
@@ -1014,24 +888,24 @@ if (noSecondAccount) {
       district: rowDataForEdit.district,
       state: rowDataForEdit.state,
       address: rowDataForEdit.address,
-
       vehicleIds: [],
       hubId: selectedHubId,
       bankAccounts: rowDataForEdit.accountIds.map(account => ({
-      id: account._id,
-      accountNumber: account.accountNumber,
-      accountHolderName: account.accountHolderName,
-      ifscCode: account.ifscCode,
-      bankName: account.bankName,
-      branchName: account.branchName,
-      hubId: account.hubId,
-      ownerId: account.ownerId,
+        id: account._id,
+        accountNumber: account.accountNumber,
+        accountHolderName: account.accountHolderName,
+        ifscCode: account.ifscCode,
+        bankName: account.bankName,
+        branchName: account.branchName,
+        hubId: account.hubId,
+        ownerId: account.ownerId,
       }))
     });
+
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
-      const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
-      setFormData((prevFormData) => ({
+      const updatedValue = name === 'panNumber' ? value.toUpperCase() : value;
+      setFormData(prevFormData => ({
         ...prevFormData,
         [name]: updatedValue,
       }));
@@ -1041,15 +915,15 @@ if (noSecondAccount) {
       const { name, value } = e.target;
       const updatedBankAccounts = [...formData.bankAccounts];
       updatedBankAccounts[index][name] = value;
-      setFormData((prevFormData) => ({
+      setFormData(prevFormData => ({
         ...prevFormData,
-        bankAccounts: updatedBankAccounts
+        bankAccounts: updatedBankAccounts,
       }));
     };
 
     const handleAddBankAccount = () => {
-      if (formData.bankAccounts.length < 2) { // Check if the current number of bank accounts is less than 2
-        setFormData((prevFormData) => ({
+      if (formData.bankAccounts.length < 2) {
+        setFormData(prevFormData => ({
           ...prevFormData,
           bankAccounts: [
             ...prevFormData.bankAccounts,
@@ -1058,32 +932,32 @@ if (noSecondAccount) {
               accountHolderName: '',
               ifscCode: '',
               bankName: '',
-              branchName: ''
-            }
-          ]
+              branchName: '',
+              hubId: selectedHubId,
+              ownerId: rowDataForEdit._id
+            },
+          ],
         }));
       } else {
-        // You can show a message or take any other action here to inform the user that only two bank accounts are allowed
-        console.log("Only two bank accounts are allowed");
-        alert("Only two bank accounts are allowed")
+        console.log('Only two bank accounts are allowed');
+        alert('Only two bank accounts are allowed');
       }
     };
 
     const handleRemoveBankAccount = (index) => {
-      setFormData((prevFormData) => ({
+      setFormData(prevFormData => ({
         ...prevFormData,
-        bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
+        bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index),
       }));
     };
-    const [message, setMessage] = useState('');
 
     const handleChangeBank = (index, e) => {
       const { value } = e.target;
       const updatedBankAccounts = [...formData.bankAccounts];
       updatedBankAccounts[index].ifscCode = value;
-      setFormData((prevFormData) => ({
+      setFormData(prevFormData => ({
         ...prevFormData,
-        bankAccounts: updatedBankAccounts
+        bankAccounts: updatedBankAccounts,
       }));
     };
 
@@ -1105,11 +979,11 @@ if (noSecondAccount) {
                 return {
                   ...account,
                   bankName: data.BANK,
-                  branchName: data.BRANCH
+                  branchName: data.BRANCH,
                 };
               }
               return account;
-            })
+            }),
           }));
         })
         .catch(error => {
@@ -1121,68 +995,18 @@ if (noSecondAccount) {
     const [districts, setDistricts] = useState([]);
     const handleStateChange = (value) => {
       setSelectedState(value);
-      setFormData((prevFormData) => ({
+      setFormData(prevFormData => ({
         ...prevFormData,
         state: value,
       }));
-      const selectedStateData = states.find((state) => state.state === value);
+      const selectedStateData = states.find(state => state.state === value);
       if (selectedStateData) {
         setDistricts(selectedStateData.districts);
       } else {
         setDistricts([]);
       }
     };
-    // const handleSubmit = (e) => {
-    //   e.preventDefault();
-    //   const payloadOwner = {
-    //     name: formData.name,
-    //     email: formData.email,
-    //     phoneNumber: formData.phoneNumber,
-    //     panNumber: formData.panNumber,
-    //     address: selectedHubName,
-    //     district: formData.district,
-    //     state: formData.state,
 
-    //   };
-    //   const headersOb = {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "Authorization": `Bearer ${authToken}`
-    //     }
-    //   }
-    //   const postData = async () => {
-    //     await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb)
-    //       .then((response) => {
-    //         console.log(response)
-    //         if (response.status == 201) {
-    //           console.log(response)
-    //           alert('Owner data updated successfully!');
-    //           setTimeout(() => {
-    //             window.location.reload();
-    //           }, 1000)
-    //         }
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error updating owner data:', error);
-    //         alert('error occured')
-    //         console.log(error.response.data)
-    //         if (error.response.data.keyPattern.phoneNumber == 1) {
-    //           alert(`mobile number ${formData.phoneNumber} already exist`)
-    //         }
-    //         setTimeout(() => {
-    //           window.location.reload();
-    //         }, 1000)
-    //       });
-    //   }
-
-
-    //   if (formData.phoneNumber.length == 10) {
-
-    //     postData()
-    //   } else {
-    //     alert("mobile number must be atleast 10 digit")
-    //   }
-    // };
     const updateOwnerDetails = async () => {
       const payloadOwner = {
         name: formData.name,
@@ -1193,14 +1017,15 @@ if (noSecondAccount) {
         district: formData.district,
         state: formData.state,
       };
-    
+
       const headersOb = {
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
       };
-    
+
+
       try {
         const response = await API.put(`update-owner-details/${rowDataForEdit._id}`, payloadOwner, headersOb);
         if (response.status !== 201) {
@@ -1213,29 +1038,61 @@ if (noSecondAccount) {
         } else {
           alert('Error occurred while updating owner details');
         }
-        throw error; // Re-throw error to be caught by the caller
+        throw error;
       }
     };
-    
+
+    const addSecondaryBankAccount = async () => {
+      const secondaryBankAccount = {
+        ...formData.bankAccounts[1],
+        ownerId: rowDataForEdit._id,
+        hubId: selectedHubId,
+      };
+
+      const payload = {
+        allAccounts: [secondaryBankAccount],
+      };
+
+      const headersOb = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      };
+
+      try {
+        const response = await API.post(`create-accounts-owner/${rowDataForEdit._id}`, payload, { headers: headersOb });
+        if (response.status !== 200 && response.status !== 201) {
+          throw new Error('Failed to add secondary bank account');
+        } else {
+          alert('Secondary account added successfully');
+        }
+      } catch (error) {
+        console.error('Error adding secondary bank account:', error);
+        alert('Error adding secondary bank account');
+        throw error;
+      }
+    };
+
     const updateOwnerAccounts = async () => {
       const payloadAccounts = {
-        allBankDetails: formData.bankAccounts.map(account => ({
-          accountNumber: account.accountNumber,
-          accountHolderName: account.accountHolderName,
-          ifscCode: account.ifscCode,
-          bankName: account.bankName,
-          branchName: account.branchName,
-          id: account.id,
-          hubId: selectedHubId,
-          ownerId: account.ownerId
-        }))
+        allBankDetails: formData.bankAccounts
+          .filter(account => account.id)
+          .map(account => ({
+            accountNumber: account.accountNumber,
+            accountHolderName: account.accountHolderName,
+            ifscCode: account.ifscCode,
+            bankName: account.bankName,
+            branchName: account.branchName,
+            id: account.id,
+            hubId: account.hubId,
+            ownerId: account.ownerId,
+          })),
       };
-    
+
       const headersOb = {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       };
-    
+
       try {
         const response = await API.put(`update-owner-accounts`, payloadAccounts, { headers: headersOb });
         if (response.status !== 200 && response.status !== 201) {
@@ -1244,24 +1101,28 @@ if (noSecondAccount) {
       } catch (error) {
         console.error('Error updating bank details:', error);
         alert('Error updating bank details');
-        throw error; // Re-throw error to be caught by the caller
+        throw error;
       }
     };
-    
-  
+
     const handleSubmit = async (e) => {
       e.preventDefault();
-  
+
       if (formData.phoneNumber.length !== 10) {
-        alert("Mobile number must be exactly 10 digits");
+        alert('Mobile number must be exactly 10 digits');
         return;
       }
-  
+
       try {
         await updateOwnerDetails();
+
+        if (formData.bankAccounts.length === 2 && !formData.bankAccounts[1].id) {
+          await addSecondaryBankAccount();
+        }
+
         await updateOwnerAccounts();
-        
-      alert('Owner data and bank details updated successfully!');
+
+        alert('Owner data and bank details updated successfully!');
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -1269,8 +1130,7 @@ if (noSecondAccount) {
         console.error('Submission error:', error);
       }
     };
-  
- 
+
     const goBack = () => {
       setShowOwnerTable(true)
       onData("flex");
@@ -1397,6 +1257,7 @@ if (noSecondAccount) {
               </div>
             ))}
           </div>
+
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={() => { setShowOwnerTable(true) }}>Reset</Button>

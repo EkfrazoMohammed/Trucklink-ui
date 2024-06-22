@@ -22,7 +22,6 @@ function App() {
 // Component to handle conditional rendering of Dashboard based on token existence
 const ProtectedDashboard = () => {
   const navigate = useNavigate();
-
   useEffect(() => {
     // Check if token exists in localStorage
     const isAuthenticated = localStorage.getItem("token") !== null;

@@ -117,12 +117,14 @@ const Login = () => {
   const handleClick = async () => {
     await API.post("/login", user)
       .then((res: { status: number; data: { userDetails: []; token: string; }; }) => {
-        console.log(res)
+        // console.log(res)
+        console.log(res.data.logData._id)
         if (res.status == 201) {
           localStorage.setItem("userDetails", JSON.stringify(res.data.userDetails))
           localStorage.setItem("token", res.data.token)
+          localStorage.setItem("loginID", JSON.stringify(res.data.logData._id))
           localStorage.setItem("loginData", JSON.stringify(res.data.userDetails))
-          localStorage.setItem('selectedMenuItem','1')
+          localStorage.setItem('selectedMenuItem', '1')
           navigate("/dashboard");
         }
         else {

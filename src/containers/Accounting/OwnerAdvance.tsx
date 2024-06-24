@@ -35,16 +35,21 @@ const OwnerAdvance = () => {
   };
 
 
-  const handleStartDateChange = (date, dateString) => {
-    const unixTimestamp = new Date(dateString).getTime();
+  const handleStartDateChange = (date) => {
+    const unixTimestamp = new Date(date).getTime();
     setStartDate(unixTimestamp);
   };
 
-  const handleEndDateChange = (date, dateString) => {
-    const unixTimestamp = new Date(dateString).getTime();
+  const handleEndDateChange = (date) => {
+    const unixTimestamp = new Date(date).getTime();
     setEndDate(unixTimestamp);
   };
   const handleFilter = () => {
+    console.log({
+      ownerId,
+      startDate,
+      endDate
+    })
     updateFilterAndFetchData({
       ownerId,
       startDate,
@@ -134,12 +139,19 @@ const OwnerAdvance = () => {
     }
   };
 
+ 
   useEffect(() => {
     console.log(filterRequest)
-    if (filterRequest == null) {
+    if (filterRequest === null) {
       getTableData();
     }
   }, [filterRequest, ownerId]);
+
+  useEffect(() => {
+    if (filterRequest) {
+      updateFilterAndFetchData(filterRequest);
+    }
+  }, [filterRequest]);
   const getOutstandingData = async () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);

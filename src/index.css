@@ -425,3 +425,30 @@
 :where(.css-11xg00t).ant-menu-dark>.ant-menu:not(.ant-menu-horizontal) .ant-menu-item:not(.ant-menu-item-selected):hover {
   background-color: #424242 !important;
 }
+
+
+.dashboard-table-pagination-container {
+
+  text-align: right !important;
+  /* margin: 10px; */
+  width: fit-content !important;
+  padding: 10px !important;
+  background-color: #8080800a !important;
+  border-radius: 5px !important;
+}
+
+.dashboard-table-pagination-container Button {
+  border-radius: 6px !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+
+}
+
+.dashboard-table-pagination-container Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn {
+  font-size: 16px !important;
+  line-height: 16px !important;
+
+  padding: 1px 14px !important;
+  border-radius: 6px !important;
+}

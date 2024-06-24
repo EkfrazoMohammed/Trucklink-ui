@@ -213,17 +213,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       getTableData(searchQuery2, 1, 600, selectedHubId);
     };
 
-    // const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //   setSearchQuery2(e.target.value);
-    //   if (e.target.value == "") {
-    //     onReset()
-    //   }
-    // };
-
-    // const onReset = () => {
-    //   setSearchQuery2("");
-    //   getTableData("", 1, 600, selectedHubId);
-    // }
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearchQuery2(value);
@@ -278,6 +267,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const onResetClick = () => {
       console.log('reset clicked')
+      setFileName("");
       setFormData({
         registrationNumber: '',
         commission: 0,
@@ -323,7 +313,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       }
     };
     const handleFileChange = (file) => {
-      console.log(file)
       axiosFileUploadRequest(file.file);
 
     };
@@ -782,6 +771,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const handleResetClick = () => {
       console.log('reset clicked')
+      setFileName("")
       setFormData({
         ownerId: '',
         accountId: '',

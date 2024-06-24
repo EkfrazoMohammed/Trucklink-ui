@@ -28,14 +28,10 @@ const { Content, Footer, Sider } = Layout;
 
 const Dashboard: React.FC = () => {
   const [dataFromChild, setDataFromChild] = useState('');
-
-  console.log(dataFromChild)
-
   const handleDataFromChild = (childData) => {
     setDataFromChild(childData);
   };
   const currentHub = localStorage.getItem("selectedHubName")
-  console.log(currentHub)
 
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));

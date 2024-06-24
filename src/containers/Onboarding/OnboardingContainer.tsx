@@ -64,11 +64,12 @@ const OnboardingContainer = ({ onData }) => {
     try {
       const pages = page;
       const limitData = 600;
+      console.log(`get-owner-bank-details?page=1&limit=${pages}&hubId=${selectedHubId}`)
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData
           ? `get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`
-          : `get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,
+          : `get-owner-bank-details?page=1&limit=${pages}&hubId=${selectedHubId}`,
         headersOb
       );
 
@@ -214,7 +215,7 @@ const OnboardingContainer = ({ onData }) => {
       try {
         const formData = new FormData();
         formData.append("file", file);
-  
+
         const config = {
           headers: {
             "content-type": "multipart/form-data",
@@ -222,14 +223,14 @@ const OnboardingContainer = ({ onData }) => {
           },
         };
         console.log(formData)
-  
+
         // const response = await API.post('create-owner-by-xsl', formData, config);
         const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
         console.log(response);
         message.success("Successfully Uploaded");
-        setTimeout(()=>{
+        setTimeout(() => {
           window.location.reload();
-        },1000)
+        }, 1000)
       } catch (error) {
         if (error.response && error.response.data && error.response.data.message) {
           message.error(error.response.data.message);
@@ -240,7 +241,7 @@ const OnboardingContainer = ({ onData }) => {
         setLoading(false);
       }
     };
-  
+
     const handleBeforeUpload = (file) => {
       console.log(file)
       axiosFileUploadRequest(file);
@@ -270,11 +271,11 @@ const OnboardingContainer = ({ onData }) => {
             <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
           </Upload> */}
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
-      <Button icon={<UploadOutlined />} loading={loading}>
-        {/* {loading ? "Uploading" : "Click to Upload"} */}
-        {loading ? "Uploading" : ""}
-      </Button>
-    </Upload>
+            <Button icon={<UploadOutlined />} loading={loading}>
+              {/* {loading ? "Uploading" : "Click to Upload"} */}
+              {loading ? "Uploading" : ""}
+            </Button>
+          </Upload>
           <Upload>
             <Button icon={<DownloadOutlined />}></Button>
           </Upload>
@@ -1270,7 +1271,7 @@ const OnboardingContainer = ({ onData }) => {
 
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [currentPageSize, setCurrentPageSize] = useState(1);
   useEffect(() => {
     getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
   }, [currentPage, currentPageSize, selectedHubId]);
@@ -1338,10 +1339,12 @@ const OnboardingContainer = ({ onData }) => {
     ];
     const changePagination = async (pageNumber, pageSize) => {
       try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
+        // setCurrentPage(pageNumber);
+        // setCurrentPageSize(pageSize);
+        console.log("pageNumber", pageNumber)
+        console.log("pageSize", pageSize);
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -1351,8 +1354,10 @@ const OnboardingContainer = ({ onData }) => {
       try {
         setCurrentPage(pageNumber);
         setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
+        console.log("pageNumber", pageNumber)
+        console.log("pageSize", pageSize);
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -1362,9 +1367,10 @@ const OnboardingContainer = ({ onData }) => {
       setCurrentPageSize(pageNumber);
       setCurrentPage(pageNumber); // Reset to first page
       // Call your data fetching function here if needed
+      console.log(pageNumber)
       try {
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -1372,7 +1378,7 @@ const OnboardingContainer = ({ onData }) => {
 
     const renderPaginationButtons = () => {
       const totalPages = Math.ceil(totalOwnerData / currentPageSize);
-      let buttons = [];
+      const buttons = [];
 
       for (let i = 1; i <= totalPages; i++) {
         buttons.push(
@@ -1388,30 +1394,10 @@ const OnboardingContainer = ({ onData }) => {
     }
     return (
       <>
+      <div className="flex justify-end items-center">
 
-        <Table
-          rowSelection={rowSelection}
-          columns={columns}
-          dataSource={filteredOwnerData}
-          scroll={{ x: 800, y: 310 }}
-          rowKey="_id"
-          pagination={{
-            position: ['bottomCenter'],
-            current: currentPage,
-            total: totalOwnerData,
-            defaultPageSize: currentPageSize,
-            showSizeChanger: true,
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
-          }}
-          loading={loading}
-        />
-
-      </>
-    );
-  };
-  {/* <div style={{ textAlign: 'right', margin: '10px' }}>
-          {renderPaginationButtons()}
+        <div className='dashboard-table-pagination-container'>
+          {/* {renderPaginationButtons()} */}
           <Button
             onClick={() => handlePageSizeChange(10)}
             style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
@@ -1423,7 +1409,7 @@ const OnboardingContainer = ({ onData }) => {
             onClick={() => handlePageSizeChange(25)}
             style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
           >
-            20
+            25
           </Button>
           <Button
             onClick={() => handlePageSizeChange(50)}
@@ -1436,9 +1422,33 @@ const OnboardingContainer = ({ onData }) => {
             onClick={() => handlePageSizeChange(100)}
             style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
           >
-            100
+          100
           </Button>
-        </div> */}
+        </div>
+        </div>
+      
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={filteredOwnerData}
+          scroll={{ x: 800, y: 310 }}
+          rowKey="_id"
+          pagination={{
+            position: ['bottomCenter'],
+            current: currentPage,
+            total: totalOwnerData,
+            defaultPageSize: currentPageSize,
+            // showSizeChanger: true,
+            // onChange: changePagination,
+            // onShowSizeChange: changePaginationAll,
+          }}
+          loading={loading}
+        />
+
+      </>
+    );
+  };
+
 
   const [showTabs, setShowTabs] = useState(true);
 

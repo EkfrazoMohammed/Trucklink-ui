@@ -225,6 +225,15 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 key: 'serialNumber',
                 render: (text, record, index: any) => index + 1,
                 width: 90,
+                fixed:'left'
+
+            },
+            {
+                title: 'Bill No',
+                dataIndex: 'billNumber',
+                key: 'billNumber',
+                render: (text, record, index: any) => text,
+                width: 110,
 
             },
             {

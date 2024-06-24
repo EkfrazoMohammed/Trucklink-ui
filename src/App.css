@@ -445,19 +445,49 @@
   box-sizing: border-box;
 }
 
-.ant-table-expanded-row>td.ant-table-cell{
+.ant-table-expanded-row>td.ant-table-cell {
   padding: 0 !important;
   background-color: #BBE2FF !important;
 }
+
 .master-data-maindiv {
   border: solid 1px #cecece;
   height: 260px;
   padding: 10px;
 }
+
 .delivery-number-drag-area {
   min-width: 100% !important;
 }
 
-:where(.css-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+:where(.css-11xg00t).ant-menu-dark .ant-menu-item-selected,
+:where(.css-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
   background-color: #424242 !important;
+}
+
+
+.dashboard-table-pagination-container {
+
+  text-align: right;
+  margin: 10px;
+  width: fit-content;
+  padding: 10px;
+  background-color: #8080800a;
+  border-radius: 5px;
+}
+
+.dashboard-table-pagination-container Button{
+  border-radius: 6px !important;
+  border: none;
+  outline: none;
+  padding: 0;
+
+}
+
+.dashboard-table-pagination-container Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn {
+  font-size: 16px;
+  line-height: 16px;
+
+  padding: 1px 14px!important;
+  border-radius: 6px;
 }

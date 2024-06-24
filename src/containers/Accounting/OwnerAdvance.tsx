@@ -45,11 +45,7 @@ const OwnerAdvance = () => {
     setEndDate(unixTimestamp);
   };
   const handleFilter = () => {
-    console.log({
-      ownerId,
-      startDate,
-      endDate
-    })
+
     updateFilterAndFetchData({
       ownerId,
       startDate,
@@ -70,12 +66,12 @@ const OwnerAdvance = () => {
     try {
       setLoading(true);
 
+
       const searchData = filterRequest ? filterRequest : null;
-      console.log(searchData);
 
       let response;
       if (searchData) {
-        response = await API.post(`get-filter-owner-advance-data?page=1&limit=50&hubId=${selectedHubId}`, searchData, headersOb);
+        response = await API.post(`get-filter-owner-advance-data?page=1&limit=600&hubId=${selectedHubId}`, searchData, headersOb);
       } else {
         response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
       }
@@ -83,34 +79,27 @@ const OwnerAdvance = () => {
       if (response.data) {
 
         // Handle the structure for get-filterOwnerAdvanceData response
-        if (searchData) {
-          console.log("searchData")
-          console.log(response.data)
-          if (response.data.disptachData.length > 0) {
-            const dataSource = response.data.disptachData[0].data.map((data) => {
-              console.log(data)
-              const { initialDate, ownerName, ownerId, ownerDetails, initialAmount
-              } = data;
-              const intDate = dayjs(initialDate, "DD-MM-YYYY");
-              return {
-                key: data._id,
-                ownerName, // Assuming ownerName is not an array here
-                initialDate,
-                intDate,
-                IntAmount: initialAmount,
-                entries: [] // Initialize empty, will fetch on expand
-              };
-            });
-            console.log(dataSource)
-            setDataSource(dataSource);
-            setCount(dataSource.length);
-          } else {
-            setDataSource([]);
-            setCount(0);
-          }
+        if (searchData && response.data.disptachData.length > 0) {
+          const dataSource = response.data.disptachData.map(dispatchItem => {
+            const data = dispatchItem.data;
 
-        }
-        else {
+            const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
+            console.log(data);
+
+            const intDate = dayjs(initialDate, "DD-MM-YYYY");
+            return {
+              key: data._id,
+              ownerName: ownerName[0], // Assuming ownerName is always an array with at least one item
+              initialDate,
+              intDate,
+              IntAmount: initialAmount,
+              entries: ledgerEntries[0] // Initialize with the actual ledgerEntries
+            };
+          });
+          console.log(dataSource);
+          setDataSource(dataSource);
+          setCount(dataSource.length);
+        } else {
           const dataSource = response.data.ownersAdavance.map((data) => {
             const { ownerDetails, outStandingAmount } = data;
 
@@ -129,6 +118,9 @@ const OwnerAdvance = () => {
           setDataSource(dataSource);
           setCount(dataSource.length);
         }
+
+
+
       } else {
         setDataSource([]);
       }
@@ -139,9 +131,7 @@ const OwnerAdvance = () => {
     }
   };
 
- 
   useEffect(() => {
-    console.log(filterRequest)
     if (filterRequest === null) {
       getTableData();
     }
@@ -383,6 +373,11 @@ const OwnerAdvance = () => {
       </div>
     );
   };
+  const [currentPage, setCurrentPage] = useState(10);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  useEffect(() => {
+    getTableData(currentPage, currentPageSize, selectedHubId);
+  }, [currentPage, currentPageSize, selectedHubId]);
   const LedgerTable = ({ record, entries, hideLedgerAction }) => {
     const [form] = Form.useForm();
     const [editingKeyIn, setEditingKeyIn] = useState("");
@@ -737,7 +732,61 @@ const OwnerAdvance = () => {
     getOwners();
   }, []);
 
+  const changePagination = async (pageNumber, pageSize) => {
+    try {
+      // setCurrentPage(pageNumber);
+      // setCurrentPageSize(pageSize);
+      console.log("pageNumber", pageNumber)
+      console.log("pageSize", pageSize);
+      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+      // setFilteredOwnerData(newData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
+  const changePaginationAll = async (pageNumber, pageSize) => {
+    try {
+      setCurrentPage(pageNumber);
+      setCurrentPageSize(pageSize);
+      console.log("pageNumber", pageNumber)
+      console.log("pageSize", pageSize);
+      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+      // setFilteredOwnerData(newData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handlePageSizeChange = async (pageNumber) => {
+
+    setCurrentPageSize(pageNumber);
+    setCurrentPage(pageNumber); // Reset to first page
+    // Call your data fetching function here if needed
+    console.log(pageNumber)
+    try {
+      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+      // setFilteredOwnerData(newData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const renderPaginationButtons = () => {
+    const totalPages = Math.ceil(totalOwnerData / currentPageSize);
+    const buttons = [];
+
+    for (let i = 1; i <= totalPages; i++) {
+      buttons.push(
+        <Button
+          key={i}
+          type={i === currentPage ? 'primary' : 'default'}
+          onClick={() => handlePageSizeChange(i)}
+        >
+          {i}
+        </Button>
+      );
+    }
+  }
 
   return (
     <div>
@@ -784,6 +833,37 @@ const OwnerAdvance = () => {
         >
           ADD OWNER BALANCE
         </Button>
+      </div>
+      <div className="flex justify-end items-center">
+        <div className='dashboard-table-pagination-container'>
+          {/* {renderPaginationButtons()} */}
+          <Button
+            onClick={() => handlePageSizeChange(10)}
+            style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
+          >
+            10
+          </Button>
+
+          <Button
+            onClick={() => handlePageSizeChange(25)}
+            style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
+          >
+            25
+          </Button>
+          <Button
+            onClick={() => handlePageSizeChange(50)}
+            style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
+          >
+            50
+          </Button>
+
+          <Button
+            onClick={() => handlePageSizeChange(100)}
+            style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
+          >
+            100
+          </Button>
+        </div>
       </div>
       <div className="myowneradvancetab-content">
         <Form form={form} component={false}>

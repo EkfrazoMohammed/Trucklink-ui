@@ -645,7 +645,7 @@ const convertJSONToCSV = (data: any[]): string => {
           </Upload>
           {/* <Upload> */}
             {/* <Button icon={<DownloadOutlined />}></Button> */}
-            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+            <Button icon={<DownloadOutlined />} ></Button>
           {/* </Upload> */}
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>

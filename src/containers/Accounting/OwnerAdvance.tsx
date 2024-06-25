@@ -795,17 +795,19 @@ const OwnerAdvance = () => {
               showSearch
               placeholder="Select Owner"
               optionFilterProp="children"
+              size="large"
               value={ownerId || undefined} // Set value to undefined if ownerId is '' or null
               onChange={handleOwnerNameChange}
               style={{ width: 200, marginRight: 16 }}
             >
               {owners.map((owner) => (
-                <Select.Option key={owner._id} value={owner._id}>
+                <Select.Option key={owner._id} value={owner._id} >
                   {owner.name}
                 </Select.Option>
               ))}
             </Select>
             <DatePicker
+            size="large"
               placeholder="Start Date"
               format={dateFormat}
               onChange={handleStartDateChange}
@@ -813,15 +815,16 @@ const OwnerAdvance = () => {
             />
             <DatePicker
               placeholder="End Date"
+              size="large"
               format={dateFormat}
               onChange={handleEndDateChange}
               style={{ marginRight: 16 }}
             />
             <Button type="primary" onClick={handleFilter}>
-              Filter
+              APPLY
             </Button>
           </div>
-          {ownerId !== null && ownerId !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+          {ownerId !== null && ownerId !== "" ? <><Button  onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
 
         <Button
@@ -876,7 +879,7 @@ const OwnerAdvance = () => {
             pagination={{
               position: ['bottomCenter'],
               showSizeChanger: false,
-              total: dataSource.length,
+              // total: dataSource.length,
             }}
             loading={loading}
 

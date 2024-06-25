@@ -256,10 +256,10 @@ const OnboardingContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           },
         };
-        console.log(formData)
 
-        // const response = await API.post('create-owner-by-xsl', formData, config);
-        const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
+
+        const response = await API.post('create-owner-by-xsl', formData, config);
+        // const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
         console.log(response);
         message.success("Successfully Uploaded");
         setTimeout(() => {
@@ -1800,14 +1800,17 @@ const OnboardingContainer = ({ onData }) => {
           dataSource={filteredOwnerData}
           scroll={{ x: 800, y: 310 }}
           rowKey="_id"
+          // pagination={{
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   total: totalOwnerData,
+          //   defaultPageSize: currentPageSize,
+          //   // showSizeChanger: true,
+          //   // onChange: changePagination,
+          //   // onShowSizeChange: changePaginationAll,
+          // }}
           pagination={{
             position: ['bottomCenter'],
-            current: currentPage,
-            total: totalOwnerData,
-            defaultPageSize: currentPageSize,
-            // showSizeChanger: true,
-            // onChange: changePagination,
-            // onShowSizeChange: changePaginationAll,
           }}
           loading={loading}
         />

@@ -193,7 +193,8 @@
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-btn {
   font-size: 14px;
-  line-height: 1.5714285714285714;
+  /* line-height: 1.5714285714285714; */
+  line-height: 16px !important;
   height: 36px;
   padding: 6px 16px !important;
   border-radius: 6px;

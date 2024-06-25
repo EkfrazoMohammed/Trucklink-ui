@@ -177,7 +177,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           />
 
           <Button size="large" type="primary" onClick={handleFilterClick}>
-            Filter
+            APPLY
           </Button>
           {searchQuery6 !== "" && (
             <Button size="large" onClick={onReset} style={{ transform: "rotate(180deg)" }} icon={<RedoOutlined />} />
@@ -522,10 +522,10 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],
-            showSizeChanger: false,
-            current: currentPage,
-            total: totalVoucherData,
-            defaultPageSize: currentPageSize, // Set the default page size
+            // showSizeChanger: false,
+            // current: currentPage,
+            // total: totalVoucherData,
+            // defaultPageSize: currentPageSize, // Set the default page size
 
           }}
         />

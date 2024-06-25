@@ -513,9 +513,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "80px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>                
                     </Upload>
-                    {fileName}
+                    {formData.rcBookProof !==null ?
+                    <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                    :null}       
                   </div>
                 </Col>
 
@@ -946,6 +948,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             <div className="flex p-2 " style={{ fontSize: "1rem", borderRadius: "5px", color: "rgb(255, 40, 40)", border: "2px solid rgb(255, 40, 40)", backgroundColor: "rgba(255, 40, 40, 0.2)" }}>
               Please review the owner details before transferring the vehicle owner.
             </div>
+            
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -1000,6 +1003,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     onChange={onDateChangeTransferToDate}
                   />
                 </Col>
+                
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
                     RC Book* : {' '}
@@ -1009,10 +1013,14 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
+                        <Button size="large" style={{ width: "110px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
+                   
+                      {/* <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button> */}
                     </Upload>
-                    {fileName}
-                  </div>
+                    {formData.rcBookProof !==null ?
+                    <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                    :null}
+                   </div>
                 </Col>
 
 
@@ -1072,7 +1080,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       ownerName:initialOwnerId.ownerName,
       accountId: null,
       vehicleType: filterTruckTableData.truckType,
-      rcBookProof: null,
+      rcBookProof: filterTruckTableData.rcBookProof ||null,
       isCommission: filterTruckTableData.isCommission,
       marketRate: filterTruckTableData.marketRate,
       isMarketRate: filterTruckTableData.isMarketRate,
@@ -1278,6 +1286,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               <div className="text-md font-semibold">Vehicle Information</div>
               <div className="text-md font-normal">Enter Truck Details</div>
             </div>
+            {/* {JSON.stringify(formData, null, 2)}  */}
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
@@ -1350,8 +1359,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" style={{ width: "110px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
+                    {formData.rcBookProof !==null ?
+                    <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                    :null}
                   </div>
                 </Col>
 

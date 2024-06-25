@@ -11,7 +11,6 @@ import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
 import OwnerActivityLog from './OwnerActivityLog';
-import axios from "axios"
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -244,7 +243,7 @@ const OnboardingContainer = ({ onData }) => {
         onReset();
       }
     };
-    const axiosFileUploadRequest = async (file) => {
+    const spreadSheetUploadRequest = async (file) => {
       setLoading(true);
       try {
         const formData = new FormData();
@@ -284,7 +283,7 @@ const OnboardingContainer = ({ onData }) => {
     };
 
     const handleBeforeUpload = (file) => {
-      axiosFileUploadRequest(file);
+      spreadSheetUploadRequest(file);
       return false; // Prevent automatic upload
     };
     const onReset = () => {
@@ -640,9 +639,7 @@ const OnboardingContainer = ({ onData }) => {
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-          {/* <Upload>
-            <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
-          </Upload> */}
+         
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
             <Button icon={<UploadOutlined />} loading={loading}>
               {/* {loading ? "Uploading" : "Click to Upload"} */}

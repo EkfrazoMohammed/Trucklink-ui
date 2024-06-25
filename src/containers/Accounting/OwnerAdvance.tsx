@@ -96,14 +96,11 @@ const OwnerAdvance = () => {
               entries: ledgerEntries[0] // Initialize with the actual ledgerEntries
             };
           });
-          console.log(dataSource);
           setDataSource(dataSource);
           setCount(dataSource.length);
         } else {
           const dataSource = response.data.ownersAdavance.map((data) => {
             const { ownerDetails, outStandingAmount } = data;
-
-            console.log("not searchdata")
             const { initialDate, ownerName } = ownerDetails[0];
             const intDate = dayjs(initialDate, "DD-MM-YYYY");
             return {
@@ -834,9 +831,9 @@ const OwnerAdvance = () => {
           ADD OWNER BALANCE
         </Button>
       </div>
-      <div className="flex justify-end items-center">
+    {/*   <div className="flex justify-end items-center">
         <div className='dashboard-table-pagination-container'>
-          {/* {renderPaginationButtons()} */}
+       
           <Button
             onClick={() => handlePageSizeChange(10)}
             style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
@@ -864,7 +861,7 @@ const OwnerAdvance = () => {
             100
           </Button>
         </div>
-      </div>
+      </div> */}
       <div className="myowneradvancetab-content">
         <Form form={form} component={false}>
           <Table

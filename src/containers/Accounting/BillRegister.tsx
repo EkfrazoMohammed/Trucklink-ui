@@ -588,8 +588,11 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     try {
       await API.delete(`delete-bill-register-data/${key}`, headersOb)
         .then(() => {
-          message.success("Successfully Deleted Ledger Entry");
-          getTableData("", "1", "500", selectedHubId);
+          message.success("Successfully Deleted Bill Entry");
+          setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+          // getTableData("", "1", "500", selectedHubId);
 
         })
         .catch((error) => {

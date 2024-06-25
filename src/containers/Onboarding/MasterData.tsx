@@ -356,8 +356,6 @@ const MasterData = () => {
         }
     };
 
-
-
     return (
         <>
             <Modal title="Update Material" visible={materialModalVisible} onCancel={handleUpdateMaterialCancel} footer={null}>
@@ -412,11 +410,8 @@ const MasterData = () => {
             </Modal>
             <div className="flex flex-col mymastertab-content">
                 <div className="flex gap-12">
-
-
                     <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Material Type"
                                 value={materialType}
@@ -428,9 +423,7 @@ const MasterData = () => {
                             </Button>
                         </div>
                         {errMsg && errMsg.length > 0 ? <><p style={{ color: "red", paddingRight: "1rem" }}><InfoCircleOutlined />{" "}{errMsg}</p></> : <></>}
-
                         <div>
-
                             <div>
                                 <Select
                                     placeholder="Materials"
@@ -446,7 +439,6 @@ const MasterData = () => {
                                             {value.materialType}
                                         </Option>
                                     ))}
-
                                 </Select>
                             </div>
                             <List
@@ -461,11 +453,8 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-
-
                     <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Load Location"
                                 value={loadLocationName}
@@ -510,11 +499,8 @@ const MasterData = () => {
 
                 </div>
                 <div className="flex mt-8 gap-12">
-
-
                     <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Delivery Location"
                                 value={deliveryLocationName}
@@ -525,7 +511,6 @@ const MasterData = () => {
                                 Add Delivery Location
                             </Button>
                         </div>
-
                         <div>
                             <div>
                                 <Select
@@ -542,13 +527,10 @@ const MasterData = () => {
                                             {value.location}
                                         </Option>
                                     ))}
-
                                 </Select>
                             </div>
                             <List
                                 style={{ overflowY: "scroll", height: "180px" }}
-
-
                                 dataSource={deliveryLocation}
                                 renderItem={(item) => (
                                     <List.Item style={{ width: "100%", padding: "8px 16px" }}>
@@ -558,10 +540,8 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-
                     <div className='flex flex-col gap-2 p-2' style={{ width: "600px", }} >
                     </div>
-
                 </div>
             </div>
         </>

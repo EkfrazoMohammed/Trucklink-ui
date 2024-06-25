@@ -1,219 +1,194 @@
-import { useState, useEffect } from 'react';
-import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
+import React, { useState,useCallback, useEffect } from 'react';
+import { DatePicker, Table, Input, Select, Space, Button, Tooltip, Row, Col } from 'antd';
 import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
-const { Search } = Input;
 import dayjs from 'dayjs';
-import backbutton_logo from "../../assets/backbutton.png"
-import { API } from "../../API/apirequest"
-import moment from 'moment';
+import backbutton_logo from "../../assets/backbutton.png";
+import { API } from "../../API/apirequest";
+import moment from "moment"
+const { Search } = Input;
+const { Option } = Select;
 
-
-const filterOption = (input, option) =>
-  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+const filterOption = (input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredVoucherData, setFilteredVoucherData] = useState([]);
-  const [totalMonthlyAmount, setTotalMonthlyAmount] = useState('')
+  const [totalMonthlyAmount, setTotalMonthlyAmount] = useState('');
 
   // Set current month and year as default values
   const currentMonth = dayjs().month() + 1;
   const currentYear = dayjs().year();
   const [selectedDate, setSelectedDate] = useState({ month: currentMonth, year: currentYear });
 
-  // const handleSearch = (e) => {
-  //   setSearchQuery(e);
-  // };
-
   const [showVoucherTable, setshowVoucherTable] = useState(true);
   const [showVoucherView, setshowVoucherView] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
+
   const handleEditVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(rowData);
     setshowVoucherTable(false);
     setShowTransferForm(false);
-    setshowVoucherView(false)
+    setshowVoucherView(false);
   };
+
   const handleViewVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(rowData);
     setshowVoucherTable(false);
     setShowTransferForm(false);
-    setshowVoucherView(true)
+    setshowVoucherView(true);
   };
+
   const handleAddVoucherClick = () => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(null);
     setshowVoucherTable(false);
   };
 
-  const handleTransferVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
-    setShowTransferForm(true);
-    setRowDataForTruckEdit(rowData);
-    setshowVoucherTable(false);
-  };
-
   const handleDeleteVoucherClick = async (rowData) => {
-    console.log("deleting", rowData._id)
-
-    const voucherId = rowData._id
+    const voucherId = rowData._id;
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }
-    }
+        "Authorization": `Bearer ${authToken}`,
+      },
+    };
     const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
     if (response.status === 201) {
-      alert("deleted data")
-      window.location.reload()
-
+      alert("Deleted data");
+      window.location.reload();
     } else {
-      alert(`unable to delete data`)
-      console.log(response.data)
+      alert("Unable to delete data");
     }
-  }
-
+  };
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalVoucherData, setTotalVoucherData] = useState(null)
+  const [totalVoucherData, setTotalVoucherData] = useState(null);
 
-  const getTableData = async (searchData, month, year) => {
+  const getTableData = useCallback(async (searchData, month, year) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }
-    }
+        "Authorization": `Bearer ${authToken}`,
+      },
+    };
     try {
-      const month = selectedDate.month
-      const year = selectedDate.year
-      const text = searchData;
-      
-      const response = text ? await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}&searchDN=${searchData}`, headersOb)
-        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb)
-      // const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb)
-      //   : await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb);
+      const text = searchData || "";
+      const filterPayload = {
+        searchTN: text,
+      };
+
+      const response = text
+        ? await API.post(`get-vouchers-filter-by-name-date/${month}/${year}/${selectedHubId}`, filterPayload, headersOb)
+        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb);
 
       let truckDetails;
       let amount;
-      if (response.data.vaucharEntries == 0) {
-        truckDetails = response.data.vaucharEntries
-        setFilteredVoucherData(truckDetails);
-        amount = '0'
-        setTotalMonthlyAmount(amount)
-      } else {
 
+      if (response.data.vaucharEntries.length === 0) {
+        truckDetails = response.data.vaucharEntries;
+        setFilteredVoucherData(truckDetails);
+        amount = '0';
+        setTotalMonthlyAmount(amount);
+      } else {
         truckDetails = response.data.vaucharEntries || "";
         setTotalVoucherData(response.data.vaucharEntries.count);
-        // "amounts": {
-        //         "monthlyTotalAmount": "155.00"
-        //     },
         setFilteredVoucherData(truckDetails);
-        amount = response.data.amounts.monthlyTotalAmount
-        setTotalMonthlyAmount(amount)
+        amount = response.data.amounts.monthlyTotalAmount;
+        setTotalMonthlyAmount(amount);
       }
     } catch (err) {
-      console.log(err)
-
+      console.log(err);
     }
-  };
-  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+  }, [authToken, selectedHubId]);
+
   useEffect(() => {
-    const month = selectedDate.month
-    const year = selectedDate.year
-    getTableData("", month, year);
-  }, []);
-  // useEffect(() => {
-  //   getTableData(searchQuery);
-  // }, [selectedHubId]);
+    const month = selectedDate.month;
+    const year = selectedDate.year;
+    getTableData(searchQuery, month, year);
+  }, [selectedDate, searchQuery, getTableData]);
 
-  // Truck master
-  const Truck = ({ onAddVoucherClick }: { onAddVoucherClick: () => void }) => {
+  const Truck = ({ onAddVoucherClick }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery6') || '';
-    const [searchQuery6, setSearchQuery6] = useState<string>(initialSearchQuery);
+    const [searchQuery6, setSearchQuery6] = useState(initialSearchQuery);
 
-    // Update localStorage whenever searchQuery6 changes
     useEffect(() => {
       localStorage.setItem('searchQuery6', searchQuery6);
     }, [searchQuery6]);
-    console.log(searchQuery6)
 
     const handleSearch = (value) => {
-      const query = value;
-      setSearchQuery(query);
-      const searchFilteredData = filteredVoucherData.filter(voucher => {
-        return (
-          // voucher.vehicleNumber.includes(query)
-          voucher
-        );
-      });
-      const month = selectedDate.month
-      const year = selectedDate.year
-      getTableData(searchQuery6, month, year)
-      console.log(searchFilteredData)
-      // setFilteredVoucherData(searchFilteredData);
+      setSearchQuery6(value);
     };
-    const handleMonthChange = (date, dateString) => {
+
+    const handleMonthChange = (date) => {
       if (date) {
         const month = date.month() + 1;
         const year = date.year();
         setSelectedDate({ month, year });
-        getTableData(searchQuery6, month, year);
       }
     };
 
-    const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeSearch = (e) => {
       setSearchQuery6(e.target.value);
-      if (e.target.value == "") {
-        onReset()
+      if (e.target.value === "") {
+        onReset();
       }
     };
 
     const onReset = () => {
       setSearchQuery6("");
-      const month = selectedDate.month
-      const year = selectedDate.year
-      getTableData("", month, year);
-    }
+      // const month = selectedDate.month;
+      // const year = selectedDate.year;
+      // Set current month and year as default values
+      const currentMonth = dayjs().month() + 1;
+      const currentYear = dayjs().year();
+      getTableData("", currentMonth, currentYear);
+    };
+
+    const handleFilterClick = () => {
+      const month = selectedDate.month;
+      const year = selectedDate.year;
+      getTableData(searchQuery6, month, year);
+    };
+
     return (
-      <div className='flex gap-2 justify-between  py-3'>
-        <div className='flex items-center gap-2'>
-          <Search
+      <div className="flex gap-2 justify-between py-3">
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
             placeholder="Search by Truck No / Owner Name"
-            size='large'
+            size="large"
             value={searchQuery6}
             onChange={onChangeSearch}
-            onSearch={handleSearch}
+            // onSearch={handleSearch}
             style={{ width: 320 }}
           />
           <DatePicker
-            size='large'
-            placeholder='By Month'
+            size="large"
+            placeholder="By Month"
             picker="month"
             onChange={handleMonthChange}
+            value={dayjs().month(selectedDate.month - 1).year(selectedDate.year)}
           />
-          {searchQuery6 !== null && searchQuery6 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} 
-          
+
+          <Button size="large" type="primary" onClick={handleFilterClick}>
+            Filter
+          </Button>
+          {searchQuery6 !== "" && (
+            <Button size="large" onClick={onReset} style={{ transform: "rotate(180deg)" }} icon={<RedoOutlined />} />
+          )}
         </div>
-        <div className='flex gap-2'>
-          <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> CREATE VOUCHER</Button>
+        <div className="flex gap-2">
+          <Button onClick={onAddVoucherClick} className="bg-[#1572B6] text-white">CREATE VOUCHER</Button>
         </div>
       </div>
-
     );
   };
-
   const VoucherBookForm = () => {
     const [formData, setFormData] = useState({
       hubId: selectedHubId,
@@ -448,7 +423,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
-  const TruckTable = ({ onEditVoucherClick, onTransferVoucherClick, onViewVoucherClick, onDeleteVoucherClick }) => {
+  const TruckTable = ({ onEditVoucherClick, onViewVoucherClick, onDeleteVoucherClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -869,14 +844,12 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       </>
     );
   };
-
-
   return (
     <>
       {showVoucherTable ? (
         <>
           <Truck onAddVoucherClick={handleAddVoucherClick} />
-          <TruckTable onEditVoucherClick={handleEditVoucherClick} onViewVoucherClick={handleViewVoucherClick} onTransferVoucherClick={handleTransferVoucherClick} onDeleteVoucherClick={handleDeleteVoucherClick} />
+          <TruckTable onEditVoucherClick={handleEditVoucherClick} onViewVoucherClick={handleViewVoucherClick} onDeleteVoucherClick={handleDeleteVoucherClick} />
         </>
       ) : (
         rowDataForTruckEdit ? (

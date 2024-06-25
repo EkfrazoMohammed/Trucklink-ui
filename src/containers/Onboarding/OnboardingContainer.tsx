@@ -64,12 +64,11 @@ const OnboardingContainer = ({ onData }) => {
     try {
       const pages = page;
       const limitData = 600;
-      console.log(`get-owner-bank-details?page=1&limit=${pages}&hubId=${selectedHubId}`)
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData
           ? `get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`
-          : `get-owner-bank-details?page=1&limit=${pages}&hubId=${selectedHubId}`,
+          : `get-owner-bank-details?page=1&limit=${limitData}&hubId=${selectedHubId}`,
         headersOb
       );
 
@@ -94,10 +93,10 @@ const OnboardingContainer = ({ onData }) => {
   const jsonToCSV = (json) => {
     const headers = Object.keys(json[0]);
     const csvRows = [];
-    
+
     // Add the headers row
     csvRows.push(headers.join(','));
-    
+
     // Add the data rows
     for (const row of json) {
       const values = headers.map(header => {
@@ -106,7 +105,7 @@ const OnboardingContainer = ({ onData }) => {
       });
       csvRows.push(values.join(','));
     }
-    
+
     return csvRows.join('\n');
   };
 
@@ -290,335 +289,335 @@ const OnboardingContainer = ({ onData }) => {
 
     const data = {
       "ownerDetails": [
-          {
-              "count": 8,
-              "data": [
-                  {
-                      "_id": "66790d8c4a0ed60b1435333b",
-                      "countryCode": "+91",
-                      "vehicleIds": [],
-                      "accountIds": [
-                          {
-                              "_id": "66790d8c4a0ed60b1435333f",
-                              "accountNumber": "955410000001",
-                              "accountHolderName": "manoj",
-                              "ifscCode": "CNRB0000423",
-                              "bankName": "Canara Bank",
-                              "branchName": "BYATARAYANAPURA,BANGALORE",
-                              "ownerId": "66790d8c4a0ed60b1435333b",
-                              "createdAt": "2024-06-24T06:09:16.586Z",
-                              "modifiedAt": "2024-06-24T06:09:16.586Z",
-                              "__v": 0
-                          }
-                      ],
-                      "name": "manoj",
-                      "email": "manoj@gmail.com",
-                      "phoneNumber": "5554443322",
-                      "panNumber": "manoj",
-                      "address": "manoj",
-                      "district": "Leh(Ladakh)",
-                      "state": "JAMMU_AND_KASHMIR",
-                      "hubId": "66541b73a74686d081580179",
-                      "oldVehicleDetails": [],
-                      "vehicleDetails": [],
-                      "createdAt": "2024-06-24T06:09:16.437Z",
-                      "modifiedAt": "2024-06-24T06:09:16.437Z",
-                      "__v": 0
-                  },
-                  {
-                      "_id": "66557de735f213327e2c7acc",
-                      "countryCode": "+91",
-                      "vehicleIds": [
-                          "665815c16364f6342e577911"
-                      ],
-                      "accountIds": [
-                          {
-                              "_id": "66557de735f213327e2c7acf",
-                              "accountNumber": "423",
-                              "accountHolderName": "423",
-                              "ifscCode": "CNRB0000423",
-                              "bankName": "Canara Bank",
-                              "branchName": "BYATARAYANAPURA,BANGALORE",
-                              "hubId": "66541b73a74686d081580179",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "createdAt": "2024-05-28T06:47:03.222Z",
-                              "modifiedAt": "2024-06-13T05:14:05.844Z",
-                              "__v": 0
-                          },
-                          {
-                              "_id": "666a7feb4e95f87215549c95",
-                              "accountNumber": "1717",
-                              "accountHolderName": "1717",
-                              "ifscCode": "KVBL0001717",
-                              "bankName": "Karur Vysya Bank",
-                              "branchName": "MADURAI - KAMARAJAR SALAI",
-                              "hubId": "66541b73a74686d081580179",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "createdAt": "2024-06-13T05:13:15.716Z",
-                              "modifiedAt": "2024-06-13T05:14:05.845Z",
-                              "__v": 0
-                          }
-                      ],
-                      "name": "tayib",
-                      "email": "tayib@gmail.com",
-                      "phoneNumber": "1231231231",
-                      "panNumber": "TAYIBPANCARD",
-                      "address": "Tayib",
-                      "district": "Bengaluru (Bangalore) Urban",
-                      "state": "Karnataka",
-                      "hubId": "66541b73a74686d081580179",
-                      "oldVehicleDetails": [
-                          {
-                              "commission": 0,
-                              "_id": "6656f0ac934d44286dd49f43",
-                              "vehicleIds": "6655bbbb551b8f57d1837b35",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "ownerTransferDate": "2024-06-04T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-06-05T00:00:00.000Z",
-                              "vehicleNumber": "KA02MT2241",
-                              "truckType": "open",
-                              "accountId": "66557aca35f213327e2c7a0c"
-                          },
-                          {
-                              "commission": 0,
-                              "_id": "6656f37a934d44286dd4a089",
-                              "vehicleIds": "6656f312934d44286dd4a038",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "ownerTransferDate": "2024-05-30T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-05-31T00:00:00.000Z",
-                              "vehicleNumber": "TN01AB1234",
-                              "truckType": "bulk",
-                              "accountId": "66557aca35f213327e2c7a0c"
-                          },
-                          {
-                              "commission": 0,
-                              "_id": "665703071525914c04023e85",
-                              "vehicleIds": "6656f312934d44286dd4a038",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "ownerTransferDate": "2027-07-03T00:00:00.000Z",
-                              "ownerTransferToDate": "2027-11-04T03:33:20.000Z",
-                              "vehicleNumber": "TN01AB1234",
-                              "truckType": "bulk",
-                              "accountId": "66557aca35f213327e2c7a0c",
-                              "hubId": "66541b73a74686d081580179"
-                          },
-                          {
-                              "commission": 5,
-                              "_id": "66570678cdae4f2be757e07b",
-                              "vehicleIds": "6657065dcdae4f2be757e04b",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "ownerTransferDate": "2024-05-29T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-05-30T00:00:00.000Z",
-                              "vehicleNumber": "KA01AB1234",
-                              "truckType": "bulk",
-                              "accountId": "66557aca35f213327e2c7a0c",
-                              "hubId": "66541b73a74686d081580179"
-                          }
-                      ],
-                      "vehicleDetails": [
-                          {
-                              "isOwnerTransfer": true,
-                              "_id": "6656d340795b921fbc74644f",
-                              "vehicleIds": "6655bbbb551b8f57d1837b35",
-                              "ownerTransferDate": "2024-05-01T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-05-03T00:00:00.000Z",
-                              "ownerId": "66557de735f213327e2c7acc"
-                          },
-                          {
-                              "isOwnerTransfer": true,
-                              "_id": "6656eee9934d44286dd49e84",
-                              "vehicleIds": "6655bbbb551b8f57d1837b35",
-                              "ownerTransferDate": "2024-06-01T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "hubId": "66541b73a74686d081580179"
-                          },
-                          {
-                              "isOwnerTransfer": true,
-                              "_id": "6656f48e934d44286dd4a0c3",
-                              "vehicleIds": "6656f312934d44286dd4a038",
-                              "ownerTransferDate": "2024-06-01T00:00:00.000Z",
-                              "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "hubId": "66541b73a74686d081580179"
-                          },
-                          {
-                              "isOwnerTransfer": true,
-                              "_id": "6657062ecdae4f2be757e01b",
-                              "vehicleIds": "6656f312934d44286dd4a038",
-                              "ownerTransferDate": "2027-09-25T00:00:00.000Z",
-                              "ownerTransferToDate": "2027-10-30T00:00:00.000Z",
-                              "ownerId": "66557de735f213327e2c7acc",
-                              "hubId": "66541b73a74686d081580179"
-                          }
-                      ],
-                      "createdAt": "2024-05-28T06:47:03.148Z",
-                      "modifiedAt": "2024-06-13T05:14:05.754Z",
-                      "__v": 0
-                  }
-              ]
-          }
+        {
+          "count": 8,
+          "data": [
+            {
+              "_id": "66790d8c4a0ed60b1435333b",
+              "countryCode": "+91",
+              "vehicleIds": [],
+              "accountIds": [
+                {
+                  "_id": "66790d8c4a0ed60b1435333f",
+                  "accountNumber": "955410000001",
+                  "accountHolderName": "manoj",
+                  "ifscCode": "CNRB0000423",
+                  "bankName": "Canara Bank",
+                  "branchName": "BYATARAYANAPURA,BANGALORE",
+                  "ownerId": "66790d8c4a0ed60b1435333b",
+                  "createdAt": "2024-06-24T06:09:16.586Z",
+                  "modifiedAt": "2024-06-24T06:09:16.586Z",
+                  "__v": 0
+                }
+              ],
+              "name": "manoj",
+              "email": "manoj@gmail.com",
+              "phoneNumber": "5554443322",
+              "panNumber": "manoj",
+              "address": "manoj",
+              "district": "Leh(Ladakh)",
+              "state": "JAMMU_AND_KASHMIR",
+              "hubId": "66541b73a74686d081580179",
+              "oldVehicleDetails": [],
+              "vehicleDetails": [],
+              "createdAt": "2024-06-24T06:09:16.437Z",
+              "modifiedAt": "2024-06-24T06:09:16.437Z",
+              "__v": 0
+            },
+            {
+              "_id": "66557de735f213327e2c7acc",
+              "countryCode": "+91",
+              "vehicleIds": [
+                "665815c16364f6342e577911"
+              ],
+              "accountIds": [
+                {
+                  "_id": "66557de735f213327e2c7acf",
+                  "accountNumber": "423",
+                  "accountHolderName": "423",
+                  "ifscCode": "CNRB0000423",
+                  "bankName": "Canara Bank",
+                  "branchName": "BYATARAYANAPURA,BANGALORE",
+                  "hubId": "66541b73a74686d081580179",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "createdAt": "2024-05-28T06:47:03.222Z",
+                  "modifiedAt": "2024-06-13T05:14:05.844Z",
+                  "__v": 0
+                },
+                {
+                  "_id": "666a7feb4e95f87215549c95",
+                  "accountNumber": "1717",
+                  "accountHolderName": "1717",
+                  "ifscCode": "KVBL0001717",
+                  "bankName": "Karur Vysya Bank",
+                  "branchName": "MADURAI - KAMARAJAR SALAI",
+                  "hubId": "66541b73a74686d081580179",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "createdAt": "2024-06-13T05:13:15.716Z",
+                  "modifiedAt": "2024-06-13T05:14:05.845Z",
+                  "__v": 0
+                }
+              ],
+              "name": "tayib",
+              "email": "tayib@gmail.com",
+              "phoneNumber": "1231231231",
+              "panNumber": "TAYIBPANCARD",
+              "address": "Tayib",
+              "district": "Bengaluru (Bangalore) Urban",
+              "state": "Karnataka",
+              "hubId": "66541b73a74686d081580179",
+              "oldVehicleDetails": [
+                {
+                  "commission": 0,
+                  "_id": "6656f0ac934d44286dd49f43",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-06-04T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-05T00:00:00.000Z",
+                  "vehicleNumber": "KA02MT2241",
+                  "truckType": "open",
+                  "accountId": "66557aca35f213327e2c7a0c"
+                },
+                {
+                  "commission": 0,
+                  "_id": "6656f37a934d44286dd4a089",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-05-30T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-31T00:00:00.000Z",
+                  "vehicleNumber": "TN01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c"
+                },
+                {
+                  "commission": 0,
+                  "_id": "665703071525914c04023e85",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2027-07-03T00:00:00.000Z",
+                  "ownerTransferToDate": "2027-11-04T03:33:20.000Z",
+                  "vehicleNumber": "TN01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "commission": 5,
+                  "_id": "66570678cdae4f2be757e07b",
+                  "vehicleIds": "6657065dcdae4f2be757e04b",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-05-29T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-30T00:00:00.000Z",
+                  "vehicleNumber": "KA01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c",
+                  "hubId": "66541b73a74686d081580179"
+                }
+              ],
+              "vehicleDetails": [
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656d340795b921fbc74644f",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerTransferDate": "2024-05-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656eee9934d44286dd49e84",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerTransferDate": "2024-06-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656f48e934d44286dd4a0c3",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerTransferDate": "2024-06-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6657062ecdae4f2be757e01b",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerTransferDate": "2027-09-25T00:00:00.000Z",
+                  "ownerTransferToDate": "2027-10-30T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                }
+              ],
+              "createdAt": "2024-05-28T06:47:03.148Z",
+              "modifiedAt": "2024-06-13T05:14:05.754Z",
+              "__v": 0
+            }
+          ]
+        }
       ]
-  };
-  // Function to convert JSON to CSV
-const convertJSONToCSV = (data: any[]): string => {
-  if (data.length === 0) {
-      return '';
-  }
+    };
+    // Function to convert JSON to CSV
+    const convertJSONToCSV = (data: any[]): string => {
+      if (data.length === 0) {
+        return '';
+      }
 
-  // Extract column headers from the first object in the array
-  const headers = Object.keys(data[0]);
+      // Extract column headers from the first object in the array
+      const headers = Object.keys(data[0]);
 
-  // Create CSV content
-  const csvContent =
-      headers.join(',') +
-      '\n' +
-      data
+      // Create CSV content
+      const csvContent =
+        headers.join(',') +
+        '\n' +
+        data
           .map((row) => {
-              return headers.map((fieldName) => {
-                  let cellValue = row[fieldName];
+            return headers.map((fieldName) => {
+              let cellValue = row[fieldName];
 
-                  // If cell value contains comma, escape it by enclosing in double quotes
-                  if (typeof cellValue === 'string' && cellValue.includes(',')) {
-                      cellValue = `"${cellValue}"`;
-                  }
+              // If cell value contains comma, escape it by enclosing in double quotes
+              if (typeof cellValue === 'string' && cellValue.includes(',')) {
+                cellValue = `"${cellValue}"`;
+              }
 
-                  return cellValue;
-              }).join(',');
+              return cellValue;
+            }).join(',');
           })
           .join('\n');
 
-  return csvContent;
-};
-      const handleDownload = () => {
-        const owners = data.ownerDetails[0].data;
-        const csvData = owners.map((owner) => {
-            return {
-                id: owner._id,
-                name: owner.name,
-                email: owner.email,
-                phoneNumber: owner.phoneNumber,
-                panNumber: owner.panNumber,
-                address: owner.address,
-                district: owner.district,
-                state: owner.state,
-                hubId: owner.hubId,
-                accountDetails: owner.accountIds.map((account) => ({
-                    accountNumber: account.accountNumber,
-                    accountHolderName: account.accountHolderName,
-                    ifscCode: account.ifscCode,
-                    bankName: account.bankName,
-                    branchName: account.branchName,
-                    createdAt: account.createdAt,
-                    modifiedAt: account.modifiedAt,
-                })),
-                oldVehicleDetails: owner.oldVehicleDetails.map((vehicle) => ({
-                    vehicleNumber: vehicle.vehicleNumber,
-                    truckType: vehicle.truckType,
-                    ownerTransferDate: vehicle.ownerTransferDate,
-                    ownerTransferToDate: vehicle.ownerTransferToDate,
-                    commission: vehicle.commission,
-                })),
-                vehicleDetails: owner.vehicleDetails.map((vehicle) => ({
-                    vehicleNumber: vehicle.vehicleNumber,
-                    truckType: vehicle.truckType,
-                    ownerTransferDate: vehicle.ownerTransferDate,
-                    ownerTransferToDate: vehicle.ownerTransferToDate,
-                    isOwnerTransfer: vehicle.isOwnerTransfer,
-                })),
-                createdAt: owner.createdAt,
-                modifiedAt: owner.modifiedAt,
-            };
-        });
-
-        const csvContent = convertJSONToCSV(csvData);
-
-        // Create a blob with the CSV data
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-        // Create a temporary URL for the blob
-        const url = window.URL.createObjectURL(blob);
-
-        // Create a link element
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'ownerDetails.csv');
-
-        // Append the link to the body
-        document.body.appendChild(link);
-
-        // Trigger the download
-        link.click();
-
-        // Cleanup
-        document.body.removeChild(link);
+      return csvContent;
     };
-      // const downloadCSV = () => {
-      //     const accountDetails = data.ownerDetails[0].data.flatMap(owner => 
-      //         owner.accountIds.map(account => ({
-      //             accountNumber: account.accountNumber,
-      //             accountHolderName: account.accountHolderName,
-      //             ifscCode: account.ifscCode,
-      //             bankName: account.bankName,
-      //             branchName: account.branchName,
-      //             ownerName: owner.name,
-      //             ownerEmail: owner.email,
-      //             ownerPhoneNumber: owner.phoneNumber,
-      //             ownerPanNumber: owner.panNumber,
-      //             ownerAddress: owner.address,
-      //             ownerDistrict: owner.district,
-      //             ownerState: owner.state,
-      //             ownerHubId: owner.hubId
-      //         }))
-      //     );
-  
-      //     const headers = [
-      //         "Account Number", 
-      //         "Account Holder Name", 
-      //         "IFSC Code", 
-      //         "Bank Name", 
-      //         "Branch Name",
-      //         "Owner Name",
-      //         "Owner Email",
-      //         "Owner Phone Number",
-      //         "Owner PAN Number",
-      //         "Owner Address",
-      //         "Owner District",
-      //         "Owner State",
-      //         "Owner Hub ID"
-      //     ];
-  
-      //     const csvContent = [
-      //         headers.join(","),
-      //         ...accountDetails.map(row => 
-      //             [
-      //                 row.accountNumber,
-      //                 row.accountHolderName,
-      //                 row.ifscCode,
-      //                 row.bankName,
-      //                 row.branchName,
-      //                 row.ownerName,
-      //                 row.ownerEmail,
-      //                 row.ownerPhoneNumber,
-      //                 row.ownerPanNumber,
-      //                 row.ownerAddress,
-      //                 row.ownerDistrict,
-      //                 row.ownerState,
-      //                 row.ownerHubId
-      //             ].join(",")
-      //         )
-      //     ].join("\n");
-  
-      //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      //     const link = document.createElement("a");
-      //     const url = URL.createObjectURL(blob);
-      //     link.setAttribute("href", url);
-      //     link.setAttribute("download", "account_details.csv");
-      //     link.style.visibility = 'hidden';
-      //     document.body.appendChild(link);
-      //     link.click();
-      //     document.body.removeChild(link);
-      // };
+    const handleDownload = () => {
+      const owners = data.ownerDetails[0].data;
+      const csvData = owners.map((owner) => {
+        return {
+          id: owner._id,
+          name: owner.name,
+          email: owner.email,
+          phoneNumber: owner.phoneNumber,
+          panNumber: owner.panNumber,
+          address: owner.address,
+          district: owner.district,
+          state: owner.state,
+          hubId: owner.hubId,
+          accountDetails: owner.accountIds.map((account) => ({
+            accountNumber: account.accountNumber,
+            accountHolderName: account.accountHolderName,
+            ifscCode: account.ifscCode,
+            bankName: account.bankName,
+            branchName: account.branchName,
+            createdAt: account.createdAt,
+            modifiedAt: account.modifiedAt,
+          })),
+          oldVehicleDetails: owner.oldVehicleDetails.map((vehicle) => ({
+            vehicleNumber: vehicle.vehicleNumber,
+            truckType: vehicle.truckType,
+            ownerTransferDate: vehicle.ownerTransferDate,
+            ownerTransferToDate: vehicle.ownerTransferToDate,
+            commission: vehicle.commission,
+          })),
+          vehicleDetails: owner.vehicleDetails.map((vehicle) => ({
+            vehicleNumber: vehicle.vehicleNumber,
+            truckType: vehicle.truckType,
+            ownerTransferDate: vehicle.ownerTransferDate,
+            ownerTransferToDate: vehicle.ownerTransferToDate,
+            isOwnerTransfer: vehicle.isOwnerTransfer,
+          })),
+          createdAt: owner.createdAt,
+          modifiedAt: owner.modifiedAt,
+        };
+      });
+
+      const csvContent = convertJSONToCSV(csvData);
+
+      // Create a blob with the CSV data
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'ownerDetails.csv');
+
+      // Append the link to the body
+      document.body.appendChild(link);
+
+      // Trigger the download
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+    };
+    // const downloadCSV = () => {
+    //     const accountDetails = data.ownerDetails[0].data.flatMap(owner => 
+    //         owner.accountIds.map(account => ({
+    //             accountNumber: account.accountNumber,
+    //             accountHolderName: account.accountHolderName,
+    //             ifscCode: account.ifscCode,
+    //             bankName: account.bankName,
+    //             branchName: account.branchName,
+    //             ownerName: owner.name,
+    //             ownerEmail: owner.email,
+    //             ownerPhoneNumber: owner.phoneNumber,
+    //             ownerPanNumber: owner.panNumber,
+    //             ownerAddress: owner.address,
+    //             ownerDistrict: owner.district,
+    //             ownerState: owner.state,
+    //             ownerHubId: owner.hubId
+    //         }))
+    //     );
+
+    //     const headers = [
+    //         "Account Number", 
+    //         "Account Holder Name", 
+    //         "IFSC Code", 
+    //         "Bank Name", 
+    //         "Branch Name",
+    //         "Owner Name",
+    //         "Owner Email",
+    //         "Owner Phone Number",
+    //         "Owner PAN Number",
+    //         "Owner Address",
+    //         "Owner District",
+    //         "Owner State",
+    //         "Owner Hub ID"
+    //     ];
+
+    //     const csvContent = [
+    //         headers.join(","),
+    //         ...accountDetails.map(row => 
+    //             [
+    //                 row.accountNumber,
+    //                 row.accountHolderName,
+    //                 row.ifscCode,
+    //                 row.bankName,
+    //                 row.branchName,
+    //                 row.ownerName,
+    //                 row.ownerEmail,
+    //                 row.ownerPhoneNumber,
+    //                 row.ownerPanNumber,
+    //                 row.ownerAddress,
+    //                 row.ownerDistrict,
+    //                 row.ownerState,
+    //                 row.ownerHubId
+    //             ].join(",")
+    //         )
+    //     ].join("\n");
+
+    //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    //     const link = document.createElement("a");
+    //     const url = URL.createObjectURL(blob);
+    //     link.setAttribute("href", url);
+    //     link.setAttribute("download", "account_details.csv");
+    //     link.style.visibility = 'hidden';
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     document.body.removeChild(link);
+    // };
     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
@@ -633,7 +632,7 @@ const convertJSONToCSV = (data: any[]): string => {
           />
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
-       <div className='flex gap-2'>
+        <div className='flex gap-2'>
           {/* <Upload>
             <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
           </Upload> */}
@@ -644,8 +643,8 @@ const convertJSONToCSV = (data: any[]): string => {
             </Button>
           </Upload>
           {/* <Upload> */}
-            {/* <Button icon={<DownloadOutlined />}></Button> */}
-            <Button icon={<DownloadOutlined />} ></Button>
+          {/* <Button icon={<DownloadOutlined />}></Button> */}
+          <Button icon={<DownloadOutlined />} ></Button>
           {/* </Upload> */}
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>
@@ -1762,39 +1761,39 @@ const convertJSONToCSV = (data: any[]): string => {
     }
     return (
       <>
-      <div className="flex justify-end items-center">
+        {/* <div className="flex justify-end items-center">
 
-        <div className='dashboard-table-pagination-container'>
-          {/* {renderPaginationButtons()} */}
-          <Button
-            onClick={() => handlePageSizeChange(10)}
-            style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
-          >
-            10
-          </Button>
+          <div className='dashboard-table-pagination-container'>
+     
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
+            >
+              10
+            </Button>
 
-          <Button
-            onClick={() => handlePageSizeChange(25)}
-            style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
-          >
-            25
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(50)}
-            style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
-          >
-            50
-          </Button>
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
+            >
+              50
+            </Button>
 
-          <Button
-            onClick={() => handlePageSizeChange(100)}
-            style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
-          >
-          100
-          </Button>
-        </div>
-        </div>
-      
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
+            >
+              100
+            </Button>
+          </div>
+        </div> */}
+
         <Table
           rowSelection={rowSelection}
           columns={columns}

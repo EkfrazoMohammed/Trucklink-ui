@@ -5,6 +5,7 @@
   margin: 0;
   box-sizing: border-box;
   font-family: "Inter", sans-serif;
+  /* border: 1px solid red; */
 }
 
 .custom-shadow {
@@ -46,7 +47,7 @@
   height: 100vh;
   margin-top: -0.1px;
   padding-top: 0.1px;
-  padding: 0 .5rem;
+  padding: 0 10px;
 }
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-trigger {

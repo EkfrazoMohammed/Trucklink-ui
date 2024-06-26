@@ -642,12 +642,12 @@ const OnboardingContainer = ({ onData }) => {
          
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
             <Button icon={<UploadOutlined />} loading={loading}>
-              {/* {loading ? "Uploading" : "Click to Upload"} */}
+             {loading ? "Uploading" : "Click to Upload"}
               {loading ? "" : ""}
             </Button>
-          </Upload>
+          </Upload> 
           {/* <Upload> */}
-          {/* <Button icon={<DownloadOutlined />}></Button> */}
+          {/* <Button icon={<UploadOutlined />}></Button> */}
           <Button icon={<DownloadOutlined />} ></Button>
           {/* </Upload> */}
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined,RedoOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -248,6 +248,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           const ledgerEntries = response.data.deliveryDetails.challan;
 
           const dataSource = ledgerEntries.map((data) => {
+            console.log(data)
 
             return {
               ...data,
@@ -257,7 +258,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               "deliveryLocation": data.deliveryLocation,
               "vehicleNumber": data.vehicleNumber,
               "deliveryNumber": data.deliveryNumber,
-              "invoiceDate": data.invoiceDate,
+              "invoiceDate": data.grDate,
+
               key: data._id
             };
           });
@@ -420,20 +422,20 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     const columnsInsideRow = [
       {
         title: 'Invoice Date',
-        dataIndex: 'entryDate',
-        key: 'entryDate',
+        dataIndex: 'grDate',
+        key: 'grDate',
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
             <Form.Item
-              name="entDate"
+              name="grDate"
               style={{ margin: 0 }}
               rules={[{ required: true, message: 'Please input date!' }]}
             >
               <DatePicker format={dateFormat} />
             </Form.Item>
           ) : (
-            dayjs(text).format('DD/MM/YYYY')
+            text
           );
         },
       },

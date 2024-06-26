@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
     { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer />, disabled: !currentHub },
+    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild}/>, disabled: !currentHub },
     { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer />, disabled: !currentHub },
   ];
 

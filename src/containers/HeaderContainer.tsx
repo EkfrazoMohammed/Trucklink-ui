@@ -37,9 +37,9 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
   });
   // background: rgba(255, 182, 40, 1);
 
-  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40','201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40','201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40'];
+  const borderColors = ['255, 40, 40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40', '201,205,11', '40,126,255', '255, 182, 40', '255,79,40', '11,205,181', '40,255,178', '70,255,40'];
 
-  const getHubColor = localStorage.getItem("selectedHubColor")
+  const getHubColor = localStorage.getItem("selectedHubColor") || '0,0,0'
 
 
   // const hubData = useSelector((state: RootState) => state.hub.hubData);
@@ -62,7 +62,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       const response = await API.get("get-hubs", headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
-        
+
       } else {
         console.log("error fetching hubs")
       }
@@ -120,7 +120,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
     localStorage.setItem("selectedHubName", value);
     localStorage.setItem("selectedHubColor", color);
     setModalVisible(false);
-  
+
     window.location.reload();
   };
 
@@ -177,11 +177,11 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
         setSecondModalVisible(false);
         showConfirmModal();
         console.log(response.data)
-        const newHubName=response.data.Hub.location;
-        const newHubID=response.data.Hub._id;
+        const newHubName = response.data.Hub.location;
+        const newHubID = response.data.Hub._id;
         // localStorage.setItem("selectedHubName", hubFormData.location);
         setTimeout(() => {
-          selectHubHandler(newHubName,newHubID,"40,126,255")
+          selectHubHandler(newHubName, newHubID, "40,126,255")
         }, 2000);
       } else {
         setErrorMessage("Enter all fields");
@@ -204,7 +204,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px" }}>
+          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px",cursor:"pointer" }}>
             <div className="flex flex-col">
 
               <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}> Select Hub</span>
@@ -222,11 +222,11 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
                 {hubData && hubData.map((option, index: number) => (
                   <Space direction="vertical" key={index}>
                     <div className={`card-hub `} >
-                      <div  style={{ cursor: "pointer", margin: "0 auto", textAlign: "center", borderColor: `rgb(${borderColors[index]})`, borderLeft: "3px solid #fff" }} className="progress-hub" >
+                      <div style={{ cursor: "pointer", margin: "0 auto", textAlign: "center", borderColor: `rgb(${borderColors[index]})`, borderLeft: "3px solid #fff" }} className="progress-hub" >
                         <div className="text-hub">
                           {/* <p>{option.cityCode}</p> */}
                           <p onClick={() => selectHubHandler(option.location, option._id, borderColors[index])}>{option.location}</p>
-                          <div onClick={() => { showThirdModal(); handleEdit(option);  }} style={{ cursor: "pointer" }}><EditOutlined /></div>
+                          <div onClick={() => { showThirdModal(); handleEdit(option); }} style={{ cursor: "pointer" }}><EditOutlined /></div>
                           {/* <div style={{ cursor: "pointer" }}><EditOutlined /></div> */}
                         </div>
                       </div>

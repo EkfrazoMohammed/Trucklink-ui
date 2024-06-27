@@ -32,11 +32,12 @@ const DispatchContainer = ({ onData }) => {
   const [vehicleType, setVehicleType] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const [startDateValue, setStartDateValue] = useState("")
   const [endDateValue, setEndDateValue] = useState("")
   const [materialSearch,setMaterialSearch]=useState("")
-  const [vehicleTypeSearch,setVehicleTypeSearch]=useState("")
+  const [vehicleTypeSearch,setVehicleTypeSearch]=useState(null)
 
 
   const handleMaterialTypeChange = (value) => {
@@ -107,12 +108,13 @@ const DispatchContainer = ({ onData }) => {
     if (endDate) {
       data.endDate = endDate;
     }
+    setLoading(true)
     try {
       const searchData = searchQuery ? searchQuery : null;
       const response = searchData ? await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb)
         : await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb);
 
-
+        setLoading(false)
       let allChallans;
       if (response.data.disptachData == 0) {
         allChallans = response.data.disptachData
@@ -126,6 +128,7 @@ const DispatchContainer = ({ onData }) => {
 
       }
     } catch (err) {
+      setLoading(false)
       console.log(err)
 
     }
@@ -1709,22 +1712,25 @@ const DispatchContainer = ({ onData }) => {
     };
     return (
       <>
-        <Table
-          rowSelection={rowSelection}
-          columns={columns}
-          dataSource={challanData}
-          scroll={{ x: 800, y: 320 }}
-          rowKey="_id"
-          pagination={{
-            position: ['bottomCenter'],
-            showSizeChanger: true,
-            current: currentPage,
-            total: totalDispatchData,
-            defaultPageSize: currentPageSize, // Set the default page size
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
-          }}
-        />
+    <Table
+    rowSelection={rowSelection}
+    columns={columns}
+    dataSource={challanData}
+    scroll={{ x: 800, y: 320 }}
+    rowKey="_id"
+    loading={loading}
+    pagination={{
+      position: ['bottomCenter'],
+      showSizeChanger: true,
+      current: currentPage,
+      total: totalDispatchData,
+      defaultPageSize: currentPageSize, // Set the default page size
+      onChange: changePagination,
+      onShowSizeChange: changePaginationAll,
+    }}
+  />
+   
+        
       </>
     );
   };

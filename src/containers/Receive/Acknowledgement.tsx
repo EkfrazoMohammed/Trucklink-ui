@@ -100,6 +100,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
 
         let queryParams = buildQueryParams(data);
+        setLoading(true)
         try {
             const searchData = queryParams ? queryParams : null;
             // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
@@ -111,6 +112,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
 
             let allAcknowledgement;
+            setLoading(false)
             if (response.data.dispatchData.length == 0) {
                 allAcknowledgement = response.data.disptachData
                 console.log(allAcknowledgement)
@@ -126,11 +128,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                         return a < b ? -1 : a > b ? 1 : 0;
                     });
                     setAcknowledgement(arrRes);
+
                     return arrRes;
                 }
 
             }
         } catch (err) {
+            setLoading(false)
             console.log(err)
         }
     };
@@ -475,6 +479,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     dataSource={acknowledgement}
                     scroll={{ x: 800, y: 320 }}
                     rowKey="_id"
+                    loading={loading}
                     pagination={{
                         position: ['bottomCenter'],
                         showSizeChanger: true,

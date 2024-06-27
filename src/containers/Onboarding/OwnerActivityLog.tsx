@@ -64,8 +64,8 @@ const OwnerActivityLog = () => {
       },
       {
         title: 'Login ID',
-        dataIndex: 'userEmail',
-        key: 'userEmail',
+        dataIndex: '_id',
+        key: '_id',
         width: 80,
       },
       {

@@ -27,7 +27,7 @@ const ReceiveRegister2 = () => {
     const handleEditTruckClick = (rowData) => {
         console.log(rowData)
     };
-   
+
 
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
@@ -41,9 +41,9 @@ const ReceiveRegister2 = () => {
                 : await API.get(`get-receive-register?page=1&limit=50&hubId=${selectedHubId}`);
             // const response = searchData ?  await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`)
             // : await API.post(`get-challan-data?page=1&limit=50&hubId=6634de2e2588845228b2dbe4`);  
-            
+
             let allReceiveRegister;
-           if (response.data.dispatchData.length == 0) {
+            if (response.data.dispatchData.length == 0) {
                 allReceiveRegister = response.data.disptachData
                 console.log(allReceiveRegister)
                 setReceiveRegister(allReceiveRegister);
@@ -121,10 +121,10 @@ const ReceiveRegister2 = () => {
                 key: 'serialNumber',
                 render: (text, record, index: any) => index + 1,
                 width: 80,
-
                 fixed: 'left',
             },
-          
+
+
             {
                 title: 'deliveryNumber',
                 dataIndex: 'deliveryNumber',
@@ -137,6 +137,7 @@ const ReceiveRegister2 = () => {
                 key: 'deliveryLocation',
                 width: 180,
             },
+          
             {
                 title: 'grNumber',
                 dataIndex: 'grNumber',

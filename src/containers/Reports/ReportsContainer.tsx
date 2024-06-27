@@ -5,6 +5,7 @@ import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Bread
 import moment from 'moment-timezone';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
 import backbutton_logo from "../../assets/backbutton.png"
+import axios from 'axios';
 
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -74,9 +75,8 @@ const ReportsContainer = ({ onData }) => {
     setLoading(true)
     try {
       const searchData = searchQuery ? searchQuery : null;
-      // const response = searchData ? await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb)
-      //   : await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb);
-      const response = await API.get(`report-table-data?page=1&limit=50`, headersOb)
+      const response = searchData ? await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb)
+        : await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb);
 
       setLoading(false)
       let allTripData;
@@ -217,30 +217,30 @@ const ReportsContainer = ({ onData }) => {
 
       // Function to render each expense item
       const renderExpenseItem = (label, amount) => (
-        <div className="flex justify-between items-center p-1">
+        <div className="flex justify-between items-center p-2 px-4">
           <div className=''>
             {label}
           </div>
           <div className="">
-          ₹ {amount}
+            ₹ {amount}
           </div>
         </div>
       );
 
       return (
-        <div className="flex flex-col gap-2 w-[30vw] m-2 p-4" style={{ border: "1px solid #eee", boxShadow: "2px 2px 2px #eee", borderRadius: "20px" }}>
-          <div className='font-medium text-medium'> Expense</div>
- {/* Example of a total row */}
- <div className="flex justify-between items-center p-1 bg-[#F6F6F6]">
-                
-                <div className=''>
-                  Particulars
-                </div>
-                <div className="">
-                  {/* You can calculate and display the total amount here */}
-                  Amount
-                </div>
-              </div>
+        <div className="flex flex-col gap-1 w-[30vw] " style={{ border: "1px solid #C6C6C6", boxShadow: "3px 3px 2px #eee", borderRadius: "20px" }}>
+
+          {/* Example of a total row */}
+          <div className="flex justify-between text-[16px] items-center p-2 px-4 bg-[#F6F6F6] font-bold rounded-t-[20px] ">
+
+            <div className=''>
+              Particulars
+            </div>
+            <div className="">
+              {/* You can calculate and display the total amount here */}
+              Amount
+            </div>
+          </div>
           {/* Render each expense item with dynamic amounts */}
           {totalData && (
             <>
@@ -254,13 +254,13 @@ const ReportsContainer = ({ onData }) => {
               <hr />
               {renderExpenseItem('Shortage', totalData.totalShortage)}
               <hr />
-              {renderExpenseItem('OutStanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
+              {renderExpenseItem('Outstanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
               <hr />
               {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount)}
               <hr />
               {/* Example of a total row */}
-              <div className="flex justify-between items-center p-2 bg-[#F6F6F6]">
-                
+              <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
+
                 <div className=''>
                   Total
                 </div>
@@ -279,17 +279,18 @@ const ReportsContainer = ({ onData }) => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
       const getDispatchTableData = async () => {
-        setLoading(true);
+
         try {
+          setLoading(true);
           const headersOb = {
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${authToken}`
             }
           };
-          const response = await API.get(`trip-register-aggregate-values/${editingRowId}`, headersOb);
-          setLoading(false);
+          const response = await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}`, headersOb);
           if (response.data.tripAggregates.length === 0) {
+            setLoading(false);
             setchallanData(response.data.tripAggregates);
             const saveTripReportsinLocalStorage = {
               "totalAmount": 0,
@@ -302,6 +303,7 @@ const ReportsContainer = ({ onData }) => {
             }
             localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
           } else {
+            setLoading(false);
             setchallanData(response.data.tripAggregates[0].tripDetails || []);
             const saveTripReportsinLocalStorage = {
               "totalAmount": response.data.tripAggregates[0].totalAmount,
@@ -335,12 +337,16 @@ const ReportsContainer = ({ onData }) => {
         setSelectedRowKeys(newSelectedRowKeys);
       };
 
-      const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-      };
 
       const columns = [
+        {
+          title: 'Sl No',
+          dataIndex: 'serialNumber',
+          key: 'serialNumber',
+          render: (text, record, index: any) => index + 1,
+          width: 80,
+          fixed: 'left',
+        },
         {
           title: 'Material Type',
           dataIndex: 'materialType',
@@ -351,13 +357,13 @@ const ReportsContainer = ({ onData }) => {
           title: 'GR No',
           dataIndex: 'grNumber',
           key: 'grNumber',
-          width: 90,
+          width: 110,
         },
         {
           title: 'GR Date',
           dataIndex: 'grDate',
           key: 'grDate',
-          width: 100,
+          width: 140,
         },
         {
           title: 'Load Location',
@@ -375,15 +381,9 @@ const ReportsContainer = ({ onData }) => {
           title: 'Vehicle Number',
           dataIndex: 'vehicleNumber',
           key: 'vehicleNumber',
-          width: 120,
+          width: 140,
         },
-        {
-          title: 'Owner Name',
-          width: 160,
-          render: (_, record) => {
-            return <p>{record.ownerName}</p>
-          }
-        },
+
         {
           title: 'Vehicle Type',
           dataIndex: 'vehicleType',
@@ -394,7 +394,7 @@ const ReportsContainer = ({ onData }) => {
           title: 'Delivery Number',
           dataIndex: 'deliveryNumber',
           key: 'deliveryNumber',
-          width: 120,
+          width: 140,
         },
         {
           title: 'Quantity',
@@ -404,15 +404,47 @@ const ReportsContainer = ({ onData }) => {
         },
         {
           title: 'Company Rate',
-          dataIndex: 'rate',
-          key: 'rate',
-          width: 110,
+          dataIndex: 'ratePerTon',
+          key: 'ratePerTon',
+          width: 120,
         },
         {
           title: 'Market Rate',
           dataIndex: 'marketRate',
           key: 'marketRate',
-          width: 110,
+          width: 100,
+        },
+        {
+          title: 'Commission',
+          width: 160,
+          render: (_, record) => {
+            console.log(record)
+            const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon)
+            const percentCommissionINR = (percentCommission / 100)
+
+            const marketCommisionRate = ((record.amount) - (record.marketRate * record.quantityInMetricTons))
+            return (
+              <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
+
+                {record.marketRate > 0 ? <>
+                  <p>-</p>
+                  <p>
+                    {`${(record.amount) - (record.marketRate * record.quantityInMetricTons)}`}
+                  </p>
+                </>
+                  :
+                  <><p>
+                    {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
+                  </p>
+                    <p>
+                      {`${percentCommissionINR}`}
+                    </p>
+                  </>
+                }
+
+              </div>
+            );
+          }
         },
 
         {
@@ -439,7 +471,7 @@ const ReportsContainer = ({ onData }) => {
         <>
 
           <Table
-            rowSelection={rowSelection}
+
             columns={columns}
             dataSource={challanData}
             scroll={{ x: 700, y: 130 }}
@@ -450,6 +482,19 @@ const ReportsContainer = ({ onData }) => {
               showSizeChanger: false,
             }}
           />
+          <div className="flex justify-between items-center my-1 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              Total Outstanding
+            </div>
+
+
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              1
+              {/* {totalMonthlyAmount} */}
+              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
+            </div>
+
+          </div>
         </>
       );
     };
@@ -458,6 +503,7 @@ const ReportsContainer = ({ onData }) => {
       const authToken = localStorage.getItem("token");
       const selectedHubId = localStorage.getItem("selectedHubID");
       const [challanData, setchallanData] = useState([]);
+      const [total, setTotal] = useState(0);
       const getOwnerAdvanceTableData = async () => {
         const headersOb = {
           headers: {
@@ -466,11 +512,12 @@ const ReportsContainer = ({ onData }) => {
           }
         }
 
-        setLoading(true)
         try {
+          setLoading(true)
           const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
+          setTotal(ownersAdavanceAmountDebit)
           const saveLocal = {
             "totalOutstandingDebit": ownersAdavanceAmountDebit
           }
@@ -488,9 +535,11 @@ const ReportsContainer = ({ onData }) => {
 
 
           }
+          setLoading(false)
         } catch (err) {
           setLoading(false)
           console.log(err)
+          setLoading(false)
 
         }
       };
@@ -512,6 +561,14 @@ const ReportsContainer = ({ onData }) => {
       }, [])
 
       const columns = [
+        {
+          title: 'Sl No',
+          dataIndex: 'serialNumber',
+          key: 'serialNumber',
+          render: (text, record, index: any) => index + 1,
+          width: 80,
+          fixed: 'left',
+        },
         {
           title: 'Date',
           dataIndex: 'entryDate',
@@ -545,10 +602,10 @@ const ReportsContainer = ({ onData }) => {
         <>
 
           <Table
-            rowSelection={rowSelection}
+
             columns={columns}
             dataSource={challanData}
-            scroll={{ x: 800, y: 130 }}
+            scroll={{ x: 300, y: 130 }}
             rowKey="_id"
             loading={loading}
             pagination={{
@@ -556,7 +613,19 @@ const ReportsContainer = ({ onData }) => {
               showSizeChanger: false,
             }}
           />
+          <div className="flex justify-between items-center my-1 text-md text-[#1572B6]  bg-[#eee] p-3">
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              Total Outstanding
+            </div>
 
+
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              {total}
+              {/* {totalMonthlyAmount} */}
+              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
+            </div>
+
+          </div>
 
         </>
       );
@@ -566,6 +635,7 @@ const ReportsContainer = ({ onData }) => {
       const authToken = localStorage.getItem("token");
       const selectedHubId = localStorage.getItem("selectedHubID");
       const [challanData, setchallanData] = useState([]);
+      const [total, setTotal] = useState(0)
       const getVoucherTableData = async () => {
         const headersOb = {
           headers: {
@@ -578,6 +648,7 @@ const ReportsContainer = ({ onData }) => {
           const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.voucher[0].voucherDetails;
           const ownersVoucherAmount = response.data.voucher[0].total
+          setTotal(response.data.voucher[0].total)
           const saveLocal = {
             "ownersVoucherAmount": ownersVoucherAmount
           }
@@ -614,17 +685,12 @@ const ReportsContainer = ({ onData }) => {
 
       const columns = [
         {
-          title: 'Amount',
-          dataIndex: 'amount',
-          key: 'amount',
-          width: 90,
-        },
-
-        {
-          title: 'Voucher Date',
-          dataIndex: 'voucherDate',
-          key: 'voucherDate',
-          width: 120,
+          title: 'Sl No',
+          dataIndex: 'serialNumber',
+          key: 'serialNumber',
+          render: (text, record, index: any) => index + 1,
+          width: 80,
+          fixed: 'left',
         },
 
         {
@@ -633,20 +699,23 @@ const ReportsContainer = ({ onData }) => {
           key: 'narration',
           width: 110,
         },
+        {
+          title: 'Amount',
+          dataIndex: 'amount',
+          key: 'amount',
+          width: 90,
+        },
+
+
       ];
 
       return (
         <>
 
           <Table
-            rowSelection={rowSelection}
             columns={columns}
-            //real data
             dataSource={challanData}
-
-            //dummy data
-            // dataSource={dummyData}
-            scroll={{ x: 800, y: 130 }}
+            scroll={{ x: 300, y: 130 }}
             rowKey="_id"
             loading={loading}
             pagination={{
@@ -654,6 +723,19 @@ const ReportsContainer = ({ onData }) => {
               showSizeChanger: false,
             }}
           />
+          <div className="flex justify-between items-center text-md text-[#1572B6]  bg-[#eee] p-3">
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              Total Outstanding
+            </div>
+
+
+            <div className="px-8" style={{ fontWeight: 'bold' }}>
+              {total}
+              {/* {totalMonthlyAmount} */}
+              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
+            </div>
+
+          </div>
         </>
       );
     };
@@ -705,52 +787,54 @@ const ReportsContainer = ({ onData }) => {
                   <div className="flex flex-col gap-4 reports-bank p-4 ">
                     <div className="flex gap-6">
                       <div className="flex flex-col">
-                        <div>
+                        <div className='text-[#625f5f]'>
                           Bank Name
                         </div>
-                        <div>
+                        <div className='font-semibold text-black'>
                           {v.bankName}
                         </div>
                       </div>
                       <div className="flex flex-col">
-                        <div>
+                        <div className='text-[#625f5f]'>
                           ifscCode
                         </div>
-                        <div>
+                        <div className='font-semibold text-black'>
                           {v.ifscCode}
                         </div>
                       </div>
                       <div className="flex flex-col">
-                        <div>
+                        <div className='text-[#625f5f]'>
                           Branch Name
                         </div>
-                        <div>
+                        <div className='font-semibold text-black'>
                           {v.branchName}
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-6">
                       <div className="flex flex-col">
-                        <div>
-                          Account Number
+                        <div className='text-[#625f5f]'>
+                          Name
                         </div>
-                        <div>
-                          {v.accountNumber}
-                        </div>
-                      </div>
-                      <div className="flex flex-col">
-                        <div>
-                          Account Holder Name
-                        </div>
-                        <div>
+                        <div className='font-semibold text-black'>
                           {v.accountHolderName}
                         </div>
                       </div>
                       <div className="flex flex-col">
-                        <div>
-
+                        <div className='text-[#625f5f]'>
+                          A/C No
                         </div>
-                        <div>
+                        <div className='font-semibold text-black'>
+                          {v.accountNumber}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className='text-[#625f5f]'>
+                          Phone Number
+                        </div>
+                        <div className='font-semibold text-black'>
+                          {v.accountNumber}
                         </div>
                       </div>
                     </div>
@@ -771,7 +855,7 @@ const ReportsContainer = ({ onData }) => {
             <div className="flex items-center gap-4">
               <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
               <div className="flex flex-col">
-                <h1 className='font-bold' style={{ fontSize: "16px" }}>{editingRowName} Performance Report</h1>
+                <h1 className='font-bold' style={{ fontSize: "16px" }}>{editingRowName.charAt(0).toUpperCase() + editingRowName.slice(1)} Performance Report</h1>
                 <Breadcrumb
                   items={[
                     {
@@ -795,19 +879,22 @@ const ReportsContainer = ({ onData }) => {
               {editingRowId && (
                 <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
                   <div className="flex gap-4 h-auto w-100">
-                    <div className="flex flex-col gap-4 w-[50vw]">
-                      <div className='flex flex-col gap-2 my-2'>
-                        <div className='font-medium text-medium'>  Advance</div>
+                    <div className="flex flex-col gap-1 w-[50vw]">
+                      <div className='flex flex-col py-2 my-2'>
+                        <div className='font-semibold text-lg'>  Advance</div>
                         <OwnerAdvanceTable />
                       </div>
-                      <div className='flex flex-col gap-2 my-2'>
-                        <div className='font-medium text-medium'>  Voucher</div>
+                      <div className='flex flex-col py-2 my-2'>
+                        <div className='font-semibold text-lg'>  Voucher</div>
                         <OwnerVoucherTable />
                       </div>
                       <div>
                       </div>
                     </div>
-                    <ExpenseComponent />
+                    <div className='flex flex-col py-2 my-2'>
+                      <div className='font-semibold text-lg'> Expense</div>
+                      <ExpenseComponent />
+                    </div>
                   </div>
                 </Row>
               )}
@@ -818,7 +905,7 @@ const ReportsContainer = ({ onData }) => {
               {editingRowId && (
                 <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
                   <div className="flex flex-col gap-2 h-auto w-[81vw]">
-                    <div className='font-medium text-medium'>  Bank Account Details</div>
+                    <div className='font-semibold text-lg'>  Bank Account Details</div>
                     <OwnerBankAccountsTable />
                   </div>
                 </Row>
@@ -858,15 +945,15 @@ const ReportsContainer = ({ onData }) => {
         }
       },
       {
-        title: 'QTY',
+        title: 'Qty',
         dataIndex: 'totalQuantity',
         key: 'totalQuantity',
         width: 100,
       },
       {
         title: 'Company Rate',
-        dataIndex: 'rate',
-        key: 'rate',
+        dataIndex: 'companyRate',
+        key: 'companyRate',
         width: 110,
       },
       {
@@ -881,43 +968,16 @@ const ReportsContainer = ({ onData }) => {
         key: 'totalAmount',
         width: 120,
       },
-      {
-        title: 'Commission',
-        width: 160,
-        render: (_, record) => {
-          const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
-          const percentCommissionINR = (percentCommission / 100)
-          return (
-            <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
-              {record.isMarketRate ? <>
-                <p>-</p>
-                <p>
-                  {`${record.commisionTotal}`}
-                </p>
-              </>
-                :
-                <><p>
-                  {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
-                </p>
-                  <p>
-                    {`${percentCommissionINR}`}
-                  </p>
-                </>
-              }
-
-            </div>
-          );
-        }
-      },
 
 
       {
-        title: 'Commision Total',
+        title: 'Commision',
         dataIndex: 'totalCommisionTotal',
         key: 'totalCommisionTotal',
         width: 160,
       },
+
 
       {
         title: 'Diesel',
@@ -980,7 +1040,7 @@ const ReportsContainer = ({ onData }) => {
     return (
       <>
         <Table
-          rowSelection={rowSelection}
+
           columns={columns}
           dataSource={tripData}
           scroll={{ x: 800, y: 410 }}
@@ -1004,7 +1064,7 @@ const ReportsContainer = ({ onData }) => {
     <>
       {showUserTable ? (
         <>
-          <Truck />
+          {/* <Truck /> */}
           <UserTable onEditTruckClick={handleEditTruckClick} />
         </>
       ) : (

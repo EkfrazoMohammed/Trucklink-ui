@@ -527,7 +527,7 @@
 .reports-bank {
   background: linear-gradient(0deg, #E8F1FF 0%, #E8F5FF 100%) !important;
   border-radius: 10px;
-  box-shadow: 2px 2px 2px #E8F5FF;
+  box-shadow: 3px 3px 2px #E8F5FF;
   width: 50%;
-  
+  border: 1px solid #C6C6C6,
 }

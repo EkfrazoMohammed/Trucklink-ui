@@ -191,6 +191,91 @@ const ReportsContainer = ({ onData }) => {
       setShowUserTable(true)
     }
 
+    const ExpenseComponent = () => {
+      const [totalData, setTotalData] = useState(null);
+      const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
+      const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
+
+      const [totalExpenseAmount, setTotalExpenseAmount] = useState(null);
+
+      useEffect(() => {
+        // Fetch data from localStorage
+        const storedData = localStorage.getItem("TripReportsExpense1");
+        if (storedData) {
+          setTotalData(JSON.parse(storedData));
+        }
+        // Fetch data from localStorage
+        const storedDebitData = localStorage.getItem("totalOutstandingDebit");
+        if (storedDebitData) {
+          setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
+        }
+
+        // Fetch data from localStorage
+        const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
+        if (storedVoucherAmountData) {
+          setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
+        }
+      }, []);
+
+      // Function to render each expense item
+      const renderExpenseItem = (label, amount) => (
+        <div className="flex justify-between items-center p-1">
+          <div className=''>
+            {label}
+          </div>
+          <div className="">
+          ₹ {amount}
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="flex flex-col gap-2 w-[30vw] m-2 p-4" style={{ border: "1px solid #eee", boxShadow: "2px 2px 2px #eee", borderRadius: "20px" }}>
+          <div className='font-medium text-medium'> Expense</div>
+ {/* Example of a total row */}
+ <div className="flex justify-between items-center p-1 bg-[#F6F6F6]">
+                
+                <div className=''>
+                  Particulars
+                </div>
+                <div className="">
+                  {/* You can calculate and display the total amount here */}
+                  Amount
+                </div>
+              </div>
+          {/* Render each expense item with dynamic amounts */}
+          {totalData && (
+            <>
+              {renderExpenseItem('Total amount', totalData.totalAmount)}
+              <hr />
+              {renderExpenseItem('Diesel', totalData.totalDiesel)}
+              <hr />
+              {renderExpenseItem('Cash', totalData.totalCash)}
+              <hr />
+              {renderExpenseItem('Bank Transfer', totalData.totalBankTransfer)}
+              <hr />
+              {renderExpenseItem('Shortage', totalData.totalShortage)}
+              <hr />
+              {renderExpenseItem('OutStanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
+              <hr />
+              {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount)}
+              <hr />
+              {/* Example of a total row */}
+              <div className="flex justify-between items-center p-2 bg-[#F6F6F6]">
+                
+                <div className=''>
+                  Total
+                </div>
+                <div className="">
+                  {/* You can calculate and display the total amount here */}
+                  ₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount.ownersVoucherAmount))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };
 
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
@@ -206,12 +291,31 @@ const ReportsContainer = ({ onData }) => {
           };
           const response = await API.get(`trip-register-aggregate-values/${editingRowId}`, headersOb);
           setLoading(false);
-
-          let alltripAggregates = response.data.tripAggregates.length === 0
-            ? response.data.tripAggregates
-            : response.data.tripAggregates[0].tripDetails || [];
-
-          setchallanData(alltripAggregates);
+          if (response.data.tripAggregates.length === 0) {
+            setchallanData(response.data.tripAggregates);
+            const saveTripReportsinLocalStorage = {
+              "totalAmount": 0,
+              "totalBankTransfer": 0,
+              "totalCash": 0,
+              "totalCommisionTotal": 0,
+              "totalDiesel": 0,
+              "totalQuantity": 0,
+              "totalShortage": 0
+            }
+            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
+          } else {
+            setchallanData(response.data.tripAggregates[0].tripDetails || []);
+            const saveTripReportsinLocalStorage = {
+              "totalAmount": response.data.tripAggregates[0].totalAmount,
+              "totalBankTransfer": response.data.tripAggregates[0].totalBankTransfer,
+              "totalCash": response.data.tripAggregates[0].totalCash,
+              "totalCommisionTotal": response.data.tripAggregates[0].totalCommisionTotal,
+              "totalDiesel": response.data.tripAggregates[0].totalDiesel,
+              "totalQuantity": response.data.tripAggregates[0].totalQuantity,
+              "totalShortage": response.data.tripAggregates[0].totalShortage
+            }
+            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
+          }
           // Ensure setTotalDispatchData is defined and used appropriately
           // setTotalDispatchData(alltripAggregates.length);
         } catch (err) {
@@ -368,6 +472,11 @@ const ReportsContainer = ({ onData }) => {
         try {
           const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
+          const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
+          const saveLocal = {
+            "totalOutstandingDebit": ownersAdavanceAmountDebit
+          }
+          localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal))
           setLoading(false)
           let allChallans;
           if (ledgerEntries.length == 0) {
@@ -470,6 +579,12 @@ const ReportsContainer = ({ onData }) => {
         try {
           const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.voucher[0].voucherDetails;
+          const ownersVoucherAmount = response.data.voucher[0].total
+          const saveLocal = {
+            "ownersVoucherAmount": ownersVoucherAmount
+          }
+          localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal))
+
           setLoading(false)
           let truckDetails;
           if (ledgerEntries.length === 0) {
@@ -694,90 +809,7 @@ const ReportsContainer = ({ onData }) => {
                       <div>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 w-[30vw] m-2 p-4" style={{ border: "1px solid #eee",boxShadow:"2px 2px 2px #eee" ,borderRadius: "20px" }}>
-
-                      <div className='font-medium text-medium'> Expense</div>
-                      <div className="flex justify-between items-center p-2  bg-[#F6F6F6]">
-                        <div className=''>
-                          Particulars
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Total amount
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Diesel
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Cash
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Bank Transfer
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Shortage
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          OutStanding Debit
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2">
-                        <div className=''>
-                          Advance Voucher
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between items-center p-2 bg-[#F6F6F6]">
-                        <div className=''>
-                          Total
-                        </div>
-                        <div className="">
-                          Amount
-                        </div>
-                      </div>
-                    </div>
+                    <ExpenseComponent />
                   </div>
                 </Row>
               )}

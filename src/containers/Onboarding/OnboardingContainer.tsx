@@ -258,9 +258,7 @@ const OnboardingContainer = ({ onData }) => {
 
 
         const response = await API.post('create-owner-by-xsl', formData, config);
-        // const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
         localStorage.setItem("owner-fileUpload", JSON.stringify(response.data));
-        
         if (response.data && response.data.error_code === 1) {
           console.error('File upload error:', response.data.err_desc);
           message.error(`File upload error: ${response.data.err_desc.code} - ${response.data.err_desc.syscall}`);
@@ -274,6 +272,9 @@ const OnboardingContainer = ({ onData }) => {
         console.error('File upload failed:', error);
         if (error.response && error.response.data && error.response.data.message) {
           message.error(error.response.data.message);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000)
         } else {
           message.error("Network Failed, Please Try Again");
         }
@@ -639,13 +640,13 @@ const OnboardingContainer = ({ onData }) => {
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-         
+
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
             <Button icon={<UploadOutlined />} loading={loading}>
-             {loading ? "Uploading" : "Click to Upload"}
+              {/* {loading ? "Uploading" : "Click to Upload"} */}
               {loading ? "" : ""}
             </Button>
-          </Upload> 
+          </Upload>
           {/* <Upload> */}
           {/* <Button icon={<UploadOutlined />}></Button> */}
           <Button icon={<DownloadOutlined />} ></Button>

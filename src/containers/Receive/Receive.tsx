@@ -225,7 +225,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 key: 'serialNumber',
                 render: (text, record, index: any) => index + 1,
                 width: 90,
-                fixed:'left'
+                fixed: 'left'
 
             },
             {
@@ -312,7 +312,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 title: 'Commission',
                 width: 160,
                 render: (_, record) => {
-                    console.log(record)
                     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
                     const percentCommissionINR = (percentCommission / 100)
                     return (

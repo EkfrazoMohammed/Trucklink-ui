@@ -196,8 +196,6 @@ const ReportsContainer = ({ onData }) => {
       const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
       const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
 
-      const [totalExpenseAmount, setTotalExpenseAmount] = useState(null);
-
       useEffect(() => {
         // Fetch data from localStorage
         const storedData = localStorage.getItem("TripReportsExpense1");

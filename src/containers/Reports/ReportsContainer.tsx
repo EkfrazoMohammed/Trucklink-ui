@@ -1062,16 +1062,18 @@ const ReportsContainer = ({ onData }) => {
 
   return (
     <>
-      {showUserTable ? (
+      {/* {showUserTable ? (
         <>
-          {/* <Truck /> */}
+          <Truck />
           <UserTable onEditTruckClick={handleEditTruckClick} />
         </>
       ) : (
         editingChallan ? (
           <UserInsideReport editingRowId={rowDataForDispatchEditId} editingRowName={rowDataForDispatchEditName} />
         ) : null
-      )}
+      )} */}
+
+      <NoData />
 
     </>
   );

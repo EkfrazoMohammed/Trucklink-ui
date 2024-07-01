@@ -22,32 +22,49 @@ const ReportsContainer = ({ onData }) => {
   const [editingChallan, setEditingChallan] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [materialType, setMaterialType] = useState('')
-  const [vehicleType, setVehicleType] = useState("")
-  const [startDate, setStartDate] = useState("")
   const [loading, setLoading] = useState(false)
   const [startDateValue, setStartDateValue] = useState("")
-  const [materialSearch, setMaterialSearch] = useState("")
+  const [endDateValue, setEndDateValue] = useState("")
   const [vehicleTypeSearch, setVehicleTypeSearch] = useState(null)
 
+  const [filters, setFilters] = useState({
+    "material": null,
+    "vehicle": null,
+    "startDate": null,
+    "endDate": null,
+  })
+  // Function to handle material type change
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
-    setMaterialSearch(value)
+    setFilters({ ...filters, material: `(${value})` });
   };
 
+  // Function to handle truck type change
   const handleVehicleTypeChange = (value) => {
-    setVehicleType(value);
     setVehicleTypeSearch(value)
+    setFilters({ ...filters, vehicle: value });
   };
-
-  const convertToIST = (date) => {
-    const istDate = moment.tz(date, "Asia/Kolkata");
-    return istDate.valueOf();
-  };
+  // Function to handle start date change
   const handleStartDateChange = (date, dateString) => {
-    setStartDateValue(date)
-    setStartDate(date ? convertToIST(dateString) : null);
+    setStartDateValue(date); // Update DatePicker value
+    const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
+    setFilters({ ...filters, startDate: startDateUnix }); // Update filters state with startDate
   };
 
+  const handleEndDateChange = (date) => {
+    setEndDateValue(date); // Update DatePicker value
+    const unixTimestamp = new Date(date).getTime();
+    setFilters({ ...filters, endDate: unixTimestamp });
+  };
+  const buildQueryParams = (params) => {
+    let queryParams = [];
+    for (const param in params) {
+      if (params[param]) {
+        queryParams.push(`${param}=${params[param]}`);
+      }
+    }
+    return queryParams.length ? `?${queryParams.join("&")}` : "";
+  };
   const getTableData = async () => {
     const headersOb = {
       headers: {
@@ -55,19 +72,22 @@ const ReportsContainer = ({ onData }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-    const data = {};
-    if (vehicleType) {
-      data.vehicleType = [vehicleType];
-    }
-    if (materialType) {
-      data.materialType = [materialType];
-    }
-    if (startDate) {
-      data.startDate = startDate;
-    }
+
+    // setLoading(false)
     setLoading(true)
+
     try {
+      // const queryParams = new URLSearchParams({
+      //   page: '1',
+      //   limit: '150',
+      //   hubId: selectedHubId,
+      //   ...filters
+      // }).toString();
+      // console.log(queryParams)
+      // const response = await API.get(`report-table-data?${queryParams}`, headersOb);
+
       const searchData = searchQuery ? searchQuery : null;
+
       const response = searchData ? await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb)
         : await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb);
       setLoading(false)
@@ -104,18 +124,19 @@ const ReportsContainer = ({ onData }) => {
   useEffect(() => {
     fetchMaterials();
   }, [])
+  // useEffect(() => {
+  //   getTableData();
+  // }, [selectedHubId, materialType, vehicleType, startDate]);
   useEffect(() => {
     getTableData();
-  }, [selectedHubId, materialType, vehicleType, startDate]);
-
+  }, [filters])
   // Truck master
   const Truck = () => {
     const onReset = () => {
       setStartDateValue("")
       setSearchQuery("");
-      setMaterialSearch("")
-      setVehicleTypeSearch("")
-      window.location.reload()
+      setMaterialType(null)
+      setVehicleTypeSearch(null)
     }
 
     return (
@@ -133,24 +154,33 @@ const ReportsContainer = ({ onData }) => {
             {materials.map((v, index) => (<Option key={index} value={v.materialType}>{`${v.materialType}`}</Option>))}
           </Select>
           <Select
-            name="truckType"
+            name="vehicle"
             placeholder="Truck Type*"
             size="large"
             style={{ width: "20%" }}
             value={vehicleTypeSearch}
             options={[
-              { value: 'Open', label: 'Open' },
+              { value: 'Bag', label: 'Open' },
               { value: 'Bulk', label: 'Bulk' },
             ]}
             onChange={handleVehicleTypeChange}
           />
           <DatePicker
-            size='large'
-            onChange={handleStartDateChange}
+            size="large"
+            placeholder="Start Date"
             value={startDateValue}
-            placeholder='Select Year'
+            onChange={handleStartDateChange}
+            style={{ marginRight: 16 }}
           />
-          {startDateValue !== null && startDateValue !== "" || materialSearch !== "" || vehicleTypeSearch !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
+          <DatePicker
+            placeholder="End Date"
+            size="large"
+            value={endDateValue}
+            onChange={handleEndDateChange}
+            style={{ marginRight: 16 }}
+          />
+
+          {startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2 justify-end'>
         </div>
@@ -205,7 +235,11 @@ const ReportsContainer = ({ onData }) => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
       const { triggerUpdate } = useLocalStorage();
+
+      const queryParams = buildQueryParams(filters)
+      console.log(queryParams)
       const getDispatchTableData = async () => {
+
 
         try {
           setLoading(true);
@@ -215,7 +249,10 @@ const ReportsContainer = ({ onData }) => {
               "Authorization": `Bearer ${authToken}`
             }
           };
-          const response = await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}`, headersOb);
+          const searchData = queryParams ? queryParams : null;
+
+          const response = searchData ? await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}${queryParams}`, headersOb)
+            : await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}`, headersOb);
           if (response.data.tripAggregates.length === 0) {
             setLoading(false);
             setchallanData(response.data.tripAggregates);
@@ -458,16 +495,8 @@ const ReportsContainer = ({ onData }) => {
       };
 
       const [loading, setLoading] = useState(false)
-      const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-      const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedRowKeys(newSelectedRowKeys);
-      };
 
 
-      const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-      };
       useEffect(() => {
         getOwnerAdvanceTableData()
       }, [])
@@ -757,13 +786,13 @@ const ReportsContainer = ({ onData }) => {
           <div className="flex flex-col gap-2 p-2">
             <div className="flex items-center gap-4">
               <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
-                <div className="flex justify-between gap-4 pr-2 w-[100%]">
-              <div className="flex flex-col ">
-                <h1 className='font-bold' style={{ fontSize: "16px" }}>{editingRowName.charAt(0).toUpperCase() + editingRowName.slice(1)} Performance Report</h1>
+              <div className="flex justify-between gap-4 pr-2 w-[100%]">
+                <div className="flex flex-col ">
+                  <h1 className='font-bold' style={{ fontSize: "16px" }}>{editingRowName.charAt(0).toUpperCase() + editingRowName.slice(1)} Performance Report</h1>
 
                   <Breadcrumb items={[{ title: 'Print and download the Report' }]} />
                 </div>
-                  <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
+                <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
               </div>
             </div>
             <div ref={componentRef}>
@@ -830,7 +859,7 @@ const ReportsContainer = ({ onData }) => {
         title: 'Owner Name',
         width: 160,
         render: (_, record) => {
-          return <p>{record.ownerDetails[0].ownerName}</p>
+          return <p>{record.ownerDetails[0].ownerName !== null || record.ownerDetails[0].ownerName !== "" ? record.ownerDetails[0].ownerName.charAt(0).toUpperCase() + record.ownerDetails[0].ownerName.slice(1) : null}</p>
         }
       },
       {
@@ -909,8 +938,8 @@ const ReportsContainer = ({ onData }) => {
           rowKey="_id"
           loading={loading}
           pagination={{
-            position: ['none', 'none'],
-            showSizeChanger: false,
+            position: ['bottomCenter'],
+            showSizeChanger: true,
           }}
         />
       </>
@@ -921,7 +950,7 @@ const ReportsContainer = ({ onData }) => {
     <>
       {showUserTable ? (
         <>
-          {/* <Truck /> */}
+          <Truck />
           <UserTable onEditTruckClick={handleEditTruckClick} />
         </>
       ) : (
@@ -929,6 +958,7 @@ const ReportsContainer = ({ onData }) => {
           <UserInsideReport editingRowId={rowDataForDispatchEditId} editingRowName={rowDataForDispatchEditName} />
         ) : null
       )}
+      {/* <p>Reports Container</p> */}
       {/* <NoData /> */}
 
     </>

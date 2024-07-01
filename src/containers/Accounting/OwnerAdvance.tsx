@@ -824,7 +824,8 @@ const OwnerAdvance = () => {
               APPLY
             </Button>
           </div>
-          {ownerId !== null && ownerId !== "" ? <><Button  onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+          {/* {startDate} */}
+          {ownerId !== null && ownerId !== "" || startDate !== null && startDate !== 0  || endDate !== null && endDate !== 0 ? <><Button  onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
 
         <Button

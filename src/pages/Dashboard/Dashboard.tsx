@@ -42,41 +42,25 @@ const Dashboard: React.FC = () => {
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
 
-  // const items = [
-  //   { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-  //   { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
-  //   { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
-  //   { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
-  //   { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
-  //   { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
-  //   { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
-  // ];
   const items = [
     { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
     { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild}/>, disabled: !currentHub },
+    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer />, disabled: !currentHub },
   ];
 
   const handleMenuClick = (menuItemKey: string, menuTitle: string, disabled: boolean) => {
-    //  if(disabled){
-    //   alert("seelct hub location first")
-    //  }
-    console.log("disabled", !currentHub)
     if (!currentHub) {
-      alert("seelct hub location first")
+      alert("select hub location first")
     } else {
-
-
       setSelectedMenuItem(menuItemKey);
       setTitle(menuTitle);
       setSelectedMenuTitle(menuTitle)
       setDataFromChild("flex")
     }
-
 
   };
 
@@ -117,7 +101,7 @@ const Dashboard: React.FC = () => {
 
   };
   return (
-    <Layout style={{ minHeight: '90vh',maxHeight:"100vh" }}>
+    <Layout style={{ minHeight: '95vh'}}>
       <Sider style={{ background: "radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)" }} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
@@ -162,13 +146,15 @@ const Dashboard: React.FC = () => {
               {item.label}
             </Menu.Item>
           ))}
+          <div>
+            <Menu.Item key={8} icon={<IconImage src={logout_logo} />}  onClick={() => setLogoutModalVisible(true)} >
+              <span>Logout</span>
+            </Menu.Item>
+          </div>
         </Menu>
 
-        <div>
-          {/* <button className='flex  mx-8 my-0 items-center gap-2' onClick={() => setLogoutModalVisible(true)}> 
-          <img src={logout_logo} alt="" style={{width:"30px"}}/>
-          {collapsed ? null : <span className='text-white'>Logout</span>}
-          </button> */}
+        {/* <div>
+      
           {collapsed ?
             <button className='flex  mx-4 my-0 items-center gap-2   trucklink-sidemenu-logout-close' onClick={() => setLogoutModalVisible(true)}>
               <img src={logout_logo} alt="" style={{ width: "30px" }} />
@@ -180,7 +166,7 @@ const Dashboard: React.FC = () => {
               <span className='text-white'>Logout</span>
             </button>
           }
-        </div>
+        </div> */}
       </Sider>
       <Layout>
         <Content style={{ margin: '1rem 1rem 0 1rem' }}>

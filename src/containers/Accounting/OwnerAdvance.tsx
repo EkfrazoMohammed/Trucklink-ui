@@ -55,6 +55,8 @@ const OwnerAdvance = () => {
 
   const onReset = () => {
     setOwnerId('');
+    setStartDate(null)
+    setEndDate(null)
     setFilterRequest(null);
   };
 
@@ -807,7 +809,7 @@ const OwnerAdvance = () => {
               ))}
             </Select>
             <DatePicker
-            size="large"
+              size="large"
               placeholder="Start Date"
               format={dateFormat}
               onChange={handleStartDateChange}
@@ -825,7 +827,7 @@ const OwnerAdvance = () => {
             </Button>
           </div>
           {/* {startDate} */}
-          {ownerId !== null && ownerId !== "" || startDate !== null && startDate !== 0  || endDate !== null && endDate !== 0 ? <><Button  onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+          {ownerId !== null && ownerId !== "" || startDate !== null && startDate !== 0 || endDate !== null && endDate !== 0 ? <><Button onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
 
         <Button
@@ -835,7 +837,7 @@ const OwnerAdvance = () => {
           ADD OWNER BALANCE
         </Button>
       </div>
-    {/*   <div className="flex justify-end items-center">
+      {/*   <div className="flex justify-end items-center">
         <div className='dashboard-table-pagination-container'>
        
           <Button

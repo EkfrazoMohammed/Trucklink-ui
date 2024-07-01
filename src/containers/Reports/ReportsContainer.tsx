@@ -449,6 +449,8 @@ const ReportsContainer = ({ onData }) => {
       const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0);
+      const queryParams = buildQueryParams(filters)
+      console.log(queryParams)
       const getOwnerAdvanceTableData = async () => {
         const headersOb = {
           headers: {
@@ -459,7 +461,13 @@ const ReportsContainer = ({ onData }) => {
 
         try {
           setLoading(true)
-          const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
+          const searchData = queryParams ? queryParams : null;
+
+          const response = searchData ? await API.get(`get-ledger-data-owner/${editingRowId}${queryParams}`, headersOb)
+            : await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb)
+          // : await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb)
+
+          // const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
 
@@ -563,6 +571,7 @@ const ReportsContainer = ({ onData }) => {
       const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0)
+      const queryParams = buildQueryParams(filters)
       const getVoucherTableData = async () => {
         const headersOb = {
           headers: {
@@ -572,7 +581,12 @@ const ReportsContainer = ({ onData }) => {
         }
         setLoading(true)
         try {
-          const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
+          // const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
+          const searchData = queryParams ? queryParams : null;
+
+          const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}${queryParams}`, headersOb)
+            : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
+
           const ledgerEntries = response.data.voucher[0].voucherDetails;
           const ownersVoucherAmount = response.data.voucher[0].total
           setTotal(response.data.voucher[0].total)

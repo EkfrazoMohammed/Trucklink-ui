@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
 
   };
   return (
-    <Layout style={{ minHeight: '95vh'}}>
+    <Layout style={{ minHeight: '95vh' }}>
       <Sider style={{ background: "radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)" }} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
@@ -146,11 +146,9 @@ const Dashboard: React.FC = () => {
               {item.label}
             </Menu.Item>
           ))}
-          <div>
-            <Menu.Item key={8} icon={<IconImage src={logout_logo} />}  onClick={() => setLogoutModalVisible(true)} >
-              <span>Logout</span>
-            </Menu.Item>
-          </div>
+          <Menu.Item key={8} icon={<IconImage src={logout_logo} />} onClick={() => setLogoutModalVisible(true)} >
+            <span>Logout</span>
+          </Menu.Item>
         </Menu>
 
         {/* <div>

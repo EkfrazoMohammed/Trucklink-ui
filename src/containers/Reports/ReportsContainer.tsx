@@ -912,7 +912,7 @@ const ReportsContainer = ({ onData }) => {
                       <div>
                       </div>
                     </div>
-                    <div className='flex flex-col py-2 my-2'>
+                    <div className='flex flex-col py-2 my-2 w-[50%]'>
                       <div className='font-semibold text-lg'> Expense</div>
                       <ExpenseComponent />
                     </div>
@@ -1068,7 +1068,7 @@ const ReportsContainer = ({ onData }) => {
           rowKey="_id"
           loading={loading}
           pagination={{
-            position: ['none','none'],
+            position: ['none', 'none'],
             showSizeChanger: false,
             // current: currentPage,
             // total: totalDispatchData,

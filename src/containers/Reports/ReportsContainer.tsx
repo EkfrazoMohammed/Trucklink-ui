@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import moment from 'moment-timezone';
@@ -6,6 +6,8 @@ import { UploadOutlined, DownloadOutlined, EyeOutlined, DeleteOutlined, PrinterO
 import backbutton_logo from "../../assets/backbutton.png"
 import { useLocalStorage } from "../../localStorageContext"
 import NoData from "./NoData"
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -18,11 +20,6 @@ const ReportsContainer = ({ onData }) => {
   const [rowDataForDispatchEditId, setRowDataForDispatchEditId] = useState(null);
   const [rowDataForDispatchEditName, setRowDataForDispatchEditName] = useState(null);
   const [editingChallan, setEditingChallan] = useState(false);
-
-  // Initialize state variables for current page and page size
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalDispatchData, setTotalDispatchData] = useState(100)
   const [searchQuery, setSearchQuery] = useState('');
   const [materialType, setMaterialType] = useState('')
   const [vehicleType, setVehicleType] = useState("")
@@ -81,7 +78,6 @@ const ReportsContainer = ({ onData }) => {
       } else {
         allTripData = response.data.tripAggregates[0].data || "";
         settripData(allTripData);
-        setTotalDispatchData(allTripData.length);
       }
     } catch (err) {
       setLoading(false)
@@ -134,11 +130,7 @@ const ReportsContainer = ({ onData }) => {
             onChange={handleMaterialTypeChange}
             filterOption={filterOption}
           >
-            {materials.map((v, index) => (
-              <Option key={index} value={v.materialType}>
-                {`${v.materialType}`}
-              </Option>
-            ))}
+            {materials.map((v, index) => (<Option key={index} value={v.materialType}>{`${v.materialType}`}</Option>))}
           </Select>
           <Select
             name="truckType"
@@ -163,7 +155,6 @@ const ReportsContainer = ({ onData }) => {
         <div className='flex gap-2 justify-end'>
         </div>
       </div>
-
     );
   };
 
@@ -180,108 +171,35 @@ const ReportsContainer = ({ onData }) => {
       onData('flex')
       setShowUserTable(true)
     }
+    const componentRef = useRef(null);
 
-    const ExpenseComponent = () => {
-      const [totalData, setTotalData] = useState(null);
-      const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
-      const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
-      const { updateCount } = useLocalStorage();
+    const downloadPDF = async () => {
+      const input = componentRef.current;
+      const canvas = await html2canvas(input);
+      const imgData = canvas.toDataURL('image/png');
 
-      useEffect(() => {
-        // Fetch data from localStorage
-        const storedData = localStorage.getItem("TripReportsExpense1");
-        if (storedData) {
-          setTotalData(JSON.parse(storedData));
-        }
-        // Fetch data from localStorage
-        const storedDebitData = localStorage.getItem("totalOutstandingDebit");
-        if (storedDebitData) {
-          setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
-        }
-        // Fetch data from localStorage
-        const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
-        if (storedVoucherAmountData) {
-          setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
-        }
-      }, [updateCount]);
-      // useEffect(() => {
-      //   // Fetch data from localStorage
-      //   const storedData = localStorage.getItem("TripReportsExpense1");
-      //   if (storedData) {
-      //     setTotalData(JSON.parse(storedData));
-      //   }
-      //   // Fetch data from localStorage
-      //   const storedDebitData = localStorage.getItem("totalOutstandingDebit");
-      //   if (storedDebitData) {
-      //     setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
-      //   }
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const padding = { top: 10, bottom: 10, left: 10, right: 10 }; // Set padding in mm
 
-      //   // Fetch data from localStorage
-      //   const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
-      //   if (storedVoucherAmountData) {
-      //     setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
-      //   }
-      // }, []);
+      const usableWidth = pdfWidth - padding.left - padding.right;
+      const usableHeight = pdfHeight - padding.top - padding.bottom;
+      const imgProps = pdf.getImageProperties(imgData);
 
-      // Function to render each expense item
-      const renderExpenseItem = (label, amount) => (
-        <div className="flex justify-between items-center p-2 px-4">
-          <div className=''>
-            {label}
-          </div>
-          <div className="">
-            ₹ {amount}
-          </div>
-        </div>
-      );
+      let imgWidth = usableWidth;
+      let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-      return (
-        <div className="flex flex-col gap-1 w-[30vw] " style={{ border: "1px solid #C6C6C6", boxShadow: "3px 3px 2px #eee", borderRadius: "20px" }}>
+      if (imgHeight > usableHeight) {
+        const scaleFactor = usableHeight / imgHeight;
+        imgWidth *= scaleFactor;
+        imgHeight *= scaleFactor;
+      }
 
-          {/* Example of a total row */}
-          <div className="flex justify-between text-[16px] items-center p-2 px-4 bg-[#F6F6F6] font-bold rounded-t-[20px] ">
-
-            <div className=''>
-              Particulars
-            </div>
-            <div className="">
-              {/* You can calculate and display the total amount here */}
-              Amount
-            </div>
-          </div>
-          {/* Render each expense item with dynamic amounts */}
-          {totalData && (
-            <>
-              {renderExpenseItem('Total amount', totalData.totalAmount)}
-              <hr />
-              {renderExpenseItem('Diesel', totalData.totalDiesel)}
-              <hr />
-              {renderExpenseItem('Cash', totalData.totalCash)}
-              <hr />
-              {renderExpenseItem('Bank Transfer', totalData.totalBankTransfer)}
-              <hr />
-              {renderExpenseItem('Shortage', totalData.totalShortage)}
-              <hr />
-              {renderExpenseItem('Outstanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
-              <hr />
-              {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount)}
-              <hr />
-              {/* Example of a total row */}
-              <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
-
-                <div className=''>
-                  Total
-                </div>
-                <div className="">
-                  {/* You can calculate and display the total amount here */}
-                  ₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount.ownersVoucherAmount))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      );
+      pdf.addImage(imgData, 'PNG', padding.left, padding.top, imgWidth, imgHeight);
+      pdf.save('report.pdf');
     };
+
 
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
@@ -326,8 +244,7 @@ const ReportsContainer = ({ onData }) => {
             }
             localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
           }
-          // Ensure setTotalDispatchData is defined and used appropriately
-          // setTotalDispatchData(alltripAggregates.length);
+
         } catch (err) {
           setLoading(false);
           console.log(err);
@@ -342,12 +259,6 @@ const ReportsContainer = ({ onData }) => {
 
 
       const [loading, setLoading] = useState(false)
-      const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-      const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedRowKeys(newSelectedRowKeys);
-      };
-
-
       const columns = [
         {
           title: 'Sl No',
@@ -476,9 +387,7 @@ const ReportsContainer = ({ onData }) => {
 
       return (
         <>
-
           <Table
-
             columns={columns}
             dataSource={challanData}
             scroll={{ x: 700, y: 130 }}
@@ -489,26 +398,17 @@ const ReportsContainer = ({ onData }) => {
               showSizeChanger: false,
             }}
           />
-          <div className="flex justify-between items-center my-1 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              Total Outstanding
-            </div>
+          {/* <div className="flex justify-between items-center my-1 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>1</div>
 
-
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              1
-              {/* {totalMonthlyAmount} */}
-              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
-            </div>
-
-          </div>
+          </div> */}
         </>
       );
     };
 
     const OwnerAdvanceTable = () => {
       const authToken = localStorage.getItem("token");
-      const selectedHubId = localStorage.getItem("selectedHubID");
       const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0);
@@ -523,7 +423,6 @@ const ReportsContainer = ({ onData }) => {
         try {
           setLoading(true)
           const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
-          console.log(response)
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
 
@@ -539,14 +438,9 @@ const ReportsContainer = ({ onData }) => {
           if (ledgerEntries.length == 0) {
             allChallans = ledgerEntries
             setchallanData(allChallans);
-
           } else {
-
             allChallans = ledgerEntries || "";
             setchallanData(allChallans);
-            setTotalDispatchData(allChallans.length);
-
-
           }
           setLoading(false)
         } catch (err) {
@@ -562,7 +456,6 @@ const ReportsContainer = ({ onData }) => {
           triggerUpdate();
         }
       };
-
 
       const [loading, setLoading] = useState(false)
       const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -614,17 +507,13 @@ const ReportsContainer = ({ onData }) => {
           key: 'credit',
 
         },
-
-
       ];
       return (
         <>
-
           <Table
-
             columns={columns}
             dataSource={challanData}
-            scroll={{ x: 300, y: 130 }}
+            // scroll={{ x: 300, y: 130 }}
             rowKey="_id"
             loading={loading}
             pagination={{
@@ -633,26 +522,15 @@ const ReportsContainer = ({ onData }) => {
             }}
           />
           <div className="flex justify-between items-center my-1 text-md text-[#1572B6]  bg-[#eee] p-3">
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              Total Outstanding
-            </div>
-
-
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              {total}
-              {/* {totalMonthlyAmount} */}
-              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
-            </div>
-
+            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>{total}</div>
           </div>
-
         </>
       );
     };
 
     const OwnerVoucherTable = () => {
       const authToken = localStorage.getItem("token");
-      const selectedHubId = localStorage.getItem("selectedHubID");
       const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0)
@@ -689,17 +567,7 @@ const ReportsContainer = ({ onData }) => {
           console.log(err)
         }
       };
-
       const [loading, setLoading] = useState(false)
-      const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-      const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedRowKeys(newSelectedRowKeys);
-      };
-
-      const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-      };
       useEffect(() => {
         getVoucherTableData()
       }, [])
@@ -726,17 +594,14 @@ const ReportsContainer = ({ onData }) => {
           key: 'amount',
           width: 90,
         },
-
-
       ];
 
       return (
         <>
-
           <Table
             columns={columns}
             dataSource={challanData}
-            scroll={{ x: 300, y: 130 }}
+            // scroll={{ x: 300, y: 130 }}
             rowKey="_id"
             loading={loading}
             pagination={{
@@ -745,25 +610,74 @@ const ReportsContainer = ({ onData }) => {
             }}
           />
           <div className="flex justify-between items-center text-md text-[#1572B6]  bg-[#eee] p-3">
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              Total Outstanding
-            </div>
-
-
-            <div className="px-8" style={{ fontWeight: 'bold' }}>
-              {total}
-              {/* {totalMonthlyAmount} */}
-              {/* {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>} */}
-            </div>
-
+            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>{total}</div>
           </div>
         </>
       );
     };
+    const ExpenseComponent = () => {
+      const [totalData, setTotalData] = useState(null);
+      const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
+      const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
+      const { updateCount } = useLocalStorage();
 
+      useEffect(() => {
+        const storedData = localStorage.getItem("TripReportsExpense1");
+        if (storedData) {
+          setTotalData(JSON.parse(storedData));
+        }
+        const storedDebitData = localStorage.getItem("totalOutstandingDebit");
+        if (storedDebitData) {
+          setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
+        }
+        const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
+        if (storedVoucherAmountData) {
+          setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
+        }
+      }, [updateCount]);
+      const renderExpenseItem = (label, amount) => (
+        <div className="flex justify-between items-center p-2 px-4">
+          <div className=''>{label}</div>
+          <div className="">₹ {amount}</div>
+        </div>
+      );
+
+      return (
+        <div className="flex flex-col gap-1 w-[30vw] " style={{ border: "1px solid #C6C6C6", boxShadow: "3px 3px 2px #eee", borderRadius: "20px" }}>
+          <div className="flex justify-between text-[16px] items-center p-2 px-4 bg-[#F6F6F6] font-bold rounded-t-[20px] ">
+            <div className=''>Particulars</div>
+            <div className="">Amount</div>
+          </div>
+          {totalData && (
+            <>
+              {renderExpenseItem('Total amount', totalData.totalAmount)}
+              <hr />
+              {renderExpenseItem('Diesel', totalData.totalDiesel)}
+              <hr />
+              {renderExpenseItem('Cash', totalData.totalCash)}
+              <hr />
+              {renderExpenseItem('Bank Transfer', totalData.totalBankTransfer)}
+              <hr />
+              {renderExpenseItem('Shortage', totalData.totalShortage)}
+              <hr />
+              {renderExpenseItem('Outstanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
+              <hr />
+              {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount)}
+              <hr />
+              {/* Example of a total row */}
+              <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
+                <div className=''>Total</div>
+                <div className="">₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount.ownersVoucherAmount))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };
     const OwnerBankAccountsTable = () => {
       const authToken = localStorage.getItem("token");
-      const selectedHubId = localStorage.getItem("selectedHubID");
       const [bankAccountData, setBankAccountData] = useState([]);
       const ownerBankAccountsData = async () => {
         const headersOb = {
@@ -790,17 +704,12 @@ const ReportsContainer = ({ onData }) => {
           console.log(err)
         }
       };
-
       const [loading, setLoading] = useState(false)
-
       useEffect(() => {
         ownerBankAccountsData()
       }, [])
-
-
       return (
         <>
-
           <div className='flex gap-4'>
             {bankAccountData.map((v) => {
               return (
@@ -808,64 +717,37 @@ const ReportsContainer = ({ onData }) => {
                   <div className="flex flex-col gap-4 reports-bank p-4 ">
                     <div className="flex gap-6">
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          Bank Name
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.bankName}
-                        </div>
+                        <div className='text-[#625f5f]'>Bank Name</div>
+                        <div className='font-semibold text-black'>{v.bankName}</div>
                       </div>
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          ifscCode
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.ifscCode}
-                        </div>
+                        <div className='text-[#625f5f]'>ifscCode</div>
+                        <div className='font-semibold text-black'>{v.ifscCode}</div>
                       </div>
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          Branch Name
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.branchName}
-                        </div>
+                        <div className='text-[#625f5f]'>Branch Name</div>
+                        <div className='font-semibold text-black'>{v.branchName}</div>
                       </div>
                     </div>
                     <div className="flex gap-6">
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          Name
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.accountHolderName}
-                        </div>
+                        <div className='text-[#625f5f]'>Name</div>
+                        <div className='font-semibold text-black'>{v.accountHolderName}</div>
                       </div>
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          A/C No
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.accountNumber}
-                        </div>
+                        <div className='text-[#625f5f]'>A/C No</div>
+                        <div className='font-semibold text-black'>{v.accountNumber}</div>
                       </div>
-
                       <div className="flex flex-col">
-                        <div className='text-[#625f5f]'>
-                          Phone Number
-                        </div>
-                        <div className='font-semibold text-black'>
-                          {v.accountNumber}
-                        </div>
+                        <div className='text-[#625f5f]'>Phone Number</div>
+                        <div className='font-semibold text-black'>{v.accountNumber}</div>
                       </div>
                     </div>
-
                   </div>
                 </>
               )
             })}
           </div>
-
         </>
       );
     };
@@ -875,62 +757,58 @@ const ReportsContainer = ({ onData }) => {
           <div className="flex flex-col gap-2 p-2">
             <div className="flex items-center gap-4">
               <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /></div>
-              <div className="flex flex-col">
+                <div className="flex justify-between gap-4 pr-2 w-[100%]">
+              <div className="flex flex-col ">
                 <h1 className='font-bold' style={{ fontSize: "16px" }}>{editingRowName.charAt(0).toUpperCase() + editingRowName.slice(1)} Performance Report</h1>
-                <Breadcrumb
-                  items={[
-                    {
-                      title: 'Print and download the Report',
-                    }
-                  ]}
-                />
+
+                  <Breadcrumb items={[{ title: 'Print and download the Report' }]} />
+                </div>
+                  <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
               </div>
             </div>
+            <div ref={componentRef}>
 
-            <div className="flex flex-col gap-2">
-              {editingRowId && (
-                <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
-                  <div className="flex flex-col gap-2 h-auto w-[81vw]">
-                    <DispatchTable />
-                  </div>
-                </Row>
-              )}
-            </div>
-            <div className="flex flex-col gap-4">
-              {editingRowId && (
-                <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
-                  <div className="flex justify-between gap-4 h-auto w-[100%] pr-2">
-                    <div className="flex flex-col gap-2 w-[80%]">
-                      <div className='flex flex-col py-2 my-2'>
-                        <div className='font-semibold text-lg'>  Advance</div>
-                        <OwnerAdvanceTable />
+              <div className="flex flex-col gap-2">
+                {editingRowId && (
+                  <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
+                    <div className="flex flex-col gap-2 h-auto w-[81vw]"><DispatchTable /></div>
+                  </Row>
+                )}
+              </div>
+              <div className="flex flex-col gap-4">
+                {editingRowId && (
+                  <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
+                    <div className="flex justify-between gap-4 h-auto w-[100%] pr-2">
+                      <div className="flex flex-col gap-2 w-[80%]">
+                        <div className='flex flex-col gap-3 py-2 my-2'>
+                          <div className='font-semibold text-lg px-4'>  Advance</div>
+                          <OwnerAdvanceTable />
+                        </div>
+                        <div className='flex flex-col gap-3 py-2 my-2'>
+                          <div className='font-semibold text-lg px-4'>  Voucher</div>
+                          <OwnerVoucherTable />
+                        </div>
+                        <div>
+                        </div>
                       </div>
-                      <div className='flex flex-col py-2 my-2'>
-                        <div className='font-semibold text-lg'>  Voucher</div>
-                        <OwnerVoucherTable />
-                      </div>
-                      <div>
+                      <div className='flex flex-col gap-3 py-2 my-2 w-[50%]'>
+                        <div className='font-semibold text-lg px-4'> Expense</div>
+                        <ExpenseComponent />
                       </div>
                     </div>
-                    <div className='flex flex-col py-2 my-2 w-[50%]'>
-                      <div className='font-semibold text-lg'> Expense</div>
-                      <ExpenseComponent />
+                  </Row>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                {editingRowId && (
+                  <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
+                    <div className="flex flex-col gap-3 h-auto w-[81vw]">
+                      <div className='font-semibold text-lg px-4'>  Bank Account Details</div>
+                      <OwnerBankAccountsTable />
                     </div>
-                  </div>
-                </Row>
-              )}
-            </div>
-
-
-            <div className="flex flex-col gap-2">
-              {editingRowId && (
-                <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
-                  <div className="flex flex-col gap-2 h-auto w-[81vw]">
-                    <div className='font-semibold text-lg'>  Bank Account Details</div>
-                    <OwnerBankAccountsTable />
-                  </div>
-                </Row>
-              )}
+                  </Row>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -939,16 +817,6 @@ const ReportsContainer = ({ onData }) => {
   };
 
   const UserTable = ({ onEditTruckClick }) => {
-    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-      setSelectedRowKeys(newSelectedRowKeys);
-    };
-
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
     const columns = [
       {
         title: 'Sl No',
@@ -989,25 +857,18 @@ const ReportsContainer = ({ onData }) => {
         key: 'totalAmount',
         width: 120,
       },
-
-
-
       {
         title: 'Commision',
         dataIndex: 'totalCommisionTotal',
         key: 'totalCommisionTotal',
         width: 160,
       },
-
-
       {
         title: 'Diesel',
         dataIndex: 'totalDiesel',
         key: 'totalDiesel',
         width: 160,
       },
-
-
       {
         title: 'Cash',
         dataIndex: 'totalCash',
@@ -1020,15 +881,12 @@ const ReportsContainer = ({ onData }) => {
         key: 'totalBankTransfer',
         width: 120,
       },
-
       {
         title: 'Shortage',
         dataIndex: 'totalShortage',
         key: 'totalShortage',
         width: 160,
       },
-
-
       {
         title: 'Action',
         key: 'action',
@@ -1041,27 +899,10 @@ const ReportsContainer = ({ onData }) => {
         ),
       },
     ];
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
 
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     return (
       <>
         <Table
-
           columns={columns}
           dataSource={tripData}
           scroll={{ x: 800, y: 410 }}
@@ -1070,11 +911,6 @@ const ReportsContainer = ({ onData }) => {
           pagination={{
             position: ['none', 'none'],
             showSizeChanger: false,
-            // current: currentPage,
-            // total: totalDispatchData,
-            // defaultPageSize: currentPageSize, // Set the default page size
-            // onChange: changePagination,
-            // onShowSizeChange: changePaginationAll,
           }}
         />
       </>
@@ -1085,7 +921,7 @@ const ReportsContainer = ({ onData }) => {
     <>
       {showUserTable ? (
         <>
-          <Truck />
+          {/* <Truck /> */}
           <UserTable onEditTruckClick={handleEditTruckClick} />
         </>
       ) : (

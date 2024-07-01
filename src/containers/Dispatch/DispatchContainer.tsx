@@ -447,7 +447,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -489,7 +489,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -1101,7 +1101,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -1143,7 +1143,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];

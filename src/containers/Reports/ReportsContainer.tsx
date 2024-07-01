@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import NoData from "./NoData";
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import moment from 'moment-timezone';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
 import backbutton_logo from "../../assets/backbutton.png"
-import axios from 'axios';
+import { useLocalStorage } from "../../localStorageContext"
+import NoData from "./NoData"
 
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -58,47 +58,37 @@ const ReportsContainer = ({ onData }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-
     const data = {};
-
     if (vehicleType) {
       data.vehicleType = [vehicleType];
     }
-
     if (materialType) {
       data.materialType = [materialType];
     }
     if (startDate) {
       data.startDate = startDate;
     }
-
     setLoading(true)
     try {
       const searchData = searchQuery ? searchQuery : null;
       const response = searchData ? await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb)
         : await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb);
-
       setLoading(false)
       let allTripData;
       if (response.data.tripAggregates == 0) {
         allTripData = response.data.tripAggregates
         settripData(allTripData);
       } else {
-
         allTripData = response.data.tripAggregates[0].data || "";
         settripData(allTripData);
         setTotalDispatchData(allTripData.length);
-
-
       }
     } catch (err) {
       setLoading(false)
       console.log(err)
-
     }
   };
   const [materials, setMaterials] = useState([]);
-
   const fetchMaterials = async () => {
     try {
       const headersOb = {
@@ -195,6 +185,7 @@ const ReportsContainer = ({ onData }) => {
       const [totalData, setTotalData] = useState(null);
       const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
       const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
+      const { updateCount } = useLocalStorage();
 
       useEffect(() => {
         // Fetch data from localStorage
@@ -207,13 +198,30 @@ const ReportsContainer = ({ onData }) => {
         if (storedDebitData) {
           setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
         }
-
         // Fetch data from localStorage
         const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
         if (storedVoucherAmountData) {
           setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
         }
-      }, []);
+      }, [updateCount]);
+      // useEffect(() => {
+      //   // Fetch data from localStorage
+      //   const storedData = localStorage.getItem("TripReportsExpense1");
+      //   if (storedData) {
+      //     setTotalData(JSON.parse(storedData));
+      //   }
+      //   // Fetch data from localStorage
+      //   const storedDebitData = localStorage.getItem("totalOutstandingDebit");
+      //   if (storedDebitData) {
+      //     setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
+      //   }
+
+      //   // Fetch data from localStorage
+      //   const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
+      //   if (storedVoucherAmountData) {
+      //     setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
+      //   }
+      // }, []);
 
       // Function to render each expense item
       const renderExpenseItem = (label, amount) => (
@@ -278,6 +286,7 @@ const ReportsContainer = ({ onData }) => {
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
+      const { triggerUpdate } = useLocalStorage();
       const getDispatchTableData = async () => {
 
         try {
@@ -301,7 +310,8 @@ const ReportsContainer = ({ onData }) => {
               "totalQuantity": 0,
               "totalShortage": 0
             }
-            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
+            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage));
+            triggerUpdate();
           } else {
             setLoading(false);
             setchallanData(response.data.tripAggregates[0].tripDetails || []);
@@ -418,11 +428,8 @@ const ReportsContainer = ({ onData }) => {
           title: 'Commission',
           width: 160,
           render: (_, record) => {
-            console.log(record)
             const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon)
             const percentCommissionINR = (percentCommission / 100)
-
-            const marketCommisionRate = ((record.amount) - (record.marketRate * record.quantityInMetricTons))
             return (
               <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
@@ -502,6 +509,7 @@ const ReportsContainer = ({ onData }) => {
     const OwnerAdvanceTable = () => {
       const authToken = localStorage.getItem("token");
       const selectedHubId = localStorage.getItem("selectedHubID");
+      const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0);
       const getOwnerAdvanceTableData = async () => {
@@ -515,18 +523,23 @@ const ReportsContainer = ({ onData }) => {
         try {
           setLoading(true)
           const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
+          console.log(response)
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
+
           setTotal(ownersAdavanceAmountDebit)
           const saveLocal = {
             "totalOutstandingDebit": ownersAdavanceAmountDebit
           }
-          localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal))
+          localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
+          triggerUpdate();
+          // localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal))
           setLoading(false)
           let allChallans;
           if (ledgerEntries.length == 0) {
             allChallans = ledgerEntries
             setchallanData(allChallans);
+
           } else {
 
             allChallans = ledgerEntries || "";
@@ -539,8 +552,14 @@ const ReportsContainer = ({ onData }) => {
         } catch (err) {
           setLoading(false)
           console.log(err)
-          setLoading(false)
+          const ownersAdavanceAmountDebit = 0
 
+          setTotal(ownersAdavanceAmountDebit)
+          const saveLocal = {
+            "totalOutstandingDebit": ownersAdavanceAmountDebit
+          }
+          localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
+          triggerUpdate();
         }
       };
 
@@ -634,6 +653,7 @@ const ReportsContainer = ({ onData }) => {
     const OwnerVoucherTable = () => {
       const authToken = localStorage.getItem("token");
       const selectedHubId = localStorage.getItem("selectedHubID");
+      const { triggerUpdate } = useLocalStorage();
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0)
       const getVoucherTableData = async () => {
@@ -652,8 +672,9 @@ const ReportsContainer = ({ onData }) => {
           const saveLocal = {
             "ownersVoucherAmount": ownersVoucherAmount
           }
-          localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal))
-
+          // localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal))
+          localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
+          triggerUpdate();
           setLoading(false)
           let truckDetails;
           if (ledgerEntries.length === 0) {
@@ -878,8 +899,8 @@ const ReportsContainer = ({ onData }) => {
             <div className="flex flex-col gap-4">
               {editingRowId && (
                 <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
-                  <div className="flex gap-4 h-auto w-100">
-                    <div className="flex flex-col gap-1 w-[50vw]">
+                  <div className="flex justify-between gap-4 h-auto w-[100%] pr-2">
+                    <div className="flex flex-col gap-2 w-[80%]">
                       <div className='flex flex-col py-2 my-2'>
                         <div className='font-semibold text-lg'>  Advance</div>
                         <OwnerAdvanceTable />
@@ -1047,13 +1068,13 @@ const ReportsContainer = ({ onData }) => {
           rowKey="_id"
           loading={loading}
           pagination={{
-            position: ['bottomCenter'],
-            showSizeChanger: true,
-            current: currentPage,
-            total: totalDispatchData,
-            defaultPageSize: currentPageSize, // Set the default page size
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
+            position: ['none','none'],
+            showSizeChanger: false,
+            // current: currentPage,
+            // total: totalDispatchData,
+            // defaultPageSize: currentPageSize, // Set the default page size
+            // onChange: changePagination,
+            // onShowSizeChange: changePaginationAll,
           }}
         />
       </>
@@ -1062,7 +1083,7 @@ const ReportsContainer = ({ onData }) => {
 
   return (
     <>
-      {/* {showUserTable ? (
+      {showUserTable ? (
         <>
           <Truck />
           <UserTable onEditTruckClick={handleEditTruckClick} />
@@ -1071,9 +1092,8 @@ const ReportsContainer = ({ onData }) => {
         editingChallan ? (
           <UserInsideReport editingRowId={rowDataForDispatchEditId} editingRowName={rowDataForDispatchEditName} />
         ) : null
-      )} */}
-
-      <NoData />
+      )}
+      {/* <NoData /> */}
 
     </>
   );

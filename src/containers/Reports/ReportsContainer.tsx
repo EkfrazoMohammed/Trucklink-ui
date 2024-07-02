@@ -661,7 +661,6 @@ const ReportsContainer = ({ onData }) => {
 
           // const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
-          console.log(ledgerEntries)
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
 
           setTotal(ownersAdavanceAmountDebit)
@@ -781,31 +780,45 @@ const ReportsContainer = ({ onData }) => {
           const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}${queryParams}`, headersOb)
             : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
-          const ledgerEntries = response.data.voucher[0].voucherDetails;
-          console.log(response.data)
-          const ownersVoucherAmount = response.data.voucher[0].length > 0 ? response.data.voucher[0].total : 0
-
-          setTotal(response.data.voucher[0].total)
-          const saveLocal = {
-            "ownersVoucherAmount": ownersVoucherAmount
-          }
-          localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
-          triggerUpdate();
-          setLoading(false)
-          let voucherDetails;
-          if (ledgerEntries.length === 0) {
-            voucherDetails = ledgerEntries;
-            console.log(voucherDetails)
-            setchallanData(voucherDetails);
-            localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
+          if (response.data.voucher.length == 0) {
+            setLoading(false)
+            setTotal(0)
+            const saveLocal = {
+              "ownersVoucherAmount": 0
+            }
+            console.log(saveLocal)
+            localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
           } else {
-            voucherDetails = ledgerEntries || "";
-            setchallanData(voucherDetails);
-            localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
+            setLoading(false)
+            const ledgerEntries = response.data.voucher[0].voucherDetails;
+            const ownersVoucherAmount = response.data.voucher[0].length > 0 ? response.data.voucher[0].total : 0
+
+            setTotal(response.data.voucher[0].total)
+            const saveLocal = {
+              "ownersVoucherAmount": ownersVoucherAmount
+            }
+            localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
+            triggerUpdate();
+            setLoading(false)
+            let voucherDetails;
+            if (ledgerEntries.length === 0) {
+              voucherDetails = ledgerEntries;
+              console.log(voucherDetails)
+              setchallanData(voucherDetails);
+              localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
+            } else {
+              voucherDetails = ledgerEntries || "";
+              setchallanData(voucherDetails);
+              localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
+            }
           }
         } catch (err) {
           setLoading(false)
           console.log(err)
+          const saveLocal = {
+            "ownersVoucherAmount": 0
+          }
+          localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
         }
       };
       const [loading, setLoading] = useState(false)

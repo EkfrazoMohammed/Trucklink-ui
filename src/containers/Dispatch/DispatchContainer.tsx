@@ -1092,7 +1092,7 @@ const DispatchContainer = ({ onData }) => {
         console.error('Error fetching materials:', error);
       }
     };
-    const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+    const [vehicleDetails, setVehicleDetails] = useState([]);
     const fetchVehicleDetails = async () => {
       try {
         const headersOb = {
@@ -1128,7 +1128,6 @@ const DispatchContainer = ({ onData }) => {
         }
       } catch (error) {
         console.error('Error fetching vehicle details:', error);
-        // Handle error
       }
     };
     const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details

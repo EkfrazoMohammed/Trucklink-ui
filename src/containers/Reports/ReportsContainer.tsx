@@ -189,10 +189,6 @@ const ReportsContainer = ({ onData }) => {
   };
 
   const UserInsideReport = ({ editingRowId, editingRowName }) => {
-    const authToken = localStorage.getItem("token");
-    const [tablesData, setTablesData] = useState([]);
-    const [loading, setLoading] = useState(false);
-
     const goBack = () => {
       onData('flex')
       setShowUserTable(true)
@@ -238,7 +234,14 @@ const ReportsContainer = ({ onData }) => {
 
       // Add Dispatch Table data
       const dispatchColumns = [
-        { title: 'Sl No', dataIndex: 'serialNumber' },
+        {
+          title: "Sl No",
+          dataIndex: "slno",
+          render: (text, row, index) => {
+            return <span>{index + 1}</span>;
+          },
+          key: "name",
+        },
         { title: 'Material Type', dataIndex: 'materialType' },
         { title: 'GR No', dataIndex: 'grNumber' },
         { title: 'GR Date', dataIndex: 'grDate' },
@@ -254,40 +257,19 @@ const ReportsContainer = ({ onData }) => {
         { title: 'Cash', dataIndex: 'cash' },
         { title: 'Bank Transfer', dataIndex: 'bankTransfer' },
       ];
-
-      const a = [
-        {
-          "invoiceDate": null,
-          "deliveryLocation": "Udupi",
-          "loadLocation": "Kolar",
-          "vehicleNumber": "MH01AB1234",
-          "vehicleId": "665815c16364f6342e577911",
-          "deliveryNumber": "1",
-          "quantityInMetricTons": 10,
-          "materialType": "CEMENT",
-          "vehicleType": "Bulk",
-          "ratePerTon": 200,
-          "commisionRate": 0,
-          "commisionTotal": 0,
-          "shortage": 0,
-          "diesel": 1,
-          "cash": 1,
-          "bankTransfer": 1,
-          "invoiceISODate": null,
-          "amount": 2000,
-          "marketRate": 5,
-          "grNumber": "1",
-          "grDate": "01/05/2024",
-          "ownerName": "tayib",
-          "OwnwerTransfer": "false"
-        }
-      ];
-
-      addSheetToWorkbook(a, dispatchColumns, 'Dispatch');
+      const dispatch = JSON.parse(localStorage.getItem("Dispatch Table")) || [];
+      addSheetToWorkbook(dispatch.tripDetails, dispatchColumns, 'Dispatch');
 
       // Add Owner Advance Table data
       const advanceColumns = [
-        { title: 'Sl No', dataIndex: 'serialNumber' },
+        {
+          title: "Sl No",
+          dataIndex: "slno",
+          render: (text, row, index) => {
+            return <span>{index + 1}</span>;
+          },
+          key: "name",
+        },
         { title: 'Date', dataIndex: 'entryDate' },
         { title: 'Narration', dataIndex: 'narration' },
         { title: 'Debit', dataIndex: 'debit' },
@@ -295,107 +277,137 @@ const ReportsContainer = ({ onData }) => {
       ];
 
       // Retrieve data from localStorage and parse it as an array
-      const b = JSON.parse(localStorage.getItem("ad")) || [];
+      const b = JSON.parse(localStorage.getItem("advance")) || [];
       addSheetToWorkbook(b, advanceColumns, 'Advance');
-      // const tripRegisterFooter = [
-      //   [
-      //     {
-      //       content: "Total:",
-      //       colSpan: 5,
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalQuantity &&
-      //         decimals(tripRegisterData.tripAggrigate.totalQuantity),
-      //     },
-      //     {
-      //       content: "",
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalAmount &&
-      //         decimals(tripRegisterData.tripAggrigate.totalAmount),
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalCommisionTotal &&
-      //         decimals(tripRegisterData.tripAggrigate.totalCommisionTotal),
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalDiesel &&
-      //         decimals(tripRegisterData.tripAggrigate.totalDiesel),
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalCash &&
-      //         decimals(tripRegisterData.tripAggrigate.totalCash),
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalBankTransfer &&
-      //         decimals(tripRegisterData.tripAggrigate.totalBankTransfer),
-      //     },
-      //     {
-      //       content:
-      //         tripRegisterData.tripAggrigate &&
-      //         tripRegisterData.tripAggrigate.totalShortage &&
-      //         decimals(tripRegisterData.tripAggrigate.totalShortage),
-      //     },
-      //   ],
-      // ];
+      const vouchersColumns = [
+        {
+          title: "Sl No",
+          dataIndex: "slno",
+          render: (text, row, index) => {
+            return <span>{index + 1}</span>;
+          },
+          key: "name",
+        },
 
-      // const ownersAdvanceFooter = [
-      //   [
-      //     {
-      //       content: "",
-      //     },
-      //     {
-      //       content: "New Outstanding:",
-      //       colSpan: 2,
-      //     },
-      //     {
-      //       content: ownersAdvance.outStandingAmount || 0,
-      //       colSpan: 2,
-      //       styles: {
-      //         halign: "center",
-      //       },
-      //     },
-      //   ],
-      // ];
-      //  const advanceVoucherFooter = [
-      //   [
-      //     {
-      //       content: "Total:",
-      //       colSpan: 2,
-      //     },
-      //     {
-      //       content: advanceVoucher.total || 0,
-      //     },
-      //   ],
-      // ];
+        {
+          title: 'Narration',
+          dataIndex: 'narration',
+          key: 'narration',
+          width: 110,
+        },
+        {
+          title: 'Amount',
+          dataIndex: 'amount',
+          key: 'amount',
+          width: 90,
+        },
+      ];
+      // Retrieve data from localStorage and parse it as an array
+      const c = JSON.parse(localStorage.getItem("ownersVoucher")) || [];
+      addSheetToWorkbook(c, vouchersColumns, 'Voucher');
+      const bankColumns = [
+        {
+          title: "Sl No",
+          dataIndex: "slno",
+          render: (text, row, index) => {
+            return <span>{index + 1}</span>;
+          },
+          key: "name",
+        },
 
-      // const ownerExpenseFooter = [
-      //   [
-      //     {
-      //       content: "Balance:",
-      //     },
-      //     {
-      //       content: decimals(calculateTotalBalance(dataExpenses)),
-      //       styles: {
-      //         textColor:
-      //           calculateTotalBalance(dataExpenses) <= 0 ? "red" : [0, 136, 170],
-      //       },
-      //     },
-      //   ],
-      // ];
-      // Write the workbook to a file
+        {
+          title: 'bankName',
+          dataIndex: 'bankName',
+          key: 'bankName',
+          width: 110,
+        },
+        {
+          title: 'branchName',
+          dataIndex: 'branchName',
+          key: 'branchName',
+          width: 90,
+        },
+        {
+          title: 'ifscCode',
+          dataIndex: 'ifscCode',
+          key: 'ifscCode',
+          width: 90,
+        },
+        {
+          title: 'accountHolderName',
+          dataIndex: 'accountHolderName',
+          key: 'accountHolderName',
+          width: 110,
+        },
+        {
+          title: 'accountNumber',
+          dataIndex: 'accountNumber',
+          key: 'accountNumber',
+          width: 90,
+        },
+      ];
+      const d = JSON.parse(localStorage.getItem("ac")) || [];
+      addSheetToWorkbook(d, bankColumns, 'Bank Accounts');
+
+      const storedData = JSON.parse(localStorage.getItem("TripReportsExpense1")) || [];
+      const storedDebitData = JSON.parse(localStorage.getItem("totalOutstandingDebit")) || [];
+      const storedVoucherAmountData = JSON.parse(localStorage.getItem("ownersVoucherAmount")) || [];
+
+      const columnsExpenses = [
+        {
+          title: "Particulars",
+          dataIndex: "particulars",
+          key: "particulars",
+          width: "70%",
+        },
+
+        {
+          title: "Amount (₹)",
+          dataIndex: "amount",
+          key: "amount",
+          width: "30%",
+        },
+      ];
+
+      const dataExpenses = [
+        {
+          particulars: "Total Amount",
+          amount: storedData && storedData.totalAmount
+        },
+        {
+          particulars: "Commision",
+          amount: storedData && storedData.totalCommisionTotal
+        },
+        {
+          particulars: "Diesel",
+          amount: storedData && storedData.totalDiesel
+        },
+        {
+          particulars: "Cash",
+          amount: storedData && storedData.totalCash,
+        },
+        {
+          particulars: "Bank Transfer",
+          amount: storedData && storedData.totalBankTransfer,
+        },
+        {
+          particulars: "Shortage",
+          amount: storedData && storedData.totalShortage,
+        },
+        {
+          particulars: "Outstanding Debit",
+          amount: storedDebitData && storedDebitData.totalOutstandingDebit,
+        },
+        {
+          particulars: "Advance Voucher",
+          amount: storedVoucherAmountData && storedVoucherAmountData.ownersVoucherAmount,
+        },
+      ];
+
+      addSheetToWorkbook(dataExpenses, columnsExpenses, 'Expenses');
+
+
+
       XLSX.writeFile(workbook, 'Report.xlsx');
     };
 
@@ -663,12 +675,11 @@ const ReportsContainer = ({ onData }) => {
           if (ledgerEntries.length == 0) {
             allChallans = ledgerEntries
             setchallanData(allChallans);
-            localStorage.setItem("ad", JSON.stringify(allChallans));
-
+            localStorage.setItem("advance", JSON.stringify(allChallans));
           } else {
             allChallans = ledgerEntries || "";
             setchallanData(allChallans);
-            localStorage.setItem("ad", JSON.stringify(allChallans));
+            localStorage.setItem("advance", JSON.stringify(allChallans));
           }
           setLoading(false)
         } catch (err) {
@@ -780,13 +791,15 @@ const ReportsContainer = ({ onData }) => {
           localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
           triggerUpdate();
           setLoading(false)
-          let truckDetails;
+          let voucherDetails;
           if (ledgerEntries.length === 0) {
-            truckDetails = ledgerEntries;
-            setchallanData(truckDetails);
+            voucherDetails = ledgerEntries;
+            setchallanData(voucherDetails);
+            localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
           } else {
-            truckDetails = ledgerEntries || "";
-            setchallanData(truckDetails);
+            voucherDetails = ledgerEntries || "";
+            setchallanData(voucherDetails);
+            localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
           }
         } catch (err) {
           setLoading(false)
@@ -917,13 +930,15 @@ const ReportsContainer = ({ onData }) => {
           const response = await API.get(`get-owner-accounts/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.bankDetails;
           setLoading(false)
-          let truckDetails;
+          let bankDetails;
           if (ledgerEntries.length === 0) {
-            truckDetails = ledgerEntries;
-            setBankAccountData(truckDetails);
+            bankDetails = ledgerEntries;
+            setBankAccountData(bankDetails);
+            localStorage.setItem("ac", JSON.stringify(bankDetails));
           } else {
-            truckDetails = ledgerEntries || "";
-            setBankAccountData(truckDetails);
+            bankDetails = ledgerEntries || "";
+            setBankAccountData(bankDetails);
+            localStorage.setItem("ac", JSON.stringify(bankDetails));
           }
         } catch (err) {
           setLoading(false)

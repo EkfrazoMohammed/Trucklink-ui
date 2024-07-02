@@ -19,6 +19,8 @@ const OwnerAdvance = () => {
 
   const [startDate, setStartDate] = useState(null);  // State to manage the start date
   const [endDate, setEndDate] = useState(null);  // State to manage the end date
+  const [startDateValue, setStartDateValue] = useState("");  // State to manage the start date
+  const [endDateValue, setEndDateValue] = useState("");  // State to manage the end date
 
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
@@ -36,14 +38,27 @@ const OwnerAdvance = () => {
 
 
   const handleStartDateChange = (date) => {
+    setStartDateValue(date)
     const unixTimestamp = new Date(date).getTime();
     setStartDate(unixTimestamp);
   };
 
   const handleEndDateChange = (date) => {
+    setEndDateValue(date)
     const unixTimestamp = new Date(date).getTime();
     setEndDate(unixTimestamp);
   };
+  // const handleEndDateChange = (date, dateString) => {
+  //   if (date) {
+  //     // Set endDate to the last minute of the selected day in IST
+  //     const endOfDay = moment(date).endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+  //     setEndDateValue(date);
+  //     setEndDate(endOfDay.valueOf());
+  //   } else {
+  //     setEndDateValue("");
+  //     setEndDate(null);
+  //   }
+  // };
   const handleFilter = () => {
 
     updateFilterAndFetchData({
@@ -58,6 +73,8 @@ const OwnerAdvance = () => {
     setStartDate(null)
     setEndDate(null)
     setFilterRequest(null);
+    setStartDateValue("")
+    setEndDateValue("")
   };
 
   const updateFilterAndFetchData = async (filters) => {
@@ -126,7 +143,8 @@ const OwnerAdvance = () => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      message.error("Error fetching data. Please try again later", 2);
+      setDataSource([]);
+      // message.error("Error fetching data. Please try again later", 2);
     }
   };
 
@@ -164,7 +182,8 @@ const OwnerAdvance = () => {
       setOwners(response.data.ownerDetails || []);
     } catch (err) {
       console.log(err);
-      message.error("Error fetching owners. Please try again later", 2);
+      setOwners([]);
+      // message.error("Error fetching owners. Please try again later", 2);
     }
   };
 
@@ -731,61 +750,6 @@ const OwnerAdvance = () => {
     getOwners();
   }, []);
 
-  const changePagination = async (pageNumber, pageSize) => {
-    try {
-      // setCurrentPage(pageNumber);
-      // setCurrentPageSize(pageSize);
-      console.log("pageNumber", pageNumber)
-      console.log("pageSize", pageSize);
-      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-      // setFilteredOwnerData(newData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const changePaginationAll = async (pageNumber, pageSize) => {
-    try {
-      setCurrentPage(pageNumber);
-      setCurrentPageSize(pageSize);
-      console.log("pageNumber", pageNumber)
-      console.log("pageSize", pageSize);
-      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-      // setFilteredOwnerData(newData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const handlePageSizeChange = async (pageNumber) => {
-
-    setCurrentPageSize(pageNumber);
-    setCurrentPage(pageNumber); // Reset to first page
-    // Call your data fetching function here if needed
-    console.log(pageNumber)
-    try {
-      // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-      // setFilteredOwnerData(newData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const renderPaginationButtons = () => {
-    const totalPages = Math.ceil(totalOwnerData / currentPageSize);
-    const buttons = [];
-
-    for (let i = 1; i <= totalPages; i++) {
-      buttons.push(
-        <Button
-          key={i}
-          type={i === currentPage ? 'primary' : 'default'}
-          onClick={() => handlePageSizeChange(i)}
-        >
-          {i}
-        </Button>
-      );
-    }
-  }
 
   return (
     <div>
@@ -811,6 +775,7 @@ const OwnerAdvance = () => {
             <DatePicker
               size="large"
               placeholder="Start Date"
+              value={startDateValue}
               format={dateFormat}
               onChange={handleStartDateChange}
               style={{ marginRight: 16 }}
@@ -819,6 +784,7 @@ const OwnerAdvance = () => {
               placeholder="End Date"
               size="large"
               format={dateFormat}
+              value={endDateValue}
               onChange={handleEndDateChange}
               style={{ marginRight: 16 }}
             />

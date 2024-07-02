@@ -8,6 +8,7 @@ import { useLocalStorage } from "../../localStorageContext"
 import NoData from "./NoData"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
 
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -77,17 +78,7 @@ const ReportsContainer = ({ onData }) => {
     setLoading(true)
 
     try {
-      // const queryParams = new URLSearchParams({
-      //   page: '1',
-      //   limit: '150',
-      //   hubId: selectedHubId,
-      //   ...filters
-      // }).toString();
-      // console.log(queryParams)
-      // const response = await API.get(`report-table-data?${queryParams}`, headersOb);
-
       const searchData = searchQuery ? searchQuery : null;
-
       const response = searchData ? await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb)
         : await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb);
       setLoading(false)
@@ -134,6 +125,7 @@ const ReportsContainer = ({ onData }) => {
   const Truck = () => {
     const onReset = () => {
       setStartDateValue("")
+      setEndDateValue("")
       setSearchQuery("");
       setMaterialType(null)
       setVehicleTypeSearch(null)
@@ -160,7 +152,7 @@ const ReportsContainer = ({ onData }) => {
             style={{ width: "20%" }}
             value={vehicleTypeSearch}
             options={[
-              { value: 'Bag', label: 'Open' },
+              { value: 'Open', label: 'Open' },
               { value: 'Bulk', label: 'Bulk' },
             ]}
             onChange={handleVehicleTypeChange}
@@ -197,6 +189,10 @@ const ReportsContainer = ({ onData }) => {
   };
 
   const UserInsideReport = ({ editingRowId, editingRowName }) => {
+    const authToken = localStorage.getItem("token");
+    const [tablesData, setTablesData] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     const goBack = () => {
       onData('flex')
       setShowUserTable(true)
@@ -229,59 +225,245 @@ const ReportsContainer = ({ onData }) => {
       pdf.addImage(imgData, 'PNG', padding.left, padding.top, imgWidth, imgHeight);
       pdf.save('report.pdf');
     };
+    const exportMultipleTablesToExcel = () => {
+      const workbook = XLSX.utils.book_new();
 
+      const addSheetToWorkbook = (data, columns, sheetName) => {
+        const headers = columns.map(col => col.title);
+        const rows = data.map(row => columns.map(col => row[col.dataIndex]));
+        const worksheetData = [headers, ...rows];
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      };
+
+      // Add Dispatch Table data
+      const dispatchColumns = [
+        { title: 'Sl No', dataIndex: 'serialNumber' },
+        { title: 'Material Type', dataIndex: 'materialType' },
+        { title: 'GR No', dataIndex: 'grNumber' },
+        { title: 'GR Date', dataIndex: 'grDate' },
+        { title: 'Load Location', dataIndex: 'loadLocation' },
+        { title: 'Delivery Location', dataIndex: 'deliveryLocation' },
+        { title: 'Vehicle Number', dataIndex: 'vehicleNumber' },
+        { title: 'Vehicle Type', dataIndex: 'vehicleType' },
+        { title: 'Delivery Number', dataIndex: 'deliveryNumber' },
+        { title: 'Quantity', dataIndex: 'quantityInMetricTons' },
+        { title: 'Company Rate', dataIndex: 'ratePerTon' },
+        { title: 'Market Rate', dataIndex: 'marketRate' },
+        { title: 'Diesel', dataIndex: 'diesel' },
+        { title: 'Cash', dataIndex: 'cash' },
+        { title: 'Bank Transfer', dataIndex: 'bankTransfer' },
+      ];
+
+      const a = [
+        {
+          "invoiceDate": null,
+          "deliveryLocation": "Udupi",
+          "loadLocation": "Kolar",
+          "vehicleNumber": "MH01AB1234",
+          "vehicleId": "665815c16364f6342e577911",
+          "deliveryNumber": "1",
+          "quantityInMetricTons": 10,
+          "materialType": "CEMENT",
+          "vehicleType": "Bulk",
+          "ratePerTon": 200,
+          "commisionRate": 0,
+          "commisionTotal": 0,
+          "shortage": 0,
+          "diesel": 1,
+          "cash": 1,
+          "bankTransfer": 1,
+          "invoiceISODate": null,
+          "amount": 2000,
+          "marketRate": 5,
+          "grNumber": "1",
+          "grDate": "01/05/2024",
+          "ownerName": "tayib",
+          "OwnwerTransfer": "false"
+        }
+      ];
+
+      addSheetToWorkbook(a, dispatchColumns, 'Dispatch');
+
+      // Add Owner Advance Table data
+      const advanceColumns = [
+        { title: 'Sl No', dataIndex: 'serialNumber' },
+        { title: 'Date', dataIndex: 'entryDate' },
+        { title: 'Narration', dataIndex: 'narration' },
+        { title: 'Debit', dataIndex: 'debit' },
+        { title: 'Credit', dataIndex: 'credit' },
+      ];
+
+      // Retrieve data from localStorage and parse it as an array
+      const b = JSON.parse(localStorage.getItem("ad")) || [];
+      addSheetToWorkbook(b, advanceColumns, 'Advance');
+      // const tripRegisterFooter = [
+      //   [
+      //     {
+      //       content: "Total:",
+      //       colSpan: 5,
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalQuantity &&
+      //         decimals(tripRegisterData.tripAggrigate.totalQuantity),
+      //     },
+      //     {
+      //       content: "",
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalAmount &&
+      //         decimals(tripRegisterData.tripAggrigate.totalAmount),
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalCommisionTotal &&
+      //         decimals(tripRegisterData.tripAggrigate.totalCommisionTotal),
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalDiesel &&
+      //         decimals(tripRegisterData.tripAggrigate.totalDiesel),
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalCash &&
+      //         decimals(tripRegisterData.tripAggrigate.totalCash),
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalBankTransfer &&
+      //         decimals(tripRegisterData.tripAggrigate.totalBankTransfer),
+      //     },
+      //     {
+      //       content:
+      //         tripRegisterData.tripAggrigate &&
+      //         tripRegisterData.tripAggrigate.totalShortage &&
+      //         decimals(tripRegisterData.tripAggrigate.totalShortage),
+      //     },
+      //   ],
+      // ];
+
+      // const ownersAdvanceFooter = [
+      //   [
+      //     {
+      //       content: "",
+      //     },
+      //     {
+      //       content: "New Outstanding:",
+      //       colSpan: 2,
+      //     },
+      //     {
+      //       content: ownersAdvance.outStandingAmount || 0,
+      //       colSpan: 2,
+      //       styles: {
+      //         halign: "center",
+      //       },
+      //     },
+      //   ],
+      // ];
+      //  const advanceVoucherFooter = [
+      //   [
+      //     {
+      //       content: "Total:",
+      //       colSpan: 2,
+      //     },
+      //     {
+      //       content: advanceVoucher.total || 0,
+      //     },
+      //   ],
+      // ];
+
+      // const ownerExpenseFooter = [
+      //   [
+      //     {
+      //       content: "Balance:",
+      //     },
+      //     {
+      //       content: decimals(calculateTotalBalance(dataExpenses)),
+      //       styles: {
+      //         textColor:
+      //           calculateTotalBalance(dataExpenses) <= 0 ? "red" : [0, 136, 170],
+      //       },
+      //     },
+      //   ],
+      // ];
+      // Write the workbook to a file
+      XLSX.writeFile(workbook, 'Report.xlsx');
+    };
 
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
       const { triggerUpdate } = useLocalStorage();
+      const queryParams = buildQueryParams(filters);
 
-      const queryParams = buildQueryParams(filters)
-      console.log(queryParams)
       const getDispatchTableData = async () => {
-
-
         try {
           setLoading(true);
           const headersOb = {
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${authToken}`
-            }
+              "Authorization": `Bearer ${authToken}`,
+            },
           };
           const searchData = queryParams ? queryParams : null;
 
-          const response = searchData ? await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}${queryParams}`, headersOb)
-            : await API.get(`trip-register-aggregate-values/${editingRowId}/${selectedHubId}`, headersOb);
+          const response = searchData
+            ? await API.get(
+              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}${queryParams}`,
+              headersOb
+            )
+            : await API.get(
+              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}`,
+              headersOb
+            );
+
           if (response.data.tripAggregates.length === 0) {
-            setLoading(false);
-            setchallanData(response.data.tripAggregates);
+            setchallanData([]);
+            localStorage.setItem("Dispatch Table", JSON.stringify([]));
             const saveTripReportsinLocalStorage = {
-              "totalAmount": 0,
-              "totalBankTransfer": 0,
-              "totalCash": 0,
-              "totalCommisionTotal": 0,
-              "totalDiesel": 0,
-              "totalQuantity": 0,
-              "totalShortage": 0
-            }
-            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage));
+              totalAmount: 0,
+              totalBankTransfer: 0,
+              totalCash: 0,
+              totalCommisionTotal: 0,
+              totalDiesel: 0,
+              totalQuantity: 0,
+              totalShortage: 0,
+            };
+            localStorage.setItem(
+              "TripReportsExpense1",
+              JSON.stringify(saveTripReportsinLocalStorage)
+            );
             triggerUpdate();
           } else {
-            setLoading(false);
-            setchallanData(response.data.tripAggregates[0].tripDetails || []);
+            const tripData = response.data.tripAggregates[0];
+            localStorage.setItem("Dispatch Table", JSON.stringify(tripData));
+            setchallanData(tripData.tripDetails || []);
             const saveTripReportsinLocalStorage = {
-              "totalAmount": response.data.tripAggregates[0].totalAmount,
-              "totalBankTransfer": response.data.tripAggregates[0].totalBankTransfer,
-              "totalCash": response.data.tripAggregates[0].totalCash,
-              "totalCommisionTotal": response.data.tripAggregates[0].totalCommisionTotal,
-              "totalDiesel": response.data.tripAggregates[0].totalDiesel,
-              "totalQuantity": response.data.tripAggregates[0].totalQuantity,
-              "totalShortage": response.data.tripAggregates[0].totalShortage
-            }
-            localStorage.setItem("TripReportsExpense1", JSON.stringify(saveTripReportsinLocalStorage))
-          }
+              totalAmount: tripData.totalAmount,
+              totalBankTransfer: tripData.totalBankTransfer,
+              totalCash: tripData.totalCash,
+              totalCommisionTotal: tripData.totalCommisionTotal,
+              totalDiesel: tripData.totalDiesel,
+              totalQuantity: tripData.totalQuantity,
+              totalShortage: tripData.totalShortage,
+            };
 
+            localStorage.setItem(
+              "TripReportsExpense1",
+              JSON.stringify(saveTripReportsinLocalStorage)
+            );
+            triggerUpdate();
+          }
+          setLoading(false);
         } catch (err) {
           setLoading(false);
           console.log(err);
@@ -421,7 +603,6 @@ const ReportsContainer = ({ onData }) => {
           width: 90,
         },
       ];
-
       return (
         <>
           <Table
@@ -450,7 +631,6 @@ const ReportsContainer = ({ onData }) => {
       const [challanData, setchallanData] = useState([]);
       const [total, setTotal] = useState(0);
       const queryParams = buildQueryParams(filters)
-      console.log(queryParams)
       const getOwnerAdvanceTableData = async () => {
         const headersOb = {
           headers: {
@@ -483,9 +663,12 @@ const ReportsContainer = ({ onData }) => {
           if (ledgerEntries.length == 0) {
             allChallans = ledgerEntries
             setchallanData(allChallans);
+            localStorage.setItem("ad", JSON.stringify(allChallans));
+
           } else {
             allChallans = ledgerEntries || "";
             setchallanData(allChallans);
+            localStorage.setItem("ad", JSON.stringify(allChallans));
           }
           setLoading(false)
         } catch (err) {
@@ -806,7 +989,11 @@ const ReportsContainer = ({ onData }) => {
 
                   <Breadcrumb items={[{ title: 'Print and download the Report' }]} />
                 </div>
-                <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
+                <div>
+
+                  <Button size='large' onClick={() => exportMultipleTablesToExcel()}><DownloadOutlined /></Button>
+                  <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
+                </div>
               </div>
             </div>
             <div ref={componentRef}>

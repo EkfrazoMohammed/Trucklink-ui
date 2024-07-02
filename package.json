@@ -34,7 +34,8 @@
     "sass": "^1.72.0",
     "styled-components": "^6.1.8",
     "tailwindcss": "^3.4.3",
-    "universal-cookie": "^7.1.4"
+    "universal-cookie": "^7.1.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.0",

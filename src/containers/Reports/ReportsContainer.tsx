@@ -782,7 +782,9 @@ const ReportsContainer = ({ onData }) => {
             : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
           const ledgerEntries = response.data.voucher[0].voucherDetails;
-          const ownersVoucherAmount = response.data.voucher[0].total
+          console.log(response.data)
+          const ownersVoucherAmount = response.data.voucher[0].length > 0 ? response.data.voucher[0].total : 0
+
           setTotal(response.data.voucher[0].total)
           const saveLocal = {
             "ownersVoucherAmount": ownersVoucherAmount
@@ -794,6 +796,7 @@ const ReportsContainer = ({ onData }) => {
           let voucherDetails;
           if (ledgerEntries.length === 0) {
             voucherDetails = ledgerEntries;
+            console.log(voucherDetails)
             setchallanData(voucherDetails);
             localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
           } else {

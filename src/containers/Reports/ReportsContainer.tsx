@@ -661,6 +661,7 @@ const ReportsContainer = ({ onData }) => {
 
           // const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
           const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
+          console.log(ledgerEntries)
           const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
 
           setTotal(ownersAdavanceAmountDebit)
@@ -669,7 +670,6 @@ const ReportsContainer = ({ onData }) => {
           }
           localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
           triggerUpdate();
-          // localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal))
           setLoading(false)
           let allChallans;
           if (ledgerEntries.length == 0) {
@@ -789,7 +789,6 @@ const ReportsContainer = ({ onData }) => {
           const saveLocal = {
             "ownersVoucherAmount": ownersVoucherAmount
           }
-          // localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal))
           localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
           triggerUpdate();
           setLoading(false)

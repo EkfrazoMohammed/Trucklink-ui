@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import moment from "moment";
+import 'moment-timezone';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 const dateFormat = "DD/MM/YYYY";
@@ -42,12 +43,25 @@ const OwnerAdvance = () => {
     const unixTimestamp = new Date(date).getTime();
     setStartDate(unixTimestamp);
   };
+  const handleEndDateChange = (date, dateString) => {
+    // Set the date to the last minute of the day (23:59:59.999)
+    const endOfDay = new Date(date);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
-  const handleEndDateChange = (date) => {
-    setEndDateValue(date)
-    const unixTimestamp = new Date(date).getTime();
+    // Get Unix timestamp in milliseconds
+    const unixTimestamp = endOfDay.getTime();
+
+    console.log(unixTimestamp);
+    setEndDateValue(date);
     setEndDate(unixTimestamp);
   };
+
+  // const handleEndDateChange = (date,dateString) => {
+  //   console.log(dateString.getTime())
+  //   setEndDateValue(date)
+  //   const unixTimestamp = new Date(date).getTime();
+  //   setEndDate(unixTimestamp);
+  // };
   // const handleEndDateChange = (date, dateString) => {
   //   if (date) {
   //     // Set endDate to the last minute of the selected day in IST

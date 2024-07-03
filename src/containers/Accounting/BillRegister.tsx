@@ -511,7 +511,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         },
       },
       {
-        title: 'rate',
+        title: 'Rate',
         dataIndex: 'rate',
         key: 'rate',
         render: (text, record) => {

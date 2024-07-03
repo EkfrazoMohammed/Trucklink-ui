@@ -872,8 +872,8 @@ const ReportsContainer = ({ onData }) => {
     };
     const ExpenseComponent = () => {
       const [totalData, setTotalData] = useState(null);
-      const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null);
-      const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null);
+      const [ownersAdavanceAmountDebit, setOwnersAdavanceAmountDebit] = useState(null || 0);
+      const [ownersVoucherAmount, setOwnersVoucherAmount] = useState(null || 0);
       const { updateCount } = useLocalStorage();
 
       useEffect(() => {
@@ -884,10 +884,14 @@ const ReportsContainer = ({ onData }) => {
         const storedDebitData = localStorage.getItem("totalOutstandingDebit");
         if (storedDebitData) {
           setOwnersAdavanceAmountDebit(JSON.parse(storedDebitData));
+        } else {
+          setOwnersAdavanceAmountDebit(0);
         }
-        const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount");
+        const storedVoucherAmountData = localStorage.getItem("ownersVoucherAmount") || 0;
         if (storedVoucherAmountData) {
           setOwnersVoucherAmount(JSON.parse(storedVoucherAmountData));
+        } else {
+          setOwnersVoucherAmount(0);
         }
       }, [updateCount]);
       const renderExpenseItem = (label, amount) => (
@@ -915,14 +919,14 @@ const ReportsContainer = ({ onData }) => {
               <hr />
               {renderExpenseItem('Shortage', totalData.totalShortage)}
               <hr />
-              {renderExpenseItem('Outstanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit)}
+              {renderExpenseItem('Outstanding Debit', ownersAdavanceAmountDebit.totalOutstandingDebit || 0)}
               <hr />
-              {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount)}
+              {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount || 0)}
               <hr />
               {/* Example of a total row */}
               <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
                 <div className=''>Total</div>
-                <div className="">₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount.ownersVoucherAmount))}
+                <div className="">₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)).toFixed(2)}
                 </div>
               </div>
             </>
@@ -930,6 +934,8 @@ const ReportsContainer = ({ onData }) => {
         </div>
       );
     };
+
+
     const OwnerBankAccountsTable = () => {
       const authToken = localStorage.getItem("token");
       const [bankAccountData, setBankAccountData] = useState([]);

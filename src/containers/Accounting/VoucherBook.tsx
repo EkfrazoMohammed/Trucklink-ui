@@ -445,18 +445,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         fixed: 'left',
       },
       {
-        title: 'Amount',
-        dataIndex: 'amount',
-        key: 'amount',
-        width: 90,
-      },
-      {
-        title: 'Mode of Payment',
-        dataIndex: 'modeOfPayment',
-        key: 'modeOfPayment',
-        width: 100,
-      },
-      {
         title: 'Voucher Number',
         dataIndex: 'voucherNumber',
         key: 'voucherNumber',
@@ -495,10 +483,21 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         width: 110,
       },
       {
+        title: 'Mode of Payment',
+        dataIndex: 'modeOfPayment',
+        key: 'modeOfPayment',
+        width: 100,
+      },
+      {
+        title: 'Amount',
+        dataIndex: 'amount',
+        key: 'amount',
+        width: 90,
+      },
+      {
         title: 'Action',
         key: 'action',
         width: 90,
-
         fixed: 'right',
         render: (record) => (
           <Space size="middle">
@@ -551,8 +550,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     );
   };
   const EditTruckDataRow = ({ filterTruckTableData }) => {
-    const initialVoucherData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
-    const initialOwnerId = `${filterTruckTableData.ownerId[0]._id}`;
     const [formData, setFormData] = useState({
       amount: filterTruckTableData.amount,
       modeOfPayment: filterTruckTableData.modeOfPayment,

@@ -417,8 +417,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     };
 
-
-
     const columnsInsideRow = [
       {
         title: 'Invoice Date',
@@ -570,7 +568,9 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         },
       },
     ];
-
+    const calculateTotalExpense = () => {
+      return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+    };
     return (
       <div className='bg-[#BBE2FF] p-4'>
 
@@ -581,6 +581,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
+            summary={() => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell colSpan={columnsInsideRow.length - 4} align="right">
+                 <strong>Total</strong> 
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                 <strong>{calculateTotalExpense()}</strong> 
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </Form>
       </div>
@@ -1276,16 +1286,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
                 <div style={{ textAlign: 'right', width: '220px' }}>
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
+                <div style={{ fontWeight: 'bold', width: '140px' }}>
                   Total
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
+                <div style={{ fontWeight: 'bold', width: '180px' }}>
                   {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
+                <div style={{ fontWeight: 'bold', width: '180px' }}>
                   {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
                   {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueTax}</p> : <p style={{ color: "red" }}>{totalValueTax}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '120px' }}>

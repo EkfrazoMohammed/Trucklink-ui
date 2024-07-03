@@ -427,6 +427,14 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
 
     const columnsInsideRow = [
       {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => index + 1,
+        width: 80,
+        fixed: 'left',
+      },
+      {
         title: 'Invoice Date',
         dataIndex: 'grDate',
         key: 'grDate',
@@ -445,6 +453,44 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           );
         },
       },
+      {
+        title: 'Truck Number',
+        dataIndex: 'vehicleNumber',
+        key: 'vehicleNumber',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="vehicleNumber"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input vehicleNumber!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+      {
+        title: 'Delivery Number',
+        dataIndex: 'deliveryNumber',
+        key: 'deliveryNumber',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="deliveryNumber"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input Delivery Number!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },  
       {
         title: 'QTY',
         dataIndex: 'quantityInMetricTons',
@@ -483,7 +529,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           );
         },
       },
-
       {
         title: 'Total',
         dataIndex: 'totalExpense',
@@ -495,46 +540,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               name="totalExpense"
               style={{ margin: 0 }}
               rules={[{ required: true, message: 'Please input totalExpense!' }]}
-            >
-              <Input />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-
-
-      {
-        title: 'Truck Number',
-        dataIndex: 'vehicleNumber',
-        key: 'vehicleNumber',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="vehicleNumber"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input vehicleNumber!' }]}
-            >
-              <Input />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-      {
-        title: 'Delivery Number',
-        dataIndex: 'deliveryNumber',
-        key: 'deliveryNumber',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="deliveryNumber"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input Delivery Number!' }]}
             >
               <Input />
             </Form.Item>
@@ -591,7 +596,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             pagination={false}
             summary={() => (
               <Table.Summary.Row>
-                <Table.Summary.Cell colSpan={columnsInsideRow.length - 4} align="right">
+                <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
                  <strong>Total</strong> 
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>

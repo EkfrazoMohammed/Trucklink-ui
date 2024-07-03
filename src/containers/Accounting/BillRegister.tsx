@@ -130,6 +130,14 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   };
   const columns = [
     {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => index + 1,
+      width: 80,
+      fixed: 'left',
+    },
+    {
       title: 'Bill Number',
       dataIndex: 'billNumber',
       key: 'billNumber',
@@ -693,7 +701,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         [name]: value,
       }));
     };
-    const [pay, setPay] = useState(null)
     const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
@@ -1284,15 +1291,15 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               />
               <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-                <div style={{ textAlign: 'right', width: '220px' }}>
+                <div style={{ textAlign: 'right', width: '280px' }}>
                 </div>
                 <div style={{ fontWeight: 'bold', width: '140px' }}>
                   Total
                 </div>
-                <div style={{ fontWeight: 'bold', width: '180px' }}>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
                   {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
                 </div>
-                <div style={{ fontWeight: 'bold', width: '180px' }}>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
                   {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '160px' }}>

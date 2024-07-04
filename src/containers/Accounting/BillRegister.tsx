@@ -490,7 +490,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             text
           );
         },
-      },  
+      },
       {
         title: 'QTY',
         dataIndex: 'quantityInMetricTons',
@@ -597,10 +597,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             summary={() => (
               <Table.Summary.Row>
                 <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
-                 <strong>Total</strong> 
+                  Total
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                 <strong>{calculateTotalExpense()}</strong> 
+                  {calculateTotalExpense()}
                 </Table.Summary.Cell>
               </Table.Summary.Row>
             )}

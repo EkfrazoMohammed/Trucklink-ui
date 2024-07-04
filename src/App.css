@@ -540,3 +540,9 @@
   width: 50%;
   border: 1px solid #C6C6C6,
 }
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-summary tr td{
+border: 1px solid #f0f0f0 !important;
+font-weight: 600 !important;
+}
+/* border: 1px solid #f0f0f0 !important; */

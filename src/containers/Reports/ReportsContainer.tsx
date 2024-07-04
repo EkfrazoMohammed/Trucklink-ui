@@ -624,45 +624,75 @@ const ReportsContainer = ({ onData }) => {
               </div>
             );
           }
-        },        
+        },
 
         {
           title: 'Diesel',
           dataIndex: 'diesel',
           key: 'diesel',
-          width:110,
+          width: 120,
         },
         {
           title: 'Cash',
           dataIndex: 'cash',
           key: 'cash',
-          width: 110,
+          width: 120,
         },
         {
           title: 'Bank Transfer',
           dataIndex: 'bankTransfer',
           key: 'bankTransfer',
-          width: 90,
+          width: 120,
         },
         {
           title: 'Shortage',
           dataIndex: 'shortage',
           key: 'shortage',
-          width: 110,
+          width: 120,
         },
       ];
-      return (
+
+      // Calculate the sums of necessary columns
+      const totalQuantity = challanData.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
+      const totalCompanyRate = challanData.reduce((sum, record) => sum + (record.ratePerTon || 0), 0).toFixed(2);
+      const totalMarketRate = challanData.reduce((sum, record) => sum + (record.marketRate || 0), 0).toFixed(2);
+      const totalAmount = challanData.reduce((sum, record) => sum + (record.amount || 0), 0).toFixed(2);
+      // const totalCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
+     
+      // const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
+      // const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.marketRate > 0 ? ((record.amount) - (record.marketRate * record.quantityInMetricTons)) : 0), 0).toFixed(2);
+      const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0);
+const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.marketRate > 0 ? ((record.amount) - (record.marketRate * record.quantityInMetricTons)) : 0), 0);
+
+      const totalDiesel = challanData.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2);
+      const totalCash = challanData.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2);
+      const totalBankTransfer = challanData.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
+      const totalShortage = challanData.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
+      const totalCommission = parseFloat((totalPercentCommission + totalMarketCommission).toFixed(2));   return (
         <>
           <Table
             columns={columns}
             dataSource={challanData}
-            scroll={{ x: 700}}
+            scroll={{ x: 700 }}
             rowKey="_id"
             loading={loading}
             pagination={{
               position: ["none", "none"],
               showSizeChanger: false,
             }}
+            summary={() => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell colSpan={9} align="right">Total</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalQuantity}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalCompanyRate}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalMarketRate}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalCommission}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
           {/* <div className="flex justify-between items-center my-1 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
             <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
@@ -947,6 +977,8 @@ const ReportsContainer = ({ onData }) => {
             <>
               {renderExpenseItem('Total amount', totalData.totalAmount)}
               <hr />
+              {renderExpenseItem('Commision', totalData.totalCommisionTotal)}
+              <hr />
               {renderExpenseItem('Diesel', totalData.totalDiesel)}
               <hr />
               {renderExpenseItem('Cash', totalData.totalCash)}
@@ -966,20 +998,21 @@ const ReportsContainer = ({ onData }) => {
                 </div>
               </div> */}
               <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
-  <div>Total</div>
-  <div>
-    ₹ {((
-      totalData.totalAmount - 
-      (totalData.totalDiesel + 
-       totalData.totalCash + 
-       totalData.totalBankTransfer + 
-       totalData.totalShortage + 
-       (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) + 
-       (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)
-      )
-    ).toFixed(2))}
-  </div>
-</div>
+                <div>Total</div>
+                <div>
+                  ₹ {((
+                    totalData.totalAmount -
+                    (totalData.totalDiesel +
+                      totalData.totalCash +
+                      totalData.totalBankTransfer +
+                      totalData.totalShortage +
+                      totalData.totalCommisionTotal+
+                      (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) +
+                      (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)
+                    )
+                  ).toFixed(2))}
+                </div>
+              </div>
 
             </>
           )}
@@ -1223,7 +1256,7 @@ const ReportsContainer = ({ onData }) => {
         <Table
           columns={columns}
           dataSource={tripData}
-          scroll={{ x: 800}}
+          scroll={{ x: 800 }}
           rowKey="_id"
           loading={loading}
           pagination={{

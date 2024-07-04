@@ -740,7 +740,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredTruckData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800 }}
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],

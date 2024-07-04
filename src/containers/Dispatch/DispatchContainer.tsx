@@ -1713,7 +1713,7 @@ const DispatchContainer = ({ onData }) => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={challanData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800 }}
           rowKey="_id"
           loading={loading}
           pagination={{

@@ -1272,7 +1272,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             <Form form={form} component={false}>
               <Table
                 rowKey={(record) => record.key}
-                scroll={{ x: "auto", y: 290 }}
+                scroll={{ x: "auto" }}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
                 // columns={columns}

@@ -517,7 +517,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredVoucherData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800}}
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],

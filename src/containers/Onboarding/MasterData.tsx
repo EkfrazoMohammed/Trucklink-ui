@@ -408,8 +408,9 @@ const MasterData = () => {
                     </Space>
                 </div>
             </Modal>
-            <div className="flex flex-col mymastertab-content">
-                <div className="flex gap-12">
+            {/* <div className="flex flex-col mymastertab-content"> */}
+            <div className="flex flex-col">
+                <div className="flex gap-6 mt-4">
                     <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
                             <Input
@@ -497,8 +498,50 @@ const MasterData = () => {
                         </div>
                     </div>
 
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Enter Delivery Location"
+                                value={deliveryLocationName}
+                                size="large"
+                                onChange={(e) => setDeliveryLocationName(e.target.value)}
+                            />
+                            <Button size='large' type="primary" onClick={handleAddDeliveryLocation}>
+                                Add Delivery Location
+                            </Button>
+                        </div>
+                        <div>
+                            <div>
+                                <Select
+                                    placeholder="Delivery Location"
+                                    style={{ width: "100%", marginBottom: "10px" }}
+                                    size='large'
+                                    showSearch
+                                    optionFilterProp="children"
+                                    onSearch={onSearch}
+                                    filterOption={filterOption}
+                                >
+                                    {deliveryLocation.map((value, index) => (
+                                        <Option key={index} value={value.location}>
+                                            {value.location}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+                            <List
+                                style={{ overflowY: "scroll", height: "180px" }}
+                                dataSource={deliveryLocation}
+                                renderItem={(item) => (
+                                    <List.Item style={{ width: "100%", padding: "8px 16px" }}>
+                                        <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpendeliveryLocationModal(item)}><FormOutlined /></a></p>
+                                    </List.Item>
+                                )}
+                            />
+                        </div>
+                    </div>
+
                 </div>
-                <div className="flex mt-8 gap-12">
+                {/* <div className="flex mt-8 gap-12">
                     <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
                             <Input
@@ -542,7 +585,7 @@ const MasterData = () => {
                     </div>
                     <div className='flex flex-col gap-2 p-2' style={{ width: "600px", }} >
                     </div>
-                </div>
+                </div> */}
             </div>
         </>
     );

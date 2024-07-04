@@ -357,7 +357,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           columns={columns}
           pagination={false}
           loading={loading}
-          scroll={{ y: 310 }}
+          // scroll={{ y: 310 }}
         // summary={() => (
         //   <Table.Summary.Row style={{ backgroundColor: "#eee" }}>
         //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>

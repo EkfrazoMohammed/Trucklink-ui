@@ -256,6 +256,7 @@ const ReportsContainer = ({ onData }) => {
         { title: 'Diesel', dataIndex: 'diesel' },
         { title: 'Cash', dataIndex: 'cash' },
         { title: 'Bank Transfer', dataIndex: 'bankTransfer' },
+        { title: 'Shortage', dataIndex: 'shortage' },
       ];
       const dispatch = JSON.parse(localStorage.getItem("Dispatch Table")) || [];
       addSheetToWorkbook(dispatch.tripDetails, dispatchColumns, 'Dispatch');
@@ -566,47 +567,76 @@ const ReportsContainer = ({ onData }) => {
           key: 'marketRate',
           width: 100,
         },
+        // {
+        //   title: 'Commission',
+        //   width: 160,
+        //   render: (_, record) => {
+        //     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon)
+        //     const percentCommissionINR = (percentCommission / 100)
+        //     return (
+        //       <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
+
+        //         {record.marketRate > 0 ? <>
+        //           <p>-</p>
+        //           <p>
+        //             {`${(record.amount) - (record.marketRate * record.quantityInMetricTons)}`}
+        //           </p>
+        //         </>
+        //           :
+        //           <><p>
+        //             {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
+        //           </p>
+        //             <p>
+        //               {`${percentCommissionINR}`}
+        //             </p>
+        //           </>
+        //         }
+
+        //       </div>
+        //     );
+        //   }
+        // },
         {
           title: 'Commission',
           width: 160,
           render: (_, record) => {
-            const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon)
-            const percentCommissionINR = (percentCommission / 100)
+            const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon);
+            const percentCommissionINR = (percentCommission / 100).toFixed(2);
             return (
               <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
-
-                {record.marketRate > 0 ? <>
-                  <p>-</p>
-                  <p>
-                    {`${(record.amount) - (record.marketRate * record.quantityInMetricTons)}`}
-                  </p>
-                </>
-                  :
-                  <><p>
-                    {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
-                  </p>
+                {record.marketRate > 0 ? (
+                  <>
+                    <p>-</p>
                     <p>
-                      {`${percentCommissionINR}`}
+                      {((record.amount) - (record.marketRate * record.quantityInMetricTons)).toFixed(2)}
                     </p>
                   </>
-                }
-
+                ) : (
+                  <>
+                    <p>
+                      {record.commisionRate == null || record.commisionRate == 0 ? '-' : `${record.commisionRate} %`}
+                    </p>
+                    <p>
+                      {percentCommissionINR}
+                    </p>
+                  </>
+                )}
               </div>
             );
           }
-        },
+        },        
 
         {
           title: 'Diesel',
           dataIndex: 'diesel',
           key: 'diesel',
-          width: 90,
+          width:110,
         },
         {
           title: 'Cash',
           dataIndex: 'cash',
           key: 'cash',
-          width: 90,
+          width: 110,
         },
         {
           title: 'Bank Transfer',
@@ -614,13 +644,19 @@ const ReportsContainer = ({ onData }) => {
           key: 'bankTransfer',
           width: 90,
         },
+        {
+          title: 'Shortage',
+          dataIndex: 'shortage',
+          key: 'shortage',
+          width: 110,
+        },
       ];
       return (
         <>
           <Table
             columns={columns}
             dataSource={challanData}
-            scroll={{ x: 700, y: 130 }}
+            scroll={{ x: 700}}
             rowKey="_id"
             loading={loading}
             pagination={{
@@ -924,11 +960,27 @@ const ReportsContainer = ({ onData }) => {
               {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount || 0)}
               <hr />
               {/* Example of a total row */}
-              <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
+              {/* <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
                 <div className=''>Total</div>
                 <div className="">₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)).toFixed(2)}
                 </div>
-              </div>
+              </div> */}
+              <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
+  <div>Total</div>
+  <div>
+    ₹ {((
+      totalData.totalAmount - 
+      (totalData.totalDiesel + 
+       totalData.totalCash + 
+       totalData.totalBankTransfer + 
+       totalData.totalShortage + 
+       (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) + 
+       (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)
+      )
+    ).toFixed(2))}
+  </div>
+</div>
+
             </>
           )}
         </div>
@@ -1045,7 +1097,7 @@ const ReportsContainer = ({ onData }) => {
                 {editingRowId && (
                   <Row gutter={{ xs: 8, sm: 8, md: 12, lg: 12 }}>
                     <div className="flex justify-between gap-4 h-auto w-[100%] pr-2">
-                      <div className="flex flex-col gap-2 w-[80%]">
+                      <div className="flex flex-col gap-2 w-[100%]">
                         <div className='flex flex-col gap-3 py-2 my-2'>
                           <div className='font-semibold text-lg px-4'>  Advance</div>
                           <OwnerAdvanceTable />
@@ -1171,7 +1223,7 @@ const ReportsContainer = ({ onData }) => {
         <Table
           columns={columns}
           dataSource={tripData}
-          scroll={{ x: 800, y: 410 }}
+          scroll={{ x: 800}}
           rowKey="_id"
           loading={loading}
           pagination={{

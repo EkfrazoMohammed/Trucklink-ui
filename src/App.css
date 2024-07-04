@@ -42,12 +42,21 @@
   background: #001529;
   transition: all 0.2s;
 } */
-:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
+/* :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
   height: 100%;
   height: 100vh;
   margin-top: -0.1px;
   padding-top: 0.1px;
   padding: 0 10px;
+} */
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
+  position: sticky !important;
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
 }
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-trigger {
@@ -241,8 +250,8 @@
 
 
 .mytab-content {
-  overflow-y: scroll !important;
-  height: 60vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 60vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -268,8 +277,8 @@
 }
 
 .myowneradvancetab-content {
-  overflow-y: scroll !important;
-  height: 46vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 46vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -296,8 +305,8 @@
 
 
 .mymastertab-content {
-  overflow-y: scroll !important;
-  height: 70vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 70vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -497,7 +506,7 @@
 
 .myuserreporttab-content {
   overflow-y: scroll !important;
-  height: 85vh !important;
+  /* height: 85vh !important; */
   overflow-x: hidden !important;
 }
 

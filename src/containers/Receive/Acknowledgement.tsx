@@ -477,7 +477,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     rowSelection={rowSelection}
                     columns={columns}
                     dataSource={acknowledgement}
-                    scroll={{ x: 800, y: 320 }}
+                    scroll={{ x: 800}}
                     rowKey="_id"
                     loading={loading}
                     pagination={{

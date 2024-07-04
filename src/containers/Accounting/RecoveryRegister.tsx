@@ -1154,7 +1154,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             </div>
             <Form form={form} component={false}>
               <Table
-                scroll={{ x: "auto", y: 300 }}
+                scroll={{ x: "auto"}}
                 rowKey={(record) => record.key}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}

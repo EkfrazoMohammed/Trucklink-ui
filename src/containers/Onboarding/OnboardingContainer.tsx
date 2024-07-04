@@ -1803,7 +1803,7 @@ const OnboardingContainer = ({ onData }) => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredOwnerData}
-          scroll={{ x: 800, y: 310 }}
+          scroll={{ x: 800 }}
           rowKey="_id"
           // pagination={{
           //   position: ['bottomCenter'],

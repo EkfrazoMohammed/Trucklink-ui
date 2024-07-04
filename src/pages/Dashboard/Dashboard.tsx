@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
 
   };
   return (
-    <Layout style={{ minHeight: '95vh' }}>
+    <Layout>
       <Sider style={{ background: "radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)" }} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
@@ -167,12 +167,13 @@ const Dashboard: React.FC = () => {
         </div> */}
       </Sider>
       <Layout>
-        <Content style={{ margin: '1rem 1rem 0 1rem' }}>
+      <Content style={{ margin: '1rem' }}>
+        {/* <Content style={{ margin: '1rem 1rem 0 1rem' }}> */}
           <div
             style={{
               padding: 16,
-              height: "90vh",
-              minHeight: "80vh",
+              height: "100%",
+              minHeight: "92vh",
               background: "#fff",
               borderRadius: "8px",
               boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",

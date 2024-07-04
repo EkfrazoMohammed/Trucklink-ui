@@ -461,3 +461,30 @@
   width: 50%;
   border: 1px solid #C6C6C6,
 }
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-summary tr td {
+  border: 1px solid #f0f0f0 !important;
+  font-weight: 600 !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children,
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider- .ant-layout-sider-dark {
+  position: sticky !important;
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}
+
+:where(.css-11xg00t).ant-layout .ant-layout-sider-children,
+.ant-layout .ant-layout-sider-children  {
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}

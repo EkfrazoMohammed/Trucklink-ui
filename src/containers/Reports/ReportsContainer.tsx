@@ -1212,7 +1212,7 @@ const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.
         title: 'Commision',
         dataIndex: 'totalCommisionTotal',
         key: 'totalCommisionTotal',
-        width: 160,
+        width: 190,
       },
       {
         title: 'Diesel',

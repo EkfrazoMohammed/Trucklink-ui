@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
-import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image, message } from 'antd';
 import axios from "axios"
 
 import moment from 'moment-timezone';
@@ -169,6 +169,51 @@ const DispatchContainer = ({ onData }) => {
       setSearchQuery(e);
     };
 
+    const spreadSheetUploadRequest = async (file) => {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const config = {
+          headers: {
+            "content-type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          },
+        };
+
+
+        const response = await API.post('uploadDispatchChallanExcelNew', formData, config);
+        localStorage.setItem("dispatch-fileUpload", JSON.stringify(response.data));
+        if (response.data && response.data.error_code === 1) {
+          console.error('File upload error:', response.data.err_desc);
+          message.error(`File upload error: ${response.data.err_desc.code} - ${response.data.err_desc.syscall}`);
+        } else {
+          message.success("Successfully Uploaded");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000)
+        }
+      } catch (error) {
+        console.error('File upload failed:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+          message.error(error.response.data.message);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000)
+        } else {
+          message.error("Network Failed, Please Try Again");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleBeforeUpload = (file) => {
+      spreadSheetUploadRequest(file);
+      return false; // Prevent automatic upload
+    };
+
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery4(e.target.value);
       if (e.target.value == "") {
@@ -258,6 +303,19 @@ const DispatchContainer = ({ onData }) => {
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
           </Upload> */}
+             <div className='flex gap-2'>
+
+<Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+  <Button icon={<UploadOutlined />} loading={loading}>
+    {/* {loading ? "Uploading" : "Click to Upload"} */}
+    {loading ? "" : ""}
+  </Button>
+</Upload>
+{/* <Upload> */}
+{/* <Button icon={<UploadOutlined />}></Button> */}
+<Button icon={<DownloadOutlined />} ></Button>
+{/* </Upload> */}
+</div>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -1561,6 +1619,13 @@ const DispatchContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    const formatDate = (date) => {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) {
+        return parsedDate.toLocaleDateString('en-GB');
+      }
+      return date; // Return the original date if parsing fails
+    };
     const columns = [
       {
         title: 'Sl No',
@@ -1583,11 +1648,18 @@ const DispatchContainer = ({ onData }) => {
         key: 'grNumber',
         width: 100,
       },
+      // {
+      //   title: 'GR Date',
+      //   dataIndex: 'grDate',
+      //   key: 'grDate',
+      //   width: 120,
+      // },
       {
         title: 'GR Date',
         dataIndex: 'grDate',
         key: 'grDate',
         width: 120,
+        render: (text) => formatDate(text),
       },
       {
         title: 'Load Location',
@@ -1686,27 +1758,8 @@ const DispatchContainer = ({ onData }) => {
         ),
       },
     ];
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setchallanData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setchallanData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  
+  
     return (
       <>
         <Table

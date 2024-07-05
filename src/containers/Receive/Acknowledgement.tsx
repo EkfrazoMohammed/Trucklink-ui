@@ -226,6 +226,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             onChange: onSelectChange,
         };
 
+        const formatDate = (date) => {
+            const parsedDate = new Date(date);
+            if (!isNaN(parsedDate)) {
+              return parsedDate.toLocaleDateString('en-GB');
+            }
+            return date; // Return the original date if parsing fails
+          };
         const columns = [
 
             {
@@ -283,12 +290,19 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'grNumber',
                 width: 100,
             },
+            // {
+            //     title: 'GR Date',
+            //     dataIndex: 'grDate',
+            //     key: 'grDate',
+            //     width: 140,
+            // },
             {
                 title: 'GR Date',
                 dataIndex: 'grDate',
                 key: 'grDate',
-                width: 140,
-            },
+                width: 120,
+                render: (text) => formatDate(text),
+              },
             {
                 title: 'Truck Number',
                 dataIndex: 'vehicleNumber',

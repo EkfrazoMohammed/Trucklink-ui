@@ -294,6 +294,14 @@ const OwnerAdvance = () => {
     getTableData()
   };
   const columns = [
+    {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => index + 1,
+      width: 80,
+      fixed: 'left',
+    },
 
     {
       title: 'Date',
@@ -588,6 +596,14 @@ const OwnerAdvance = () => {
     };
 
     const columnsInsideRow = [
+      {
+        title: 'Sl No', 
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => index + 1,
+        width: 80,
+        fixed: 'left',
+      },
       {
         title: 'Date',
         dataIndex: 'entryDate',

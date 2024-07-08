@@ -231,7 +231,20 @@ const ReportsContainer = ({ onData }) => {
         const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
         XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
       };
+      const formatDate = (date) => {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate)) {
+          return parsedDate.toLocaleDateString('en-GB');
+        }
+        return date; // Return the original date if parsing fails
+      };
 
+      // {
+      //   title: 'GR Date',
+      //   dataIndex: 'grDate',
+
+      //   render: (text) => formatDate(text),
+      // },
       // Add Dispatch Table data
       const dispatchColumns = [
         {
@@ -244,7 +257,14 @@ const ReportsContainer = ({ onData }) => {
         },
         { title: 'Material Type', dataIndex: 'materialType' },
         { title: 'GR No', dataIndex: 'grNumber' },
-        { title: 'GR Date', dataIndex: 'grDate' },
+        // { title: 'GR Date', dataIndex: 'grDate' },
+
+        {
+          title: 'GR Date',
+          dataIndex: 'grDate',
+          render: (text) => formatDate(text),
+        },
+
         { title: 'Load Location', dataIndex: 'loadLocation' },
         { title: 'Delivery Location', dataIndex: 'deliveryLocation' },
         { title: 'Vehicle Number', dataIndex: 'vehicleNumber' },
@@ -491,6 +511,13 @@ const ReportsContainer = ({ onData }) => {
 
 
       const [loading, setLoading] = useState(false)
+      const formatDate = (date) => {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate)) {
+          return parsedDate.toLocaleDateString('en-GB');
+        }
+        return date; // Return the original date if parsing fails
+      };
       const columns = [
         {
           title: 'Sl No',
@@ -512,11 +539,18 @@ const ReportsContainer = ({ onData }) => {
           key: 'grNumber',
           width: 110,
         },
+        // {
+        //   title: 'GR Date',
+        //   dataIndex: 'grDate',
+        //   key: 'grDate',
+        //   width: 140,
+        // },
         {
           title: 'GR Date',
           dataIndex: 'grDate',
           key: 'grDate',
           width: 140,
+          render: (text) => formatDate(text),
         },
         {
           title: 'Load Location',
@@ -569,46 +603,85 @@ const ReportsContainer = ({ onData }) => {
         },
         // {
         //   title: 'Commission',
-        //   width: 160,
+        //   width: 190,
         //   render: (_, record) => {
-        //     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon)
-        //     const percentCommissionINR = (percentCommission / 100)
+        //     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon);
+        //     const percentCommissionINR = (percentCommission / 100).toFixed(2);
         //     return (
         //       <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
-
-        //         {record.marketRate > 0 ? <>
-        //           <p>-</p>
-        //           <p>
-        //             {`${(record.amount) - (record.marketRate * record.quantityInMetricTons)}`}
-        //           </p>
-        //         </>
-        //           :
-        //           <><p>
-        //             {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
-        //           </p>
+        //         {record.marketRate > 0 ? (
+        //           <>
+        //             <p>-</p>
         //             <p>
-        //               {`${percentCommissionINR}`}
+        //               {((record.amount) - (record.marketRate * record.quantityInMetricTons)).toFixed(2)}
         //             </p>
         //           </>
-        //         }
+        //         ) : (
+        //           <>
+        //             <p>
+        //               {record.commisionRate == null || record.commisionRate == 0 ? '-' : `${record.commisionRate} %`}
+        //             </p>
+        //             <p>
+        //               {percentCommissionINR}
+        //             </p>
+        //           </>
+        //         )}
+        //       </div>
+        //     );
+        //   }
+        // },
+        // {
+        //   title: 'Commission',
+        //   width: 190,
+        //   render: (_, record) => {
+        //     const percentCommission = (record.commisionRate || 0) * (record.quantityInMetricTons * (record.ratePerTon || 0));
+        //     const percentCommissionINR = (percentCommission / 100).toFixed(2);
 
+        //     return (
+        //       <div style={{ display: "flex", gap: "2rem", alignItems: "center", justifyContent: "center" }}>
+        //         {record.marketRate > 0 ? (
+        //           <>
+        //             <p>-</p>
+        //             <p>
+        //               {((record.amount || 0) - ((percentCommissionINR) -(record.marketRate * (record.quantityInMetricTons || 0)))).toFixed(2)}
+        //             </p>
+        //           </>
+        //         ) : (
+        //           <>
+        //             <p>
+        //               {record.commisionRate == null || record.commisionRate == 0 ? '-' : `${record.commisionRate} %`}
+        //             </p>
+        //             <p>
+        //               {percentCommissionINR}
+        //             </p>
+        //           </>
+        //         )}
         //       </div>
         //     );
         //   }
         // },
         {
           title: 'Commission',
-          width: 160,
+          width: 190,
           render: (_, record) => {
-            const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.ratePerTon);
-            const percentCommissionINR = (percentCommission / 100).toFixed(2);
+            const percentRateCommission = (record.commisionRate || 0) * (record.quantityInMetricTons * (record.ratePerTon || 0));
+            const percentCommissionINR = (percentRateCommission / 100).toFixed(2);
+
+            // Market rate commission calculation
+            let marketRateCommission;
+            if (record.marketRate > 0) {
+              marketRateCommission = (record.amount || 0) - (record.marketRate * (record.quantityInMetricTons || 0));
+            } else if (!record.isMarketRate) {
+              marketRateCommission = percentRateCommission / 100;
+            }
+
             return (
-              <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
+              <div style={{ display: "flex", gap: "2rem", alignItems: "center", justifyContent: "center" }}>
                 {record.marketRate > 0 ? (
                   <>
                     <p>-</p>
                     <p>
-                      {((record.amount) - (record.marketRate * record.quantityInMetricTons)).toFixed(2)}
+                      {marketRateCommission.toFixed(2)}
                     </p>
                   </>
                 ) : (
@@ -625,6 +698,7 @@ const ReportsContainer = ({ onData }) => {
             );
           }
         },
+
 
         {
           title: 'Diesel',
@@ -655,20 +729,28 @@ const ReportsContainer = ({ onData }) => {
       // Calculate the sums of necessary columns
       const totalQuantity = challanData.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
       const totalCompanyRate = challanData.reduce((sum, record) => sum + (record.ratePerTon || 0), 0).toFixed(2);
+
       const totalMarketRate = challanData.reduce((sum, record) => sum + (record.marketRate || 0), 0).toFixed(2);
-      const totalAmount = challanData.reduce((sum, record) => sum + (record.amount || 0), 0).toFixed(2);
       // const totalCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
-     
+
       // const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
       // const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.marketRate > 0 ? ((record.amount) - (record.marketRate * record.quantityInMetricTons)) : 0), 0).toFixed(2);
-      const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0);
-const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.marketRate > 0 ? ((record.amount) - (record.marketRate * record.quantityInMetricTons)) : 0), 0);
 
+      const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0);
+
+      const totalMarketCommission = challanData.reduce((sum, record) => {
+        if (record.marketRate !== 0) {
+          return sum + ((record.quantityInMetricTons * record.ratePerTon) - (record.marketRate || 0) * (record.quantityInMetricTons));
+        }
+        return sum;
+      }, 0);
       const totalDiesel = challanData.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2);
       const totalCash = challanData.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2);
       const totalBankTransfer = challanData.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
       const totalShortage = challanData.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
-      const totalCommission = parseFloat((totalPercentCommission + totalMarketCommission).toFixed(2));   return (
+      const totalCommission = (totalPercentCommission + totalMarketCommission);
+
+      return (
         <>
           <Table
             columns={columns}
@@ -1006,7 +1088,7 @@ const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.
                       totalData.totalCash +
                       totalData.totalBankTransfer +
                       totalData.totalShortage +
-                      totalData.totalCommisionTotal+
+                      totalData.totalCommisionTotal +
                       (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) +
                       (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)
                     )
@@ -1209,7 +1291,7 @@ const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.
         width: 120,
       },
       {
-        title: 'Commision',
+        title: 'Commission',
         dataIndex: 'totalCommisionTotal',
         key: 'totalCommisionTotal',
         width: 190,

@@ -293,15 +293,26 @@ const OwnerAdvance = () => {
   const cancel = () => {
     getTableData()
   };
+  const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+
   const columns = [
+    
     {
       title: 'Sl No',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       width: 80,
       fixed: 'left',
     },
+    // {
+    //   title: 'Sl No',
+    //   dataIndex: 'serialNumber',
+    //   key: 'serialNumber',
+    //   render: (text, record, index) => index + 1,
+    //   width: 80,
+    //   fixed: 'left',
+    // },
 
     {
       title: 'Date',
@@ -413,7 +424,7 @@ const OwnerAdvance = () => {
       </div>
     );
   };
-  const [currentPage, setCurrentPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
   useEffect(() => {
     getTableData(currentPage, currentPageSize, selectedHubId);
@@ -876,10 +887,15 @@ const OwnerAdvance = () => {
               onExpand: handleTableRowExpand,
             }}
             pagination={{
-              position: ['bottomCenter'],
-              showSizeChanger: false,
-              // total: dataSource.length,
-            }}
+              showSizeChanger: true,
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
             loading={loading}
 
           />

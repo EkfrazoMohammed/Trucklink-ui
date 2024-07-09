@@ -1657,27 +1657,17 @@ const OnboardingContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-  
+
 
 
     const columns = [
-      
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+        render: (text, record, index) => index + 1,
         width: 80,
       },
-      // {
-      //   title: 'Sl No',
-      //   dataIndex: 'serialNumber',
-      //   key: 'serialNumber',
-      //   render: (text, record, index) => index + 1,
-      //   width: 80,
-      // },
       {
         title: 'Owner Name',
         dataIndex: 'name',
@@ -1719,10 +1709,96 @@ const OnboardingContainer = ({ onData }) => {
         ),
       },
     ];
- 
+    const changePagination = async (pageNumber, pageSize) => {
+      try {
+        // setCurrentPage(pageNumber);
+        // setCurrentPageSize(pageSize);
+        console.log("pageNumber", pageNumber)
+        console.log("pageSize", pageSize);
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    const changePaginationAll = async (pageNumber, pageSize) => {
+      try {
+        setCurrentPage(pageNumber);
+        setCurrentPageSize(pageSize);
+        console.log("pageNumber", pageNumber)
+        console.log("pageSize", pageSize);
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    const handlePageSizeChange = async (pageNumber) => {
+
+      setCurrentPageSize(pageNumber);
+      setCurrentPage(pageNumber); // Reset to first page
+      // Call your data fetching function here if needed
+      console.log(pageNumber)
+      try {
+        // const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
+        // setFilteredOwnerData(newData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    const renderPaginationButtons = () => {
+      const totalPages = Math.ceil(totalOwnerData / currentPageSize);
+      const buttons = [];
+
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(
+          <Button
+            key={i}
+            type={i === currentPage ? 'primary' : 'default'}
+            onClick={() => handlePageSizeChange(i)}
+          >
+            {i}
+          </Button>
+        );
+      }
+    }
     return (
       <>
-        
+        {/* <div className="flex justify-end items-center">
+
+          <div className='dashboard-table-pagination-container'>
+     
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
+            >
+              10
+            </Button>
+
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
+            >
+              50
+            </Button>
+
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
+            >
+              100
+            </Button>
+          </div>
+        </div> */}
+
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -1734,18 +1810,12 @@ const OnboardingContainer = ({ onData }) => {
           //   current: currentPage,
           //   total: totalOwnerData,
           //   defaultPageSize: currentPageSize,
+          //   // showSizeChanger: true,
           //   // onChange: changePagination,
           //   // onShowSizeChange: changePaginationAll,
           // }}
           pagination={{
-              showSizeChanger: true,
             position: ['bottomCenter'],
-            current: currentPage,
-            pageSize: pageSize,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
           }}
           loading={loading}
         />

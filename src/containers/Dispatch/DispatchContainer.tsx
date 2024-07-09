@@ -1627,16 +1627,27 @@ const DispatchContainer = ({ onData }) => {
       }
       return date; // Return the original date if parsing fails
     };
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+  
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
-        width: 80,
-
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
         fixed: 'left',
+        width: 80,
       },
+      // {
+      //   title: 'Sl No',
+      //   dataIndex: 'serialNumber',
+      //   key: 'serialNumber',
+      //   render: (text, record, index: any) => index + 1,
+      //   width: 80,
+      // fixed: 'left',
+      // },
       {
         title: 'Material Type',
         dataIndex: 'materialType',
@@ -1771,14 +1782,16 @@ const DispatchContainer = ({ onData }) => {
           rowKey="_id"
           loading={loading}
           pagination={{
-            position: ['bottomCenter'],
             showSizeChanger: true,
-            // current: currentPage,
-            // total: totalDispatchData,
-            // defaultPageSize: currentPageSize, // Set the default page size
-            // onChange: changePagination,
-            // onShowSizeChange: changePaginationAll,
-          }}
+          position: ['bottomCenter'],
+          current: currentPage,
+          pageSize: pageSize,
+          onChange: (page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          },
+        }}
+        
         />
 
 

@@ -1252,15 +1252,27 @@ const ReportsContainer = ({ onData }) => {
   };
 
   const UserTable = ({ onEditTruckClick }) => {
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+  
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
         width: 80,
-        fixed: 'left',
       },
+      
+      // {
+      //   title: 'Sl No',
+      //   dataIndex: 'serialNumber',
+      //   key: 'serialNumber',
+      //   render: (text, record, index: any) => index + 1,
+      //   width: 80,
+      //   fixed: 'left',
+      // },
       {
         title: 'Owner Name',
         width: 160,
@@ -1344,9 +1356,15 @@ const ReportsContainer = ({ onData }) => {
           rowKey="_id"
           loading={loading}
           pagination={{
-            position: ['bottomCenter'],
             showSizeChanger: true,
-          }}
+          position: ['bottomCenter'],
+          current: currentPage,
+          pageSize: pageSize,
+          onChange: (page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          },
+        }}
         />
       </>
     );

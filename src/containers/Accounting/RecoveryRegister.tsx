@@ -133,9 +133,17 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log("Validate Failed:", errInfo);
     }
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
 
   const columns = [
-
+    {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+      width: 80,
+    },
     {
       title: 'Code',
       dataIndex: 'recoveryCode',
@@ -1163,7 +1171,17 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
                 }}
-                pagination={false}
+               
+                pagination={{
+                  showSizeChanger: false,
+                position: ['bottomCenter'],
+                current: currentPage,
+                pageSize: pageSize,
+                onChange: (page, pageSize) => {
+                  setCurrentPage(page);
+                  setPageSize(pageSize);
+                },
+              }}
                 loading={loading}
 
               />

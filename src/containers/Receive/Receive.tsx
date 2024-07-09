@@ -223,17 +223,27 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             }
             return date; // Return the original date if parsing fails
         };
-        const columns = [
 
+        const [currentPage, setCurrentPage] = useState(1);
+        const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+      
+        const columns = [
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
-                render: (text, record, index: any) => index + 1,
-                width: 90,
-                fixed: 'left'
+                render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+                width: 80,
+              },
+            // {
+            //     title: 'Sl No',
+            //     dataIndex: 'serialNumber',
+            //     key: 'serialNumber',
+            //     render: (text, record, index: any) => index + 1,
+            //     width: 90,
+            //     fixed: 'left'
 
-            },
+            // },
             {
                 title: 'Bill No',
                 dataIndex: 'billNumber',
@@ -354,13 +364,13 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 title: 'Diesel',
                 dataIndex: 'diesel',
                 key: 'diesel',
-                width: 80,
+                width: 110,
             },
             {
                 title: 'Cash',
                 dataIndex: 'cash',
                 key: 'cash',
-                width: 80,
+                width: 110,
             },
             {
                 title: 'Bank Transfer',
@@ -428,6 +438,23 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 console.error('Error fetching data:', error);
             }
         };
+       const totalQty = receive.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
+       const totalAmout = receive.reduce((sum, record) => sum + ((record.quantityInMetricTons) * (record.rate) || 0), 0).toFixed(2);
+        
+        const totalDiesel = receive.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2);
+        const totalCash = receive.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2);
+        const totalBankTransfer = receive.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
+        const totalShortage = receive.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
+        // const totalCommission = (totalPercentCommission + totalMarketCommission);
+        const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0);
+        console.log(totalPercentCommission)
+      const totalMarketCommission = receive.reduce((sum, record) => {
+        if (record.marketRate !== 0) {
+          return sum + ((record.quantityInMetricTons * record.rate) - (record.marketRate || 0) * (record.quantityInMetricTons));
+        }
+        return sum;
+      }, 0);
+      console.log(totalMarketCommission)
         return (
             <>
                 <Table
@@ -437,15 +464,46 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
+                    // pagination={{
+                    //     position: ['bottomCenter'],
+                    //     showSizeChanger: true,
+                    //     current: currentPage,
+                    //     total: totalChallanData,
+                    //     defaultPageSize: currentPageSize, // Set the default page size
+                    //     onChange: changePagination,
+                    //     onShowSizeChange: changePaginationAll,
+                    // }}
                     pagination={{
-                        position: ['bottomCenter'],
                         showSizeChanger: true,
-                        current: currentPage,
-                        total: totalChallanData,
-                        defaultPageSize: currentPageSize, // Set the default page size
-                        onChange: changePagination,
-                        onShowSizeChange: changePaginationAll,
+                      position: ['bottomCenter'],
+                      current: currentPage,
+                      pageSize: pageSize,
+                      onChange: (page, pageSize) => {
+                        setCurrentPage(page);
+                        setPageSize(pageSize);
+                      },
                     }}
+                    summary={() => (
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell colSpan={10} align="right">Total</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalQty}</Table.Summary.Cell> 
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          {/* <Table.Summary.Cell>{totalPercentCommission}</Table.Summary.Cell> */}
+                          {/* <Table.Summary.Cell>{totalMarketCommission}</Table.Summary.Cell> */}
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalAmout}</Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
+                          {/* <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
+                          <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell> */}
+                        </Table.Summary.Row>
+                      )}
                 />
             </>
         );

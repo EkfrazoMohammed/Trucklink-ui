@@ -244,6 +244,10 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             }
             return date; // Return the original date if parsing fails
           };
+
+          const [currentPage, setCurrentPage] = useState(1);
+          const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+        
         const columns = [
 
             {
@@ -287,14 +291,21 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     );
                 },
             },
+            // {
+            //     title: 'Sl No',
+            //     dataIndex: 'serialNumber',
+            //     key: 'serialNumber',
+            //     render: (text, record, index: any) => index + 1,
+            //     width: 90,
+
+            // },
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
-                render: (text, record, index: any) => index + 1,
-                width: 90,
-
-            },
+                render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+                width: 80,
+              },
             {
                 title: 'GR Number',
                 dataIndex: 'grNumber',
@@ -505,14 +516,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     scroll={{ x: 800}}
                     rowKey="_id"
                     loading={loading}
+                    // pagination={{
+                    //     position: ['bottomCenter'],
+                    //     showSizeChanger: true,
+                    //     current: currentPage,
+                    //     total: totalChallanData,
+                    //     defaultPageSize: currentPageSize, // Set the default page size
+                    //     onChange: changePagination,
+                    //     onShowSizeChange: changePaginationAll,
+                    // }}
+
                     pagination={{
-                        position: ['bottomCenter'],
                         showSizeChanger: true,
-                        current: currentPage,
-                        total: totalChallanData,
-                        defaultPageSize: currentPageSize, // Set the default page size
-                        onChange: changePagination,
-                        onShowSizeChange: changePaginationAll,
+                      position: ['bottomCenter'],
+                      current: currentPage,
+                      pageSize: pageSize,
+                      onChange: (page, pageSize) => {
+                        setCurrentPage(page);
+                        setPageSize(pageSize);
+                      },
                     }}
                 />
             </>

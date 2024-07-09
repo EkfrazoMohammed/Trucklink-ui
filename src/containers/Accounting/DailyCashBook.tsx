@@ -181,13 +181,23 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log("Validate Failed:", errInfo);
     }
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
 
   const columns = [
+    // {
+    //   title: 'Sl No',
+    //   dataIndex: 'serialNumber',
+    //   key: 'serialNumber',
+    //   render: (text, record, index) => index + 1,
+    //   width: 80,
+    // },
+
     {
       title: 'Sl No',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
       width: 80,
     },
     {
@@ -355,27 +365,18 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           bordered
           dataSource={newRow ? [newRow, ...dataSource] : dataSource}
           columns={columns}
-          pagination={false}
+          pagination={{
+            showSizeChanger: false,
+          position: ['bottomCenter'],
+          current: currentPage,
+          pageSize: pageSize,
+          onChange: (page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          },
+        }}
           loading={loading}
-          // scroll={{ y: 310 }}
-        // summary={() => (
-        //   <Table.Summary.Row style={{ backgroundColor: "#eee" }}>
-        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       Current Month balance
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyTotalDebit}
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyTotalCredit}
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyOutstanding > 0 ? <p style={{ color: "green" }}>{amountData.monthlyOutstanding}</p> : <p style={{ color: "red" }}>{amountData.monthlyOutstanding}</p>}
-        //     </Table.Summary.Cell>
-        //   </Table.Summary.Row>
-        // )}
+        
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 

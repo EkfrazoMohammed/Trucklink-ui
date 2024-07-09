@@ -434,16 +434,27 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+  
     const columns = [
+      
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
         width: 80,
-        fixed: 'left',
+                fixed: 'left',
       },
+      // {
+      //   title: 'Sl No',
+      //   dataIndex: 'serialNumber',
+      //   key: 'serialNumber',
+      //   render: (text, record, index) => index + 1,
+      //   width: 80,
+      //   fixed: 'left',
+      // },
       {
         title: 'Voucher Number',
         dataIndex: 'voucherNumber',
@@ -521,11 +532,12 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           rowKey="_id"
           pagination={{
             position: ['bottomCenter'],
-            // showSizeChanger: false,
-            // current: currentPage,
-            // total: totalVoucherData,
-            // defaultPageSize: currentPageSize, // Set the default page size
-
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
           }}
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>

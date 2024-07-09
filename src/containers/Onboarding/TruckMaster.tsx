@@ -644,14 +644,24 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+  
 
     const columns = [
+      // {
+      //   title: 'Sl No',
+      //   dataIndex: 'serialNumber',
+      //   key: 'serialNumber',
+      //   render: (text, record, index: any) => index + 1,
+      //   width: 40,
+      // },
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
-        width: 40,
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+        width: 80,
       },
       {
         title: 'Vehicle Number',
@@ -742,15 +752,25 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           dataSource={filteredTruckData}
           scroll={{ x: 800 }}
           rowKey="_id"
+          // pagination={{
+          //   position: ['bottomCenter'],
+          //   showSizeChanger: false,
+          //   current: currentPage,
+          //   total: totalTruckData,
+          //   defaultPageSize: currentPageSize, // Set the default page size
+          //   onChange: changePagination,
+          //   onShowSizeChange: changePaginationAll,
+          // }}
           pagination={{
-            position: ['bottomCenter'],
-            showSizeChanger: false,
-            current: currentPage,
-            total: totalTruckData,
-            defaultPageSize: currentPageSize, // Set the default page size
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
-          }}
+            showSizeChanger: true,
+          position: ['bottomCenter'],
+          current: currentPage,
+          pageSize: pageSize,
+          onChange: (page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          },
+        }}
         // loading={loading}
         />
       </>

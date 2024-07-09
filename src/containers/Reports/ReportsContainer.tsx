@@ -766,9 +766,11 @@ const ReportsContainer = ({ onData }) => {
               <Table.Summary.Row>
                 <Table.Summary.Cell colSpan={9} align="right">Total</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalQuantity}</Table.Summary.Cell>
-                <Table.Summary.Cell>{totalCompanyRate}</Table.Summary.Cell>
-                <Table.Summary.Cell>{totalMarketRate}</Table.Summary.Cell>
-                <Table.Summary.Cell>{totalCommission}</Table.Summary.Cell>
+                {/* <Table.Summary.Cell>{totalCompanyRate}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalMarketRate}</Table.Summary.Cell> */}
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
@@ -900,7 +902,7 @@ const ReportsContainer = ({ onData }) => {
             }}
           />
           <div className="flex justify-between items-center my-1 text-md text-[#1572B6]  bg-[#eee] p-3">
-            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding Debit</div>
             <div className="px-8" style={{ fontWeight: 'bold' }}>{total}</div>
           </div>
         </>
@@ -1012,7 +1014,7 @@ const ReportsContainer = ({ onData }) => {
             }}
           />
           <div className="flex justify-between items-center text-md text-[#1572B6]  bg-[#eee] p-3">
-            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
+            <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding Amount</div>
             <div className="px-8" style={{ fontWeight: 'bold' }}>{total}</div>
           </div>
         </>

@@ -226,10 +226,21 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             onChange: onSelectChange,
         };
 
+        // const formatDate = (date) => {
+        //     const parsedDate = new Date(date);
+        //     if (!isNaN(parsedDate)) {
+        //       return parsedDate.toLocaleDateString('en-GB');
+        //     }
+        //     return date; // Return the original date if parsing fails
+        //   };
         const formatDate = (date) => {
             const parsedDate = new Date(date);
             if (!isNaN(parsedDate)) {
-              return parsedDate.toLocaleDateString('en-GB');
+              return parsedDate.toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
             }
             return date; // Return the original date if parsing fails
           };
@@ -270,7 +281,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const today = new Date();
                     const differenceInMs = today - givenDate;
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-
+                    console.log("givendDate=>",givenDate,"today=>",today,"difference=>",differenceInDays)
                     return (
                         <span>{differenceInDays}</span>
                     );

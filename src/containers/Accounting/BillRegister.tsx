@@ -403,7 +403,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           __v: existingData.__v,
           // slno: existingData.slno
         };
-        console.log(payload)
 
         // // Send the PUT request to update the bill register data
         await API.put(`update-bill-register-data/${existingData._id}`, payload, headersOb)
@@ -531,8 +530,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       },
       {
         title: 'Total',
-        dataIndex: 'totalExpense',
-        key: 'totalExpense',
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
@@ -544,7 +541,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               <Input />
             </Form.Item>
           ) : (
-            text
+            (record.rate) * (record.quantityInMetricTons)
           );
         },
       },
@@ -581,9 +578,38 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         },
       },
     ];
+    // const calculateTotalExpense = () => {
+    //   return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+    // };
+    //  const calculateTotalExpense = () => {
+    //   return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+    // };
     const calculateTotalExpense = () => {
-      return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+      const total = entries.reduce((total, entry) => {
+        const rate = parseFloat(entry.rate);
+        const qty = parseFloat(entry.quantityInMetricTons);
+    
+        console.log('Rate:', rate, 'Type:', typeof rate);
+        console.log('Quantity:', qty, 'Type:', typeof qty);
+    
+        // Check if rate and qty are valid numbers, if not set them to 0
+        const validRate = isNaN(rate) ? 0 : rate;
+        const validQty = isNaN(qty) ? 0 : qty;
+    
+        return parseFloat(total) + parseFloat(validRate * validQty);
+      }, 0);
+    
+      const roundedTotal = Math.round(total * 100) / 100;
+      console.log('Total Expense:', roundedTotal, 'Type:', typeof roundedTotal);
+    
+      return roundedTotal;
     };
+    
+   
+    
+
+
+
     return (
       <div className='bg-[#BBE2FF] p-4'>
 
@@ -594,16 +620,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
-            summary={() => (
-              <Table.Summary.Row>
-                <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
-                  Total
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  {calculateTotalExpense()}
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            )}
+            // summary={() => (
+            //   <Table.Summary.Row>
+            //     <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
+            //       Total
+            //     </Table.Summary.Cell>
+            //     <Table.Summary.Cell>
+            //       {calculateTotalExpense()}
+            //     </Table.Summary.Cell>
+            //   </Table.Summary.Row>
+            // )}
           />
         </Form>
       </div>

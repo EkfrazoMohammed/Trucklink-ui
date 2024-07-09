@@ -184,7 +184,7 @@ const DispatchContainer = ({ onData }) => {
 
 
         const response = await API.post('uploadDispatchChallanExcelNew', formData, config);
-        localStorage.setItem("dispatch-fileUpload", JSON.stringify(response.data));
+        localStorage.setItem("1dispatch-fileUpload", JSON.stringify(response));
         if (response.data && response.data.error_code === 1) {
           console.error('File upload error:', response.data.err_desc);
           message.error(`File upload error: ${response.data.err_desc.code} - ${response.data.err_desc.syscall}`);
@@ -196,6 +196,7 @@ const DispatchContainer = ({ onData }) => {
         }
       } catch (error) {
         console.error('File upload failed:', error);
+        localStorage.setItem("1dispatch-fileUpload", JSON.stringify(error));
         if (error.response && error.response.data && error.response.data.message) {
           message.error(error.response.data.message);
           setTimeout(() => {
@@ -303,19 +304,19 @@ const DispatchContainer = ({ onData }) => {
           <Upload>
             <Button icon={<PrinterOutlined />}></Button>
           </Upload> */}
-             <div className='flex gap-2'>
+          <div className='flex gap-2'>
 
-<Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
-  <Button icon={<UploadOutlined />} loading={loading}>
-    {/* {loading ? "Uploading" : "Click to Upload"} */}
-    {loading ? "" : ""}
-  </Button>
-</Upload>
-{/* <Upload> */}
-{/* <Button icon={<UploadOutlined />}></Button> */}
-<Button icon={<DownloadOutlined />} ></Button>
-{/* </Upload> */}
-</div>
+            <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+              <Button icon={<UploadOutlined />} loading={loading}>
+                {/* {loading ? "Uploading" : "Click to Upload"} */}
+                {loading ? "" : ""}
+              </Button>
+            </Upload>
+            {/* <Upload> */}
+            {/* <Button icon={<UploadOutlined />}></Button> */}
+            <Button icon={<DownloadOutlined />} ></Button>
+            {/* </Upload> */}
+          </div>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -1758,8 +1759,8 @@ const DispatchContainer = ({ onData }) => {
         ),
       },
     ];
-  
-  
+
+
     return (
       <>
         <Table

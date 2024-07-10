@@ -29,33 +29,33 @@ const ReportsContainer = ({ onData }) => {
   const [vehicleTypeSearch, setVehicleTypeSearch] = useState(null)
 
   const [filters, setFilters] = useState({
-    "material": null,
-    "vehicle": null,
-    "startDate": null,
-    "endDate": null,
+    "material": "",
+    "vehicle": "",
+    "startDate": "",
+    "endDate": "",
   })
   // Function to handle material type change
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
-    setFilters({ ...filters, material: `(${value})` });
+    setFilters({ ...filters, material: value || "" });
   };
 
   // Function to handle truck type change
   const handleVehicleTypeChange = (value) => {
     setVehicleTypeSearch(value)
-    setFilters({ ...filters, vehicle: value });
+    setFilters({ ...filters, vehicle: value || "" });
   };
   // Function to handle start date change
   const handleStartDateChange = (date, dateString) => {
     setStartDateValue(date); // Update DatePicker value
     const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
-    setFilters({ ...filters, startDate: startDateUnix }); // Update filters state with startDate
+    setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
   };
 
   const handleEndDateChange = (date) => {
     setEndDateValue(date); // Update DatePicker value
     const unixTimestamp = new Date(date).getTime();
-    setFilters({ ...filters, endDate: unixTimestamp });
+    setFilters({ ...filters, endDate: unixTimestamp || "" });
   };
   const buildQueryParams = (params) => {
     let queryParams = [];
@@ -66,7 +66,7 @@ const ReportsContainer = ({ onData }) => {
     }
     return queryParams.length ? `?${queryParams.join("&")}` : "";
   };
-  const getTableData = async () => {
+  const getTableData = async (payload) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
@@ -79,8 +79,16 @@ const ReportsContainer = ({ onData }) => {
 
     try {
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb)
-        : await API.get(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, headersOb);
+      // const paylod=
+      //   {
+      //     "startDate":"",
+      //     "vehicle":"Bulk",
+      //     "material":"CEMENT",
+      //     "endDate":""
+      // }
+
+      const response = searchData ? await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, payload, headersOb)
+        : await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, payload, headersOb);
       setLoading(false)
       let allTripData;
       if (response.data.tripAggregates == 0) {
@@ -95,6 +103,9 @@ const ReportsContainer = ({ onData }) => {
       console.log(err)
     }
   };
+  const showTable = () => {
+    getTableData(filters)
+  }
   const [materials, setMaterials] = useState([]);
   const fetchMaterials = async () => {
     try {
@@ -118,9 +129,9 @@ const ReportsContainer = ({ onData }) => {
   // useEffect(() => {
   //   getTableData();
   // }, [selectedHubId, materialType, vehicleType, startDate]);
-  useEffect(() => {
-    getTableData();
-  }, [filters])
+  // useEffect(() => {
+  //   getTableData();
+  // }, [filters])
   // Truck master
   const Truck = () => {
     const onReset = () => {
@@ -129,6 +140,13 @@ const ReportsContainer = ({ onData }) => {
       setSearchQuery("");
       setMaterialType(null)
       setVehicleTypeSearch(null)
+      setFilters({
+        "material": null,
+        "vehicle": null,
+        "startDate": "",
+        "endDate": "",
+      })
+     settripData([])
     }
 
     return (
@@ -171,8 +189,12 @@ const ReportsContainer = ({ onData }) => {
             onChange={handleEndDateChange}
             style={{ marginRight: 16 }}
           />
+{startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
 
-          {startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
+
+          {/* {materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <> */}
+            <Button size='large' type="primary" onClick={showTable} >APPLY</Button>
+            <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2 justify-end'>
         </div>
@@ -451,7 +473,7 @@ const ReportsContainer = ({ onData }) => {
 
           const response = searchData
             ? await API.get(
-              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}${queryParams}`,
+              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}`,
               headersOb
             )
             : await API.get(
@@ -1265,14 +1287,6 @@ const ReportsContainer = ({ onData }) => {
         width: 80,
       },
       
-      // {
-      //   title: 'Sl No',
-      //   dataIndex: 'serialNumber',
-      //   key: 'serialNumber',
-      //   render: (text, record, index: any) => index + 1,
-      //   width: 80,
-      //   fixed: 'left',
-      // },
       {
         title: 'Owner Name',
         width: 160,
@@ -1357,14 +1371,14 @@ const ReportsContainer = ({ onData }) => {
           loading={loading}
           pagination={{
             showSizeChanger: true,
-          position: ['bottomCenter'],
-          current: currentPage,
-          pageSize: pageSize,
-          onChange: (page, pageSize) => {
-            setCurrentPage(page);
-            setPageSize(pageSize);
-          },
-        }}
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
         />
       </>
     );

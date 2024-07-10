@@ -216,13 +216,24 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             selectedRowKeys,
             onChange: onSelectChange,
         };
+        // const formatDate = (date) => {
+        //     const parsedDate = new Date(date);
+        //     if (!isNaN(parsedDate)) {
+        //         return parsedDate.toLocaleDateString('en-GB');
+        //     }
+        //     return date; // Return the original date if parsing fails
+        // };
         const formatDate = (date) => {
             const parsedDate = new Date(date);
             if (!isNaN(parsedDate)) {
-                return parsedDate.toLocaleDateString('en-GB');
+              return parsedDate.toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              });
             }
             return date; // Return the original date if parsing fails
-        };
+          };
 
         const [currentPage, setCurrentPage] = useState(1);
         const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed

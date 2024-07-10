@@ -306,15 +306,15 @@ const DispatchContainer = ({ onData }) => {
           </Upload> */}
           <div className='flex gap-2'>
 
-            <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+            {/* <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
               <Button icon={<UploadOutlined />} loading={loading}>
-                {/* {loading ? "Uploading" : "Click to Upload"} */}
+                {/* {loading ? "Uploading" : "Click to Upload"} 
                 {loading ? "" : ""}
               </Button>
-            </Upload>
+            </Upload> */}
             {/* <Upload> */}
             {/* <Button icon={<UploadOutlined />}></Button> */}
-            <Button icon={<DownloadOutlined />} ></Button>
+            {/* <Button icon={<DownloadOutlined />} ></Button> */}
             {/* </Upload> */}
           </div>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
@@ -760,6 +760,19 @@ const DispatchContainer = ({ onData }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    type='number'
+                    placeholder="Delivery Number*"
+                    size="large"
+                    value={formData.deliveryNumber}
+                    name="deliveryNumber"
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
@@ -779,8 +792,6 @@ const DispatchContainer = ({ onData }) => {
                   </Select>
 
                 </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="deliveryLocation"
@@ -839,17 +850,7 @@ const DispatchContainer = ({ onData }) => {
 
 
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
 
-                  <Input
-                    type='number'
-                    placeholder="Delivery Number*"
-                    size="large"
-                    value={formData.deliveryNumber}
-                    name="deliveryNumber"
-                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
-                  />
-                </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -1418,6 +1419,20 @@ const DispatchContainer = ({ onData }) => {
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
+                  <Input
+                    placeholder="DeliveryNumber*"
+                    size="large"
+                    type='number'
+                    name="deliveryNumber"
+                    value={formData.deliveryNumber}
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
@@ -1434,8 +1449,6 @@ const DispatchContainer = ({ onData }) => {
                   </Select>
 
                 </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="deliveryLocation"
@@ -1488,17 +1501,7 @@ const DispatchContainer = ({ onData }) => {
 
 
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
 
-                  <Input
-                    placeholder="DeliveryNumber*"
-                    size="large"
-                    type='number'
-                    name="deliveryNumber"
-                    value={formData.deliveryNumber}
-                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
-                  />
-                </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -1630,7 +1633,7 @@ const DispatchContainer = ({ onData }) => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-  
+
     const columns = [
       {
         title: 'Sl No',
@@ -1783,15 +1786,15 @@ const DispatchContainer = ({ onData }) => {
           loading={loading}
           pagination={{
             showSizeChanger: true,
-          position: ['bottomCenter'],
-          current: currentPage,
-          pageSize: pageSize,
-          onChange: (page, pageSize) => {
-            setCurrentPage(page);
-            setPageSize(pageSize);
-          },
-        }}
-        
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
+
         />
 
 

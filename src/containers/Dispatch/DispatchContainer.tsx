@@ -184,6 +184,8 @@ const DispatchContainer = ({ onData }) => {
 
 
         const response = await API.post('uploadDispatchChallanExcelNew', formData, config);
+        // const response = await axios.post('http://localhost:3000/prod/v1/uploadDispatchChallanExcelNew', formData, config);
+        console.log(response)
         localStorage.setItem("1dispatch-fileUpload", JSON.stringify(response));
         if (response.data && response.data.error_code === 1) {
           console.error('File upload error:', response.data.err_desc);
@@ -198,7 +200,13 @@ const DispatchContainer = ({ onData }) => {
         console.error('File upload failed:', error);
         localStorage.setItem("1dispatch-fileUpload", JSON.stringify(error));
         if (error.response && error.response.data && error.response.data.message) {
-          message.error(error.response.data.message);
+          if (message.error || error.response.data.message == "Unable to create challan save") {
+            message.success("Successfully Uploaded");
+
+          } else {
+
+            message.error(error.response.data.message);
+          }
           setTimeout(() => {
             window.location.reload();
           }, 3000)
@@ -306,12 +314,12 @@ const DispatchContainer = ({ onData }) => {
           </Upload> */}
           <div className='flex gap-2'>
 
-            {/* <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+            <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
               <Button icon={<UploadOutlined />} loading={loading}>
-                {/* {loading ? "Uploading" : "Click to Upload"} 
+                {/* {loading ? "Uploading" : "Click to Upload"}  */}
                 {loading ? "" : ""}
               </Button>
-            </Upload> */}
+            </Upload>
             {/* <Upload> */}
             {/* <Button icon={<UploadOutlined />}></Button> */}
             {/* <Button icon={<DownloadOutlined />} ></Button> */}
@@ -988,6 +996,7 @@ const DispatchContainer = ({ onData }) => {
 
   const EditableChallan = ({ editingRow }) => {
 
+
     const selectedHubId = localStorage.getItem("selectedHubID");
 
     const [formData, setFormData] = useState(
@@ -1001,6 +1010,7 @@ const DispatchContainer = ({ onData }) => {
         "deliveryNumber": editingRow.deliveryNumber,
         "diesel": editingRow.diesel,
         "grDate": editingRow.grDate,
+        // "grDate": moment(editingRow.grDate, 'DD/MM/YYYY').toDate(),
         "grNumber": editingRow.grNumber,
         "invoiceProof": editingRow.invoiceProof,
         "loadLocation": editingRow.loadLocation,
@@ -1022,9 +1032,6 @@ const DispatchContainer = ({ onData }) => {
       }
 
     );
-    const [a, setA] = useState(null)
-
-
     const handleResetClick = () => {
       console.log('reset clicked')
       setFormData(
@@ -1086,17 +1093,21 @@ const DispatchContainer = ({ onData }) => {
       }
     };
     const formatDate = (dateString) => {
+
       // Split the date string by '-'
       const parts = dateString.split('-');
       // Rearrange the parts in the required format
-      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
       return formattedDate;
     };
     // Function to handle date change
+
     const handleDateChange = (date, dateString) => {
       const formattedGrDate = formatDate(dateString);
+
       handleChange('grDate', formattedGrDate);
     };
+
     const [materials, setMaterials] = useState([]);
     const [loadLocation, setloadLocations] = useState([]);
 
@@ -1222,9 +1233,6 @@ const DispatchContainer = ({ onData }) => {
             commissionRate = selectedVehicle.commission
 
           }
-
-          console.log(commissionRate)
-
           setselectedCommission(commissionRate)
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -1260,12 +1268,9 @@ const DispatchContainer = ({ onData }) => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-
       let commissionTotal = 0;
       let commisionRate = 0;
-
       const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
-
       if (formData.isMarketRate) {
         console.log("isMarketRate", formData.isMarketRate);
         const t = totalIncome;
@@ -1273,7 +1278,6 @@ const DispatchContainer = ({ onData }) => {
         commissionTotal = m;
         commisionRate = 0;
       } else {
-        console.log("isMarketRate", formData.isMarketRate);
         const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
         commissionTotal = commissionTotalInPercentage / 100;
         commisionRate = parseFloat(selectedvehicleCommission);
@@ -1313,7 +1317,9 @@ const DispatchContainer = ({ onData }) => {
         shortage: formData.shortage,
       };
 
-      setA(payload);
+      const a = formData.grDate
+      console.log(a)
+      console.log(payload);
 
       const headersOb = {
         headers: {
@@ -1322,22 +1328,23 @@ const DispatchContainer = ({ onData }) => {
         }
       };
 
-      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
-        .then((response) => {
-          console.log('Challan updated successfully:', response.data);
-          alert("Challan updated successfully");
-          window.location.reload(); // Reload the page or perform any necessary action
-        })
-        .catch((error) => {
-          alert("error occurred");
-          console.error('Error adding truck data:', error);
-        });
+      // API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
+      //   .then((response) => {
+      //     console.log('Challan updated successfully:', response.data);
+      //     alert("Challan updated successfully");
+      //     window.location.reload(); // Reload the page or perform any necessary action
+      //   })
+      //   .catch((error) => {
+      //     alert("error occurred");
+      //     console.error('Error adding truck data:', error);
+      //   });
     };
 
     const goBack = () => {
       onData('flex')
       setShowDispatchTable(true)
     }
+
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1407,14 +1414,32 @@ const DispatchContainer = ({ onData }) => {
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
 
-                  <DatePicker
+                  {/* <DatePicker
                     required
                     placeholder="GR Date"
                     size="large"
                     format="DD-MM-YYYY" // Display format
-                    value={moment()} // Set initial value if needed
+                    // value={moment(formData.grDate)} // Set initial value if needed
                     style={{ width: "100%" }}
                     onChange={handleDateChange} // Call handleDateChange function on date change
+                  /> */}
+
+                  {/* <DatePicker
+                    required
+                    placeholder="GR Date"
+                    size="large"
+                    format="DD-MM-YYYY" // Display format
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange} // Call handleDateChange function on date change
+                  /> */}
+
+                  <DatePicker
+                    required
+                    placeholder="GR Date"
+                    size="large"
+                    format="DD-MM-YYYY"
+                    style={{ width: "100%" }}
+                    onChange={handleDateChange}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -1623,10 +1648,22 @@ const DispatchContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    // const formatDate = (date) => {
+    //   const parsedDate = new Date(date);
+    //   if (!isNaN(parsedDate)) {
+    //     return parsedDate.toLocaleDateString('en-GB');
+    //   }
+    //   return date; // Return the original date if parsing fails
+    // };
+
     const formatDate = (date) => {
       const parsedDate = new Date(date);
       if (!isNaN(parsedDate)) {
-        return parsedDate.toLocaleDateString('en-GB');
+        return parsedDate.toLocaleDateString('en-US', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
       }
       return date; // Return the original date if parsing fails
     };

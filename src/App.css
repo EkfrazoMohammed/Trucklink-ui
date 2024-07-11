@@ -566,3 +566,40 @@
   left: 0 !important;
   max-height: 100vh !important;
 }
+
+.dashboard-top-container {
+  padding: 16px;
+  height: auto;
+  background: #F5FCFF;
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.dashboard-top-container .cards-container {
+  background: #fff;
+  padding: 8px 0px;
+  height: 100%;
+  font-size: 2rem;
+}
+
+.dashboard-earning-container{
+
+  padding: 16px;
+  height: auto;
+  background: #F7FFF6;
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.dashboard-expense-container{
+
+  padding: 16px;
+  height: auto;
+  background: #FFF3F3;
+
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}

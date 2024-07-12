@@ -742,15 +742,18 @@ const OwnerAdvance = () => {
 
     return (
       <div className='bg-[#BBE2FF] p-4'>
+        <div className="flex justify-between items-center px-2">
+          <h1 className='font-bold'>Owner Advance Outstanding</h1>
         <Button
           onClick={() => handleAddInsideRow(record)}
           type="primary"
           style={{
             marginBottom: 16,
           }}
-        >
-          Add new entry
+          >
+          ADD NEW ENTRY
         </Button>
+          </div>
         <Form form={form} component={false}>
           <Table
             className='nestedtable-account'

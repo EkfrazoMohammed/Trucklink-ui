@@ -411,7 +411,7 @@ const MasterData = () => {
             {/* <div className="flex flex-col mymastertab-content"> */}
             <div className="flex flex-col">
                 <div className="flex gap-6 mt-4">
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
                             <Input
                                 placeholder="Enter Material Type"
@@ -420,7 +420,7 @@ const MasterData = () => {
                                 onChange={(e) => setMaterialType(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddMaterial}>
-                                Add Material
+                                ADD
                             </Button>
                         </div>
                         {errMsg && errMsg.length > 0 ? <><p style={{ color: "red", paddingRight: "1rem" }}><InfoCircleOutlined />{" "}{errMsg}</p></> : <></>}
@@ -443,7 +443,7 @@ const MasterData = () => {
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
+                                style={{ overflowY: "scroll", height: "54vh" }}
 
                                 dataSource={materials}
                                 renderItem={(item) => (
@@ -454,7 +454,7 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
                             <Input
                                 placeholder="Enter Load Location"
@@ -463,7 +463,7 @@ const MasterData = () => {
                                 onChange={(e) => setLoadLocationName(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddLoadLocation}>
-                                Add Load Location
+                                ADD
                             </Button>
                         </div>
 
@@ -487,7 +487,7 @@ const MasterData = () => {
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
+                                style={{ overflowY: "scroll", height: "54vh" }}
                                 dataSource={loadLocation}
                                 renderItem={(item) => (
                                     <List.Item style={{ width: "100%", padding: "8px 16px" }}>
@@ -498,7 +498,7 @@ const MasterData = () => {
                         </div>
                     </div>
 
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
                             <Input
                                 placeholder="Enter Delivery Location"
@@ -507,7 +507,7 @@ const MasterData = () => {
                                 onChange={(e) => setDeliveryLocationName(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddDeliveryLocation}>
-                                Add Delivery Location
+                                ADD
                             </Button>
                         </div>
                         <div>
@@ -529,7 +529,7 @@ const MasterData = () => {
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
+                                style={{ overflowY: "scroll", height: "54vh" }}
                                 dataSource={deliveryLocation}
                                 renderItem={(item) => (
                                     <List.Item style={{ width: "100%", padding: "8px 16px" }}>
@@ -539,53 +539,7 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-
                 </div>
-                {/* <div className="flex mt-8 gap-12">
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Enter Delivery Location"
-                                value={deliveryLocationName}
-                                size="large"
-                                onChange={(e) => setDeliveryLocationName(e.target.value)}
-                            />
-                            <Button size='large' type="primary" onClick={handleAddDeliveryLocation}>
-                                Add Delivery Location
-                            </Button>
-                        </div>
-                        <div>
-                            <div>
-                                <Select
-                                    placeholder="Delivery Location"
-                                    style={{ width: "100%", marginBottom: "10px" }}
-                                    size='large'
-                                    showSearch
-                                    optionFilterProp="children"
-                                    onSearch={onSearch}
-                                    filterOption={filterOption}
-                                >
-                                    {deliveryLocation.map((value, index) => (
-                                        <Option key={index} value={value.location}>
-                                            {value.location}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </div>
-                            <List
-                                style={{ overflowY: "scroll", height: "180px" }}
-                                dataSource={deliveryLocation}
-                                renderItem={(item) => (
-                                    <List.Item style={{ width: "100%", padding: "8px 16px" }}>
-                                        <p style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}> {item.location} <a onClick={() => handleOpendeliveryLocationModal(item)}><FormOutlined /></a></p>
-                                    </List.Item>
-                                )}
-                            />
-                        </div>
-                    </div>
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "600px", }} >
-                    </div>
-                </div> */}
             </div>
         </>
     );

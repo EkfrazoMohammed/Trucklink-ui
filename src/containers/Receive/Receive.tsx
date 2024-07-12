@@ -226,18 +226,18 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const formatDate = (date) => {
             const parsedDate = new Date(date);
             if (!isNaN(parsedDate)) {
-              return parsedDate.toLocaleDateString('en-US', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              });
+                return parsedDate.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
             }
             return date; // Return the original date if parsing fails
-          };
+        };
 
         const [currentPage, setCurrentPage] = useState(1);
         const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-      
+
         const columns = [
             {
                 title: 'Sl No',
@@ -245,7 +245,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 key: 'serialNumber',
                 render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
                 width: 80,
-              },
+            },
             // {
             //     title: 'Sl No',
             //     dataIndex: 'serialNumber',
@@ -298,13 +298,13 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
 
             },
             {
-                title: 'From',
+                title: 'Load Location',
                 dataIndex: 'loadLocation',
                 key: 'loadLocation',
                 width: 180,
             },
             {
-                title: 'Destination',
+                title: 'Delivery Location',
                 dataIndex: 'deliveryLocation',
                 key: 'deliveryLocation',
                 width: 180,
@@ -406,9 +406,9 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 render: (_, record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(record.balance)}</span>
+                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(parseFloat(record.balance).toFixed(2))}</span>
                             :
-                            <span style={{ color: "red" }}>{(record.balance)}</span>
+                            <span style={{ color: "red" }}>- {(parseFloat(record.balance).toFixed(2))}</span>
 
                         }
                     </p>
@@ -449,9 +449,9 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 console.error('Error fetching data:', error);
             }
         };
-       const totalQty = receive.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
-       const totalAmout = receive.reduce((sum, record) => sum + ((record.quantityInMetricTons) * (record.rate) || 0), 0).toFixed(2);
-        
+        const totalQty = receive.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
+        const totalAmout = receive.reduce((sum, record) => sum + ((record.quantityInMetricTons) * (record.rate) || 0), 0).toFixed(2);
+
         const totalDiesel = receive.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2);
         const totalCash = receive.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2);
         const totalBankTransfer = receive.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
@@ -459,13 +459,13 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         // const totalCommission = (totalPercentCommission + totalMarketCommission);
         const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0);
         console.log(totalPercentCommission)
-      const totalMarketCommission = receive.reduce((sum, record) => {
-        if (record.marketRate !== 0) {
-          return sum + ((record.quantityInMetricTons * record.rate) - (record.marketRate || 0) * (record.quantityInMetricTons));
-        }
-        return sum;
-      }, 0);
-      console.log(totalMarketCommission)
+        const totalMarketCommission = receive.reduce((sum, record) => {
+            if (record.marketRate !== 0) {
+                return sum + ((record.quantityInMetricTons * record.rate) - (record.marketRate || 0) * (record.quantityInMetricTons));
+            }
+            return sum;
+        }, 0);
+        console.log(totalMarketCommission)
         return (
             <>
                 <Table
@@ -486,35 +486,35 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     // }}
                     pagination={{
                         showSizeChanger: true,
-                      position: ['bottomCenter'],
-                      current: currentPage,
-                      pageSize: pageSize,
-                      onChange: (page, pageSize) => {
-                        setCurrentPage(page);
-                        setPageSize(pageSize);
-                      },
+                        position: ['bottomCenter'],
+                        current: currentPage,
+                        pageSize: pageSize,
+                        onChange: (page, pageSize) => {
+                            setCurrentPage(page);
+                            setPageSize(pageSize);
+                        },
                     }}
                     summary={() => (
                         <Table.Summary.Row>
-                          <Table.Summary.Cell colSpan={10} align="right">Total</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalQty}</Table.Summary.Cell> 
-                          <Table.Summary.Cell></Table.Summary.Cell>
-                          {/* <Table.Summary.Cell>{totalPercentCommission}</Table.Summary.Cell> */}
-                          {/* <Table.Summary.Cell>{totalMarketCommission}</Table.Summary.Cell> */}
-                          <Table.Summary.Cell></Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalAmout}</Table.Summary.Cell>
-                          <Table.Summary.Cell></Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
-                          {/* <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
+                            <Table.Summary.Cell colSpan={10} align="right">Total</Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalQty}</Table.Summary.Cell>
+                            <Table.Summary.Cell></Table.Summary.Cell>
+                            {/* <Table.Summary.Cell>{totalPercentCommission}</Table.Summary.Cell> */}
+                            {/* <Table.Summary.Cell>{totalMarketCommission}</Table.Summary.Cell> */}
+                            <Table.Summary.Cell></Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalAmout}</Table.Summary.Cell>
+                            <Table.Summary.Cell></Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
+                            <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
+                            {/* <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
                           <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
                           <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                           <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
                           <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell> */}
                         </Table.Summary.Row>
-                      )}
+                    )}
                 />
             </>
         );
@@ -1039,7 +1039,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                                         filterOption={filterOption}
                                         name="loadLocation"
                                         onChange={(value) => handleChange('loadLocation', value)}
-                                        placeholder="Loaded From*"
+                                        placeholder="Load Location*"
                                         size="large"
                                         value={formData.loadLocation}
                                         style={{ width: '100%' }}

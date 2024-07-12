@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// Assuming states.json is located in the same directory as your component
 import states from './states.json';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
 import type { TabsProps } from 'antd';
@@ -1659,11 +1658,11 @@ const OnboardingContainer = ({ onData }) => {
     };
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-  
+
 
 
     const columns = [
-      
+
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
@@ -1719,10 +1718,10 @@ const OnboardingContainer = ({ onData }) => {
         ),
       },
     ];
- 
+
     return (
       <>
-        
+
         <Table
           rowSelection={rowSelection}
           columns={columns}
@@ -1738,7 +1737,7 @@ const OnboardingContainer = ({ onData }) => {
           //   // onShowSizeChange: changePaginationAll,
           // }}
           pagination={{
-              showSizeChanger: true,
+            showSizeChanger: true,
             position: ['bottomCenter'],
             current: currentPage,
             pageSize: pageSize,

@@ -54,19 +54,19 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
     // };
     const handleEndDateChange = (date, dateString) => {
         if (date) {
-          // Set endDate to the last minute of the selected day in IST
-          const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-          setEndDateValue(date);
-          setEndDate(endOfDay.valueOf());
+            // Set endDate to the last minute of the selected day in IST
+            const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+            setEndDateValue(date);
+            setEndDate(endOfDay.valueOf());
         } else {
-          setEndDateValue(null);
-          setEndDate(null);
+            setEndDateValue(null);
+            setEndDate(null);
         }
-      };
-      // Disable dates before the selected start date
- const disabledEndDate = (current) => {
-    return current && current < moment(startDate).startOf('day');
-  };
+    };
+    // Disable dates before the selected start date
+    const disabledEndDate = (current) => {
+        return current && current < moment(startDate).startOf('day');
+    };
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -236,25 +236,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         const formatDate = (date) => {
             const parsedDate = new Date(date);
             if (!isNaN(parsedDate)) {
-              return parsedDate.toLocaleDateString('en-US', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              });
+                return parsedDate.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
             }
             return date; // Return the original date if parsing fails
-          };
+        };
 
-          const [currentPage, setCurrentPage] = useState(1);
-          const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-        
+        const [currentPage, setCurrentPage] = useState(1);
+        const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+
         const columns = [
 
             {
                 title: 'Ageing',
                 dataIndex: 'ageing',
                 key: 'ageing',
-                width: 110,
+                width: 80,
                 fixed: 'left',
                 onCell: (record) => {
                     const givenDate = new Date(record.grISODate);
@@ -263,21 +263,26 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
 
                     let backgroundColor;
+                    let color;
 
                     if (differenceInDays < 10) {
-                        backgroundColor = '#009F23';
+                        backgroundColor = '#34ff61';
+                        color='#000';
                     } else if (differenceInDays < 20) {
                         backgroundColor = '#FFED4A';
+                        color='#000';
 
                     } else if (differenceInDays >= 30) {
                         backgroundColor = '#FF0000';
+                        color='#fff';
                     } else {
                         backgroundColor = '#FFED4A'; // Default background color
+                        color='#000';
                     }
 
                     return {
                         id: `ageing-${record._id}`,
-                        style: { backgroundColor, color: "#000", textAlign: "center" },
+                        style: { backgroundColor, color, textAlign: "center" },
                     };
                 },
                 render: (_, record) => {
@@ -285,9 +290,10 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const today = new Date();
                     const differenceInMs = today - givenDate;
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-                    console.log("givendDate=>",givenDate,"today=>",today,"difference=>",differenceInDays)
+                    console.log("givendDate=>", givenDate, "today=>", today, "difference=>", differenceInDays)
                     return (
                         <span>{differenceInDays}</span>
+                        
                     );
                 },
             },
@@ -305,7 +311,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'serialNumber',
                 render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
                 width: 80,
-              },
+            },
             {
                 title: 'GR Number',
                 dataIndex: 'grNumber',
@@ -324,7 +330,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'grDate',
                 width: 120,
                 render: (text) => formatDate(text),
-              },
+            },
             {
                 title: 'Truck Number',
                 dataIndex: 'vehicleNumber',
@@ -341,13 +347,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
             },
             {
-                title: 'From',
+                title: 'Load Location',
                 dataIndex: 'loadLocation',
                 key: 'loadLocation',
                 width: 180,
             },
             {
-                title: 'Destination',
+                title: 'Delivery Location',
                 dataIndex: 'deliveryLocation',
                 key: 'deliveryLocation',
                 width: 180,
@@ -513,7 +519,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     rowSelection={rowSelection}
                     columns={columns}
                     dataSource={acknowledgement}
-                    scroll={{ x: 800}}
+                    scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
                     // pagination={{
@@ -528,13 +534,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
                     pagination={{
                         showSizeChanger: true,
-                      position: ['bottomCenter'],
-                      current: currentPage,
-                      pageSize: pageSize,
-                      onChange: (page, pageSize) => {
-                        setCurrentPage(page);
-                        setPageSize(pageSize);
-                      },
+                        position: ['bottomCenter'],
+                        current: currentPage,
+                        pageSize: pageSize,
+                        onChange: (page, pageSize) => {
+                            setCurrentPage(page);
+                            setPageSize(pageSize);
+                        },
                     }}
                 />
             </>
@@ -1015,7 +1021,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                     <Select
                                         name="loadLocation"
                                         onChange={(value) => handleChange('loadLocation', value)}
-                                        placeholder="Loaded From*"
+                                        placeholder="Load Location*"
                                         size="large"
                                         value={formData.loadLocation}
                                         style={{ width: '100%' }}

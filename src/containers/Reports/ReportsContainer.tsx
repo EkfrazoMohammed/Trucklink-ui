@@ -34,33 +34,71 @@ const ReportsContainer = ({ onData }) => {
     "startDate": "",
     "endDate": "",
   })
+  // // Function to handle material type change
+  // const handleMaterialTypeChange = (value) => {
+  //   setMaterialType(value);
+  //   setFilters({ ...filters, material: value || "" });
+  // };
+
+  // // Function to handle truck type change
+  // const handleVehicleTypeChange = (value) => {
+  //   setVehicleTypeSearch(value)
+  //   setFilters({ ...filters, vehicle: value || "" });
+  // };
+  // // Function to handle start date change
+  // const handleStartDateChange = (date, dateString) => {
+  //   setStartDateValue(date); // Update DatePicker value
+  //   const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
+  //   setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
+  // };
+
+  // const handleEndDateChange = (date) => {
+  //   setEndDateValue(date); // Update DatePicker value
+  //   const unixTimestamp = new Date(date).getTime();
+  //   setFilters({ ...filters, endDate: unixTimestamp || "" });
+  // };
+  // const buildQueryParams = (params) => {
+  //   let queryParams = [];
+  //   for (const param in params) {
+  //     if (params[param]) {
+  //       queryParams.push(`${param}=${params[param]}`);
+  //     }
+  //   }
+  //   return queryParams.length ? `?${queryParams.join("&")}` : "";
+  // };
+
+
   // Function to handle material type change
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
-    setFilters({ ...filters, material: value || "" });
+    setFilters({ ...filters, material: value === "All" ? "" : value });
   };
 
   // Function to handle truck type change
   const handleVehicleTypeChange = (value) => {
-    setVehicleTypeSearch(value)
-    setFilters({ ...filters, vehicle: value || "" });
+    setVehicleTypeSearch(value);
+    setFilters({ ...filters, vehicle: value === "All" ? "" : value });
   };
+
   // Function to handle start date change
-  const handleStartDateChange = (date, dateString) => {
+  const handleStartDateChange = (date) => {
     setStartDateValue(date); // Update DatePicker value
     const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
     setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
   };
 
+  // Function to handle end date change
   const handleEndDateChange = (date) => {
     setEndDateValue(date); // Update DatePicker value
     const unixTimestamp = new Date(date).getTime();
     setFilters({ ...filters, endDate: unixTimestamp || "" });
   };
+
+  // Function to build query parameters
   const buildQueryParams = (params) => {
     let queryParams = [];
     for (const param in params) {
-      if (params[param]) {
+      if (params[param] && params[param] !== "All") {
         queryParams.push(`${param}=${params[param]}`);
       }
     }
@@ -87,8 +125,8 @@ const ReportsContainer = ({ onData }) => {
       //     "endDate":""
       // }
 
-      const response = searchData ? await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, payload, headersOb)
-        : await API.post(`report-table-data?page=1&limit=150&hubId=${selectedHubId}`, payload, headersOb);
+      const response = searchData ? await API.post(`report-table-data?page=1&limit=5000&hubId=${selectedHubId}`, payload, headersOb)
+        : await API.post(`report-table-data?page=1&limit=5000&hubId=${selectedHubId}`, payload, headersOb);
       setLoading(false)
       let allTripData;
       if (response.data.tripAggregates == 0) {
@@ -146,13 +184,13 @@ const ReportsContainer = ({ onData }) => {
         "startDate": "",
         "endDate": "",
       })
-     settripData([])
+      settripData([])
     }
 
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
         <div className='flex gap-2 items-center'>
-          <Select
+          {/* <Select
             name="materialType"
             value={materialType ? materialType : null}
             placeholder="Material Type*"
@@ -163,6 +201,24 @@ const ReportsContainer = ({ onData }) => {
           >
             {materials.map((v, index) => (<Option key={index} value={v.materialType}>{`${v.materialType}`}</Option>))}
           </Select>
+          */}
+          <Select
+            name="materialType"
+            value={materialType ? materialType : null}
+            placeholder="Material Type*"
+            size="large"
+            style={{ width: "20%" }}
+            onChange={handleMaterialTypeChange}
+            filterOption={filterOption}
+          >
+            <Option key="all" value="All">All</Option>
+            {materials.map((v, index) => (
+              <Option key={index} value={v.materialType}>
+                {v.materialType}
+              </Option>
+            ))}
+          </Select>
+
           <Select
             name="vehicle"
             placeholder="Truck Type*"
@@ -170,6 +226,7 @@ const ReportsContainer = ({ onData }) => {
             style={{ width: "20%" }}
             value={vehicleTypeSearch}
             options={[
+              { value: 'All', label: 'All' },
               { value: 'Open', label: 'Open' },
               { value: 'Bulk', label: 'Bulk' },
             ]}
@@ -189,10 +246,10 @@ const ReportsContainer = ({ onData }) => {
             onChange={handleEndDateChange}
             style={{ marginRight: 16 }}
           />
-{startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
+          {startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
 
 
-          {/* {materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <> */}
+            {/* {materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <> */}
             <Button size='large' type="primary" onClick={showTable} >APPLY</Button>
             <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
         </div>
@@ -253,12 +310,23 @@ const ReportsContainer = ({ onData }) => {
         const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
         XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
       };
+      // const formatDate = (date) => {
+      //   const parsedDate = new Date(date);
+      //   if (!isNaN(parsedDate)) {
+      //     return parsedDate.toLocaleDateString('en-GB');
+      //   }
+      //   return date; // Return the original date if parsing fails
+      // };
       const formatDate = (date) => {
         const parsedDate = new Date(date);
         if (!isNaN(parsedDate)) {
-          return parsedDate.toLocaleDateString('en-GB');
+          return parsedDate.toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
         }
-        return date; // Return the original date if parsing fails
+        return date;
       };
 
       // {
@@ -470,10 +538,11 @@ const ReportsContainer = ({ onData }) => {
             },
           };
           const searchData = queryParams ? queryParams : null;
-
+          console.log(queryParams)
+          // const a = '?material=COAL'
           const response = searchData
             ? await API.get(
-              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}`,
+              `trip-register-aggregate-values/${editingRowId}/${selectedHubId}${queryParams}`,
               headersOb
             )
             : await API.get(
@@ -533,10 +602,15 @@ const ReportsContainer = ({ onData }) => {
 
 
       const [loading, setLoading] = useState(false)
+
       const formatDate = (date) => {
         const parsedDate = new Date(date);
         if (!isNaN(parsedDate)) {
-          return parsedDate.toLocaleDateString('en-GB');
+          return parsedDate.toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
         }
         return date; // Return the original date if parsing fails
       };
@@ -948,9 +1022,12 @@ const ReportsContainer = ({ onData }) => {
         try {
           // const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
           const searchData = queryParams ? queryParams : null;
-
+          
           const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}${queryParams}`, headersOb)
             : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
+
+          // const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}?startDate=${sd}`, headersOb)
+          //   : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
           if (response.data.voucher.length == 0) {
             setLoading(false)
@@ -1277,7 +1354,7 @@ const ReportsContainer = ({ onData }) => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-  
+
     const columns = [
       {
         title: 'Sl No',
@@ -1286,7 +1363,7 @@ const ReportsContainer = ({ onData }) => {
         render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
         width: 80,
       },
-      
+
       {
         title: 'Owner Name',
         width: 160,
@@ -1369,16 +1446,17 @@ const ReportsContainer = ({ onData }) => {
           scroll={{ x: 800 }}
           rowKey="_id"
           loading={loading}
-          pagination={{
-            showSizeChanger: true,
-            position: ['bottomCenter'],
-            current: currentPage,
-            pageSize: pageSize,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
-          }}
+          // pagination={{
+          //   showSizeChanger: true,
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   pageSize: pageSize,
+          //   onChange: (page, pageSize) => {
+          //     setCurrentPage(page);
+          //     setPageSize(pageSize);
+          //   },
+          // }}
+          pagination={false}
         />
       </>
     );

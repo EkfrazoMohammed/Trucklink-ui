@@ -784,7 +784,7 @@ const DispatchContainer = ({ onData }) => {
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
-                    placeholder="Loaded From*"
+                    placeholder="Load Location*"
                     size="large"
                     style={{ width: '100%' }}
                     showSearch
@@ -804,7 +804,7 @@ const DispatchContainer = ({ onData }) => {
                   <Select
                     name="deliveryLocation"
                     onChange={(value) => handleChange('deliveryLocation', value)}
-                    placeholder="Deliver To*"
+                    placeholder="Delivery Location*"
                     size="large"
                     showSearch
                     value={formData.deliveryLocation}
@@ -1461,7 +1461,7 @@ const DispatchContainer = ({ onData }) => {
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
-                    placeholder="Loaded From*"
+                    placeholder="Load Location*"
                     size="large"
                     value={formData.loadLocation}
                     style={{ width: '100%' }}
@@ -1478,7 +1478,7 @@ const DispatchContainer = ({ onData }) => {
                   <Select
                     name="deliveryLocation"
                     onChange={(value) => handleChange('deliveryLocation', value)}
-                    placeholder="Deliver To*"
+                    placeholder="Delivery Location*"
                     size="large"
                     value={formData.deliveryLocation}
                     style={{ width: '100%' }}

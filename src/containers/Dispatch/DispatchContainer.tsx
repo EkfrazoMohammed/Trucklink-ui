@@ -201,7 +201,7 @@ const DispatchContainer = ({ onData }) => {
 
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
-    const initialSearchQuery = localStorage.getItem('searchQuery4') || '';
+    const initialSearchQuery =  '' || localStorage.getItem('searchQuery4') ;
     const [searchQuery4, setSearchQuery4] = useState<string>(initialSearchQuery);
 
     // Update localStorage whenever searchQuery4 changes

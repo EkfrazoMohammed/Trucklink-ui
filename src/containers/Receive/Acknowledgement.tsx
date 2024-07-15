@@ -554,27 +554,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 ),
             },
         ];
-        const changePagination = async (pageNumber, pageSize) => {
-            try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setAcknowledgement(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        const changePaginationAll = async (pageNumber, pageSize) => {
-            try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setAcknowledgement(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
         return (
             <>
                 <Table
@@ -642,11 +621,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         }
     }
 
-
     const EditableChallan = ({ editingRow }) => {
-
         const selectedHubId = localStorage.getItem("selectedHubID");
-
         const [formData, setFormData] = useState(
             {
                 "balance": editingRow.balance,

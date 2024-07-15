@@ -201,7 +201,7 @@ const DispatchContainer = ({ onData }) => {
 
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
-    const initialSearchQuery =  '' || localStorage.getItem('searchQuery4') ;
+    const initialSearchQuery = localStorage.getItem('searchQuery4') || "";
     const [searchQuery4, setSearchQuery4] = useState<string>(initialSearchQuery);
 
     // Update localStorage whenever searchQuery4 changes
@@ -279,6 +279,8 @@ const DispatchContainer = ({ onData }) => {
       setSearchQuery("");
       handleSearch("")
       setStartDateValue("")
+      setStartDate("");
+      setEndDate("");
       setEndDateValue("")
       setMaterialSearch("")
       setVehicleTypeSearch("")
@@ -338,7 +340,7 @@ const DispatchContainer = ({ onData }) => {
               </Option>
             ))}
           </Select>
-          <Select
+          {/* <Select
             name="truckType"
             placeholder="Truck Type*"
             size="large"
@@ -349,7 +351,20 @@ const DispatchContainer = ({ onData }) => {
               { value: 'Bulk', label: 'Bulk' },
             ]}
             onChange={handleVehicleTypeChange}
+          /> */}
+          <Select
+            name="truckType"
+            placeholder="Truck Type*"
+            size="large"
+            style={{ width: "20%" }}
+            value={vehicleTypeSearch || undefined}
+            options={[
+              { value: 'Open', label: 'Open' },
+              { value: 'Bulk', label: 'Bulk' },
+            ]}
+            onChange={handleVehicleTypeChange}
           />
+
           {searchQuery4 !== null && searchQuery4 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" || materialSearch !== "" || vehicleTypeSearch !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
 
         </div>

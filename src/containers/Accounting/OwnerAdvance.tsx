@@ -865,11 +865,7 @@ const OwnerAdvance = () => {
         <div style={{ fontWeight: 'bold', width: '160px' }}>
           {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
         </div>
-
-
       </div>
-
-      <h1>{JSON.stringify(dataSource, null, 2)}</h1>
     </div>
   );
 };

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import moment from "moment";
-import 'moment-timezone';
 import dayjs from 'dayjs';
+import 'moment-timezone';
 import { API } from "../../API/apirequest"
 const dateFormat = "DD/MM/YYYY";
 
@@ -43,7 +43,7 @@ const OwnerAdvance = () => {
     const unixTimestamp = new Date(date).getTime();
     setStartDate(unixTimestamp);
   };
-  const handleEndDateChange = (date, dateString) => {
+  const handleEndDateChange1 = (date, dateString) => {
     // Set the date to the last minute of the day (23:59:59.999)
     const endOfDay = new Date(date);
     endOfDay.setUTCHours(23, 59, 59, 999);
@@ -54,6 +54,17 @@ const OwnerAdvance = () => {
     console.log(unixTimestamp);
     setEndDateValue(date);
     setEndDate(unixTimestamp);
+  };
+  const handleEndDateChange = (date, dateString) => {
+    if (date) {
+      // Format the date for display
+      const formattedDate = dayjs(date).format("DD/MM/YYYY");
+      setEndDateValue(formattedDate); // Set formatted date for display
+      setEndDate(date); // Set Date object for further processing if needed
+    } else {
+      setEndDateValue(null);
+      setEndDate(null);
+    }
   };
 
   // const handleEndDateChange = (date,dateString) => {
@@ -74,11 +85,12 @@ const OwnerAdvance = () => {
   //   }
   // };
   const handleFilter = () => {
+    const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
 
     updateFilterAndFetchData({
       ownerId,
       startDate,
-      endDate
+      endDate: endOfDayInIST,
     });
   };
 
@@ -90,16 +102,9 @@ const OwnerAdvance = () => {
     setStartDateValue("")
     setEndDateValue("")
   };
-
-  const updateFilterAndFetchData = async (filters) => {
-    setFilterRequest(filters);
-    await getTableData(filters);
-  };
   const getTableData = async () => {
     try {
       setLoading(true);
-
-
       const searchData = filterRequest ? filterRequest : null;
 
       let response;
@@ -166,7 +171,13 @@ const OwnerAdvance = () => {
     if (filterRequest === null) {
       getTableData();
     }
-  }, [filterRequest, ownerId]);
+  }, [filterRequest]);
+  const updateFilterAndFetchData = async (filters) => {
+    setFilterRequest(filters);
+    await getTableData(filters);
+  };
+
+  // }, [filterRequest, ownerId]);
 
   useEffect(() => {
     if (filterRequest) {
@@ -296,7 +307,7 @@ const OwnerAdvance = () => {
   const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
 
   const columns = [
-    
+
     {
       title: 'Sl No',
       dataIndex: 'serialNumber',
@@ -608,7 +619,7 @@ const OwnerAdvance = () => {
 
     const columnsInsideRow = [
       {
-        title: 'Sl No', 
+        title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index) => index + 1,
@@ -744,16 +755,16 @@ const OwnerAdvance = () => {
       <div className='bg-[#BBE2FF] p-4'>
         <div className="flex justify-between items-center px-2">
           <h1 className='font-bold'>Owner Advance Outstanding</h1>
-        <Button
-          onClick={() => handleAddInsideRow(record)}
-          type="primary"
-          style={{
-            marginBottom: 16,
-          }}
+          <Button
+            onClick={() => handleAddInsideRow(record)}
+            type="primary"
+            style={{
+              marginBottom: 16,
+            }}
           >
-          ADD NEW ENTRY
-        </Button>
-          </div>
+            ADD NEW ENTRY
+          </Button>
+        </div>
         <Form form={form} component={false}>
           <Table
             className='nestedtable-account'
@@ -824,13 +835,23 @@ const OwnerAdvance = () => {
               onChange={handleStartDateChange}
               style={{ marginRight: 16 }}
             />
-            <DatePicker
+            {/* <DatePicker
               placeholder="End Date"
               size="large"
               format={dateFormat}
               value={endDateValue}
               onChange={handleEndDateChange}
               style={{ marginRight: 16 }}
+            /> */}
+            <DatePicker
+              size='large'
+              placeholder="End Date"
+              // value={endDateValue}
+              value={endDate}
+              onChange={handleEndDateChange}
+
+              format='DD/MM/YYYY' // Display format for the DatePicker
+
             />
             <Button type="primary" onClick={handleFilter}>
               APPLY
@@ -891,14 +912,14 @@ const OwnerAdvance = () => {
             }}
             pagination={{
               showSizeChanger: true,
-            position: ['bottomCenter'],
-            current: currentPage,
-            pageSize: pageSize,
-            onChange: (page, pageSize) => {
-              setCurrentPage(page);
-              setPageSize(pageSize);
-            },
-          }}
+              position: ['bottomCenter'],
+              current: currentPage,
+              pageSize: pageSize,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
+            }}
             loading={loading}
 
           />

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { API } from "../../API/apirequest"
+import dayjs from 'dayjs';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import moment from 'moment-timezone';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
@@ -34,40 +35,6 @@ const ReportsContainer = ({ onData }) => {
     "startDate": "",
     "endDate": "",
   })
-  // // Function to handle material type change
-  // const handleMaterialTypeChange = (value) => {
-  //   setMaterialType(value);
-  //   setFilters({ ...filters, material: value || "" });
-  // };
-
-  // // Function to handle truck type change
-  // const handleVehicleTypeChange = (value) => {
-  //   setVehicleTypeSearch(value)
-  //   setFilters({ ...filters, vehicle: value || "" });
-  // };
-  // // Function to handle start date change
-  // const handleStartDateChange = (date, dateString) => {
-  //   setStartDateValue(date); // Update DatePicker value
-  //   const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
-  //   setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
-  // };
-
-  // const handleEndDateChange = (date) => {
-  //   setEndDateValue(date); // Update DatePicker value
-  //   const unixTimestamp = new Date(date).getTime();
-  //   setFilters({ ...filters, endDate: unixTimestamp || "" });
-  // };
-  // const buildQueryParams = (params) => {
-  //   let queryParams = [];
-  //   for (const param in params) {
-  //     if (params[param]) {
-  //       queryParams.push(`${param}=${params[param]}`);
-  //     }
-  //   }
-  //   return queryParams.length ? `?${queryParams.join("&")}` : "";
-  // };
-
-
   // Function to handle material type change
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
@@ -76,22 +43,50 @@ const ReportsContainer = ({ onData }) => {
 
   // Function to handle truck type change
   const handleVehicleTypeChange = (value) => {
-    setVehicleTypeSearch(value);
+    setVehicleTypeSearch(value)
     setFilters({ ...filters, vehicle: value === "All" ? "" : value });
   };
+  // // Function to handle start date change
+  // const handleStartDateChange = (date) => {
+  //   setStartDateValue(date); // Update DatePicker value
+  //   const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
+  //   setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
+  // };
 
-  // Function to handle start date change
-  const handleStartDateChange = (date) => {
-    setStartDateValue(date); // Update DatePicker value
-    const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
-    setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
+  // // Function to handle end date change
+  // const handleEndDateChange = (date) => {
+  //   setEndDateValue(date); // Update DatePicker value
+  //   const unixTimestamp = new Date(date).getTime();
+  //   setFilters({ ...filters, endDate: unixTimestamp || "" });
+  // };
+  const handleStartDateChange = (date, dateString) => {
+    if (date) {
+      const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
+      setStartDateValue(date);
+      const startOfDayInIST = dayjs(formattedDate, "DD/MM/YYYY").startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+      setFilters({ ...filters, startDate: startOfDayInIST || "" });
+    } else {
+      setStartDateValue(null);
+    }
   };
 
   // Function to handle end date change
-  const handleEndDateChange = (date) => {
+  const handleEndDateChange2 = (date) => {
     setEndDateValue(date); // Update DatePicker value
     const unixTimestamp = new Date(date).getTime();
     setFilters({ ...filters, endDate: unixTimestamp || "" });
+  };
+
+  const handleEndDateChange = (date, dateString) => {
+    if (date) {
+      const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
+    setEndDateValue(date);
+
+      const endOfDayInIST = dayjs(formattedDate, "DD/MM/YYYY").endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+    setFilters({ ...filters, endDate: endOfDayInIST || "" });
+    } else {
+      setEndDateValue(null);
+    }
   };
 
   // Function to build query parameters
@@ -232,20 +227,29 @@ const ReportsContainer = ({ onData }) => {
             ]}
             onChange={handleVehicleTypeChange}
           />
-          <DatePicker
+          {/* <DatePicker
             size="large"
             placeholder="Start Date"
             value={startDateValue}
             onChange={handleStartDateChange}
             style={{ marginRight: 16 }}
+          /> */}
+          <DatePicker
+            size='large'
+            onChange={handleStartDateChange}
+            value={startDateValue} // Set Date object directly as the value
+            placeholder="Start Date"
+            format='DD/MM/YYYY' // Display format for the DatePicker
           />
           <DatePicker
-            placeholder="End Date"
-            size="large"
-            value={endDateValue}
+            size='large'
             onChange={handleEndDateChange}
+            value={endDateValue} // Set Date object directly as the value
+            placeholder="End Date"
+            format='DD/MM/YYYY' // Display format for the DatePicker
             style={{ marginRight: 16 }}
           />
+
           {startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
 
 
@@ -525,7 +529,7 @@ const ReportsContainer = ({ onData }) => {
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
-     
+
       const { triggerUpdate } = useLocalStorage();
       const queryParams = buildQueryParams(filters);
 
@@ -595,7 +599,7 @@ const ReportsContainer = ({ onData }) => {
           console.log(err);
         }
       };
-      console.log('first=>',challanData)
+      console.log('first=>', challanData)
 
       useEffect(() => {
         if (editingRowId) {
@@ -1022,7 +1026,7 @@ const ReportsContainer = ({ onData }) => {
         try {
           // const response = await API.get(`get-owner-voucher/${editingRowId}`, headersOb);
           const searchData = queryParams ? queryParams : null;
-          
+
           const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}${queryParams}`, headersOb)
             : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
@@ -1352,7 +1356,7 @@ const ReportsContainer = ({ onData }) => {
 
   const UserTable = ({ onEditTruckClick }) => {
 
-   
+
     const columns = [
       {
         title: 'Sl No',

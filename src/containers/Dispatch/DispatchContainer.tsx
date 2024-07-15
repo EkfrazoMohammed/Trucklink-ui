@@ -1371,10 +1371,6 @@ const DispatchContainer = ({ onData }) => {
         shortage: formData.shortage,
       };
 
-      const a = formData.grDate
-      console.log(a)
-      console.log(payload);
-
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
@@ -1382,16 +1378,16 @@ const DispatchContainer = ({ onData }) => {
         }
       };
 
-      // API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
-      //   .then((response) => {
-      //     console.log('Challan updated successfully:', response.data);
-      //     alert("Challan updated successfully");
-      //     window.location.reload(); // Reload the page or perform any necessary action
-      //   })
-      //   .catch((error) => {
-      //     alert("error occurred");
-      //     console.error('Error adding truck data:', error);
-      //   });
+      API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload, headersOb)
+        .then((response) => {
+          console.log('Challan updated successfully:', response.data);
+          alert("Challan updated successfully");
+          window.location.reload(); // Reload the page or perform any necessary action
+        })
+        .catch((error) => {
+          alert("error occurred");
+          console.error('Error adding truck data:', error);
+        });
     };
 
     const goBack = () => {

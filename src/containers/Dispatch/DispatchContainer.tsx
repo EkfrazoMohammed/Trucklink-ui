@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image, message } from 'antd';
 import axios from "axios"
+import dayjs from 'dayjs';
 
 import moment from 'moment-timezone';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined } from '@ant-design/icons';
@@ -51,32 +52,65 @@ const DispatchContainer = ({ onData }) => {
     setVehicleType(value);
     setVehicleTypeSearch(value)
   };
+  const formatDate = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
+  const parseDate = (dateString) => {
+    const [day, month, year] = dateString.split('/');
+    return new Date(year, month - 1, day);
+  };
   const convertToIST = (date) => {
     const istDate = moment.tz(date, "Asia/Kolkata");
     return istDate.valueOf();
   };
+  // const handleStartDateChange = (date, dateString) => {
+  //   console.log(date)
+  //   console.log(dateString)
+  //   setStartDateValue(date)
+  //   console.log(convertToIST(dateString))
+  //   setStartDate(date ? convertToIST(dateString) : null);
+  // };
+  // Function to handle date change
   const handleStartDateChange = (date, dateString) => {
-    setStartDateValue(date)
-    setStartDate(date ? convertToIST(dateString) : null);
+    if (date) {
+      // Format the date for display
+      const formattedDate = dayjs(date).format("DD/MM/YYYY");
+      setStartDateValue(formattedDate); // Set formatted date for display
+      setStartDate(date); // Set Date object for further processing if needed
+    } else {
+      setStartDateValue(null);
+      setStartDate(null);
+    }
   };
 
   // const handleEndDateChange = (date, dateString) => {
-  //   setEndDateValue(date)
-  //   setEndDate(date ? convertToIST(dateString) : null);
+  //   if (date) {
+  //     // Set endDate to the last minute of the selected day in IST
+  //     const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+  //     setEndDateValue(date);
+  //     setEndDate(endOfDay.valueOf());
+  //   } else {
+  //     setEndDateValue(null);
+  //     setEndDate(null);
+  //   }
   // };
   const handleEndDateChange = (date, dateString) => {
     if (date) {
-      // Set endDate to the last minute of the selected day in IST
-      const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-      setEndDateValue(date);
-      setEndDate(endOfDay.valueOf());
+      // Format the date for display
+      const formattedDate = dayjs(date).format("DD/MM/YYYY");
+      setEndDateValue(formattedDate); // Set formatted date for display
+      setEndDate(date); // Set Date object for further processing if needed
     } else {
       setEndDateValue(null);
       setEndDate(null);
     }
   };
-
 
 
   const getTableData = async () => {
@@ -101,18 +135,27 @@ const DispatchContainer = ({ onData }) => {
       data.searchTDNo = [searchQuery];
     }
 
+    // if (startDate) {
+    //   data.startDate = startDate;
+    // }
     if (startDate) {
-      data.startDate = startDate;
+      // Calculate the start of the day in IST (5:30 AM)
+      const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+      data.startDate = startOfDayInIST;
     }
-
+    // if (endDate) {
+    //   data.endDate = endDate;
+    // }
     if (endDate) {
-      data.endDate = endDate;
+      const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+
+      data.endDate = endOfDayInIST;
     }
     setLoading(true)
     try {
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.post(`get-challan-data?page=1&limit=1000&hubId=${selectedHubId}`, data, headersOb)
-        : await API.post(`get-challan-data?page=1&limit=1000&hubId=${selectedHubId}`, data, headersOb);
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=100000&hubId=${selectedHubId}`, data, headersOb)
+        : await API.post(`get-challan-data?page=1&limit=100000&hubId=${selectedHubId}`, data, headersOb);
 
       setLoading(false)
       let allChallans;
@@ -242,10 +285,7 @@ const DispatchContainer = ({ onData }) => {
       window.location.reload()
     }
 
-    // Disable dates before the selected start date
-    const disabledEndDate = (current) => {
-      return current && current < moment(startDate).startOf('day');
-    };
+
 
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
@@ -258,18 +298,28 @@ const DispatchContainer = ({ onData }) => {
             onSearch={handleSearch}
             style={{ width: 320 }}
           />
-          <DatePicker
+          {/* <DatePicker
             size='large'
             onChange={handleStartDateChange}
             value={startDateValue}
             placeholder='From date'
-          /> -
+          /> - */}
+
           <DatePicker
             size='large'
-            value={endDateValue}
+            onChange={handleStartDateChange}
+            value={startDate} // Set Date object directly as the value
+            placeholder='From date'
+            format='DD/MM/YYYY' // Display format for the DatePicker
+          />
+          <DatePicker
+            size='large'
+            // value={endDateValue}
+            value={endDate}
             onChange={handleEndDateChange}
             placeholder='To date'
-            disabledDate={disabledEndDate}
+            format='DD/MM/YYYY' // Display format for the DatePicker
+
           />
 
           <Select
@@ -514,7 +564,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -556,7 +606,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -1172,7 +1222,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -1213,7 +1263,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${1000}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];

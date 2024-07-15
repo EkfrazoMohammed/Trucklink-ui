@@ -361,7 +361,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
-              getTableData("", "1", "500", selectedHubId);
+              getTableData("", "1", "100000", selectedHubId);
             })
             .catch((error) => {
               const { response } = error;
@@ -643,8 +643,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           setTimeout(() => {
             window.location.reload()
           }, 1000)
-          // getTableData("", "1", "500", selectedHubId);
-
         })
         .catch((error) => {
           const { response } = error;
@@ -657,7 +655,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
   useEffect(() => {
-    getTableData("", "1", "500", selectedHubId);
+    getTableData("", "1", "100000", selectedHubId);
 
   }, []);
   const BillRegisterFormComponent = () => {
@@ -1233,7 +1231,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   }, [searchQuery8, initialSearchQuery]);
 
   const handleSearch = () => {
-    getTableData(searchQuery8, 1, 600, selectedHubId);
+    getTableData(searchQuery8, 1, 100000, selectedHubId);
   };
 
   const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1249,7 +1247,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     setSearchQuery8("");
     setLoading(false)
     localStorage.removeItem('searchQuery8');
-    getTableData("", 1, 600, selectedHubId);
+    getTableData("", 1, 100000, selectedHubId);
   };
 
   return (

@@ -104,7 +104,7 @@ const OwnerAdvance = () => {
 
       let response;
       if (searchData) {
-        response = await API.post(`get-filter-owner-advance-data?page=1&limit=600&hubId=${selectedHubId}`, searchData, headersOb);
+        response = await API.post(`get-filter-owner-advance-data?page=1&limit=100000&hubId=${selectedHubId}`, searchData, headersOb);
       } else {
         response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
       }

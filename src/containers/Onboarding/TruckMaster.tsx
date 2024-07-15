@@ -102,7 +102,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       const pages = page;
       // const limitData = limit ? limit : null;
 
-      const limitData = 600;
+      const limitData = 10000;
 
       // this.setState({loading: true});
       // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
@@ -210,7 +210,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     }, [searchQuery2, initialSearchQuery]);
 
     const handleSearch = () => {
-      getTableData(searchQuery2, 1, 600, selectedHubId);
+      getTableData(searchQuery2, 1, 100000, selectedHubId);
     };
 
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,7 +226,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       setSearchQuery2("");
       setLoading(false)
       localStorage.removeItem('searchQuery2');
-      getTableData("", 1, 600, selectedHubId);
+      getTableData("", 1, 100000, selectedHubId);
     };
     return (
       <div className='flex gap-2 justify-between  py-3'>

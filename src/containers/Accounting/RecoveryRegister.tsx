@@ -253,7 +253,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
-              getTableData("", "1", "500", selectedHubId);
+              getTableData("", "1", "100000", selectedHubId);
               setTimeout(() => {
                 window.location.reload();
               }, 1000)
@@ -321,7 +321,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             console.log("Second API Response:", secondResponse.data);
 
             message.success("Successfully Updated Ledger Entry");
-            getTableData("", "1", "500", selectedHubId);
+            getTableData("", "1", "10000", selectedHubId);
             setTimeout(() => {
               window.location.reload();
             }, 1000);
@@ -336,51 +336,6 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log("Validate Failed:", errInfo);
       }
     };
-
-
-    // const handleDeleteLedgerData = async (key) => {
-    //   console.log("ledgerEntries=>",ledgerEntries)
-    //   try {
-    //     const row = await form.validateFields();
-    //     const newData = [...entries];
-    //     const index = newData.findIndex((item) => key === item.key);
-
-    //     if (index > -1) {
-    //       const item = newData[index];
-    //       newData.splice(index, 1, { ...item, ...row });
-    //       setLedgerEntries((prevEntries) => ({
-    //         ...prevEntries,
-    //         [record.key]: newData,
-    //       }));
-    //       setEditingKeyIn("");
-
-
-
-    //       const payload = {
-    //         recovery: 0
-    //       };
-    //       console.log(`update-recovered-value/${record.key}/${key}`)
-    //       console.log(payload)
-    //       // await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
-    //       //   .then(() => {
-    //       //     message.success("Successfully Updated Ledger Entry");
-    //       //     getTableData("", "1", "500", selectedHubId);
-    //       //     setTimeout(() => {
-    //       //       window.location.reload();
-    //       //     }, 1000)
-    //       //   })
-    //       //   .catch((error) => {
-    //       //     const { response } = error;
-    //       //     const { data } = response;
-    //       //     const { message: msg } = data;
-    //       //     message.error(msg);
-    //       //   });
-    //     }
-    //   } catch (errInfo) {
-    //     console.log("Validate Failed:", errInfo);
-    //   }
-    // };
-
 
     const columnsInsideRow = [
 
@@ -535,7 +490,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       await API.delete(`delete-recovered-data/${key}`, headersOb)
         .then(() => {
           message.success("Successfully Deleted Recovered Entry");
-          getTableData("", "1", "500", selectedHubId);
+          getTableData("", "1", "100000", selectedHubId);
           getOutstandingData();
         })
         .catch((error) => {
@@ -549,7 +504,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
   useEffect(() => {
-    getTableData("", "1", "500", selectedHubId);
+    getTableData("", "1", "100000", selectedHubId);
 
   }, []);
 
@@ -1094,7 +1049,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   }, [searchQuery7, initialSearchQuery]);
 
   const handleSearch = () => {
-    getTableData(searchQuery7, 1, 600, selectedHubId);
+    getTableData(searchQuery7, 1, 100000, selectedHubId);
   };
 
   const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1110,7 +1065,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     setSearchQuery7("");
     setLoading(false)
     localStorage.removeItem('searchQuery7');
-    getTableData("", 1, 600, selectedHubId);
+    getTableData("", 1, 100000, selectedHubId);
   };
   return (
     <>

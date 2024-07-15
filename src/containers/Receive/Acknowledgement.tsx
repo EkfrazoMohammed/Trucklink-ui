@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
+
+import dayjs from 'dayjs';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
 import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
@@ -42,22 +44,44 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
     };
-    const handleStartDateChange = (date, dateString) => {
-        console.log(convertToIST(dateString))
-        setStartDateValue(date)
-        setStartDate(date ? convertToIST(dateString) : null);
-    };
+    // const handleStartDateChange = (date, dateString) => {
+    //     console.log(convertToIST(dateString))
+    //     setStartDateValue(date)
+    //     setStartDate(date ? convertToIST(dateString) : null);
+    // };
 
     // const handleEndDateChange = (date, dateString) => {
     //     setEndDateValue(date)
     //     setEndDate(date ? convertToIST(dateString) : null);
     // };
+    // const handleEndDateChange = (date, dateString) => {
+    //     if (date) {
+    //         // Set endDate to the last minute of the selected day in IST
+    //         const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+    //         setEndDateValue(date);
+    //         setEndDate(endOfDay.valueOf());
+    //     } else {
+    //         setEndDateValue(null);
+    //         setEndDate(null);
+    //     }
+    // };
+    const handleStartDateChange = (date, dateString) => {
+        if (date) {
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setStartDateValue(formattedDate); // Set formatted date for display
+            setStartDate(date); // Set Date object for further processing if needed
+        } else {
+            setStartDateValue(null);
+            setStartDate(null);
+        }
+    };
     const handleEndDateChange = (date, dateString) => {
         if (date) {
-            // Set endDate to the last minute of the selected day in IST
-            const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-            setEndDateValue(date);
-            setEndDate(endOfDay.valueOf());
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setEndDateValue(formattedDate); // Set formatted date for display
+            setEndDate(date); // Set Date object for further processing if needed
         } else {
             setEndDateValue(null);
             setEndDate(null);
@@ -90,12 +114,21 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             data.searchTDNo = [searchQuery];
         }
 
+        // if (startDate) {
+        //   data.startDate = startDate;
+        // }
         if (startDate) {
-            data.startDate = startDate;
+            // Calculate the start of the day in IST (5:30 AM)
+            const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+            data.startDate = startOfDayInIST;
         }
-
+        // if (endDate) {
+        //   data.endDate = endDate;
+        // }
         if (endDate) {
-            data.endDate = endDate;
+            const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+
+            data.endDate = endOfDayInIST;
         }
 
 
@@ -193,6 +226,22 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     />
                     <DatePicker
                         size='large'
+                        onChange={handleStartDateChange}
+                        value={startDate} // Set Date object directly as the value
+                        placeholder='From date'
+                        format='DD/MM/YYYY' // Display format for the DatePicker
+                    />
+                    <DatePicker
+                        size='large'
+                        // value={endDateValue}
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                        placeholder='To date'
+                        format='DD/MM/YYYY' // Display format for the DatePicker
+
+                    />
+                    {/* <DatePicker
+                        size='large'
                         value={startDateValue}
                         onChange={handleStartDateChange}
                         placeholder='From date'
@@ -203,7 +252,20 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                         onChange={handleEndDateChange}
                         disabledDate={disabledEndDate}
                         placeholder='To date'
-                    />
+                    /> */}
+                    {/* <DatePicker
+                        size='large'
+                        value={startDateValue}
+                        onChange={handleStartDateChange}
+                        placeholder='From date'
+                    /> -
+                    <DatePicker
+                        size='large'
+                        value={endDateValue}
+                        onChange={handleEndDateChange}
+                        disabledDate={disabledEndDate}
+                        placeholder='To date'
+                    /> */}
 
                     {searchQuery3 !== null && searchQuery3 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
@@ -267,17 +329,17 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
                     if (differenceInDays < 10) {
                         backgroundColor = '#34ff61';
-                        color='#000';
+                        color = '#000';
                     } else if (differenceInDays < 20) {
                         backgroundColor = '#FFED4A';
-                        color='#000';
+                        color = '#000';
 
                     } else if (differenceInDays >= 30) {
                         backgroundColor = '#FF0000';
-                        color='#fff';
+                        color = '#fff';
                     } else {
                         backgroundColor = '#FFED4A'; // Default background color
-                        color='#000';
+                        color = '#000';
                     }
 
                     return {
@@ -293,7 +355,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     console.log("givendDate=>", givenDate, "today=>", today, "difference=>", differenceInDays)
                     return (
                         <span>{differenceInDays}</span>
-                        
+
                     );
                 },
             },

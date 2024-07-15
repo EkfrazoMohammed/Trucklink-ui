@@ -525,6 +525,7 @@ const ReportsContainer = ({ onData }) => {
     const DispatchTable = () => {
       const authToken = localStorage.getItem("token");
       const [challanData, setchallanData] = useState([]);
+     
       const { triggerUpdate } = useLocalStorage();
       const queryParams = buildQueryParams(filters);
 
@@ -569,6 +570,7 @@ const ReportsContainer = ({ onData }) => {
             triggerUpdate();
           } else {
             const tripData = response.data.tripAggregates[0];
+            console.log(response.data.tripAggregates[0].tripDetails)
             localStorage.setItem("Dispatch Table", JSON.stringify(tripData));
             setchallanData(tripData.tripDetails || []);
             const saveTripReportsinLocalStorage = {
@@ -593,6 +595,7 @@ const ReportsContainer = ({ onData }) => {
           console.log(err);
         }
       };
+      console.log('first=>',challanData)
 
       useEffect(() => {
         if (editingRowId) {
@@ -854,10 +857,7 @@ const ReportsContainer = ({ onData }) => {
             scroll={{ x: 700 }}
             rowKey="_id"
             loading={loading}
-            pagination={{
-              position: ["none", "none"],
-              showSizeChanger: false,
-            }}
+            pagination={false}
             summary={() => (
               <Table.Summary.Row>
                 <Table.Summary.Cell colSpan={9} align="right">Total</Table.Summary.Cell>
@@ -1352,15 +1352,13 @@ const ReportsContainer = ({ onData }) => {
 
   const UserTable = ({ onEditTruckClick }) => {
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-
+   
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+        render: (text, record, index) => index + 1,
         width: 80,
       },
 

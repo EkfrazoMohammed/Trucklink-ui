@@ -58,7 +58,7 @@ const AccountingContainer = ({ onData }) => {
 
     try {
       const pages = page;
-      const limitData = 600;
+      const limitData = 100000;
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData

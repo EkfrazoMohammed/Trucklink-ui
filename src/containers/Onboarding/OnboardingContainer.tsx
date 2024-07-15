@@ -61,7 +61,7 @@ const OnboardingContainer = ({ onData }) => {
     setLoading(true);
     try {
       const pages = page;
-      const limitData = 600;
+      const limitData = 1000;
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData
@@ -231,7 +231,7 @@ const OnboardingContainer = ({ onData }) => {
     }, [searchQuery1, initialSearchQuery]);
 
     const handleSearch = () => {
-      getTableData(searchQuery1, 1, 600, selectedHubId);
+      getTableData(searchQuery1, 1, 100000, selectedHubId);
     };
 
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,7 +289,7 @@ const OnboardingContainer = ({ onData }) => {
     const onReset = () => {
       setSearchQuery1("");
       localStorage.removeItem('searchQuery1');
-      getTableData("", 1, 600, selectedHubId);
+      getTableData("", 1, 100000, selectedHubId);
     };
 
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
+
+import dayjs from 'dayjs';
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
 import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
@@ -23,7 +25,8 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
 
     const [showTable, setShowTable] = useState(true);
     const selectedHubId = localStorage.getItem("selectedHubID");
-    const [receive, setreceive] = useState([]);
+    // const [receive, setreceive] = useState([]);
+    const [receive, setreceive] = useState<any[]>([]); // or useState<number[]>([]) if you expect numbers
 
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,22 +46,44 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
     };
-    const handleStartDateChange = (date, dateString) => {
-        console.log(convertToIST(dateString))
-        setStartDateValue(date)
-        setStartDate(date ? convertToIST(dateString) : null);
-    };
+    // const handleStartDateChange = (date, dateString) => {
+    //     console.log(convertToIST(dateString))
+    //     setStartDateValue(date)
+    //     setStartDate(date ? convertToIST(dateString) : null);
+    // };
 
     // const handleEndDateChange = (date, dateString) => {
     //     setEndDateValue(date)
     //     setEndDate(date ? convertToIST(dateString) : null);
     // };
+    // const handleEndDateChange = (date, dateString) => {
+    //     if (date) {
+    //         // Set endDate to the last minute of the selected day in IST
+    //         const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
+    //         setEndDateValue(date);
+    //         setEndDate(endOfDay.valueOf());
+    //     } else {
+    //         setEndDateValue(null);
+    //         setEndDate(null);
+    //     }
+    // };
+    const handleStartDateChange = (date, dateString) => {
+        if (date) {
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setStartDateValue(formattedDate); // Set formatted date for display
+            setStartDate(date); // Set Date object for further processing if needed
+        } else {
+            setStartDateValue(null);
+            setStartDate(null);
+        }
+    };
     const handleEndDateChange = (date, dateString) => {
         if (date) {
-            // Set endDate to the last minute of the selected day in IST
-            const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-            setEndDateValue(date);
-            setEndDate(endOfDay.valueOf());
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setEndDateValue(formattedDate); // Set formatted date for display
+            setEndDate(date); // Set Date object for further processing if needed
         } else {
             setEndDateValue(null);
             setEndDate(null);
@@ -92,11 +117,17 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         }
 
         if (startDate) {
-            data.startDate = startDate;
+            // Calculate the start of the day in IST (5:30 AM)
+            const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+            data.startDate = startOfDayInIST;
         }
-
+        // if (endDate) {
+        //   data.endDate = endDate;
+        // }
         if (endDate) {
-            data.endDate = endDate;
+            const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+
+            data.endDate = endOfDayInIST;
         }
 
         let queryParams = buildQueryParams(data);
@@ -105,14 +136,15 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         try {
             const searchData = queryParams ? queryParams : null;
 
-            const response = searchData ? await API.get(`get-receive-register${queryParams}&page=1?limit=200&hubId=${selectedHubId}`, headersOb)
-                : await API.get(`get-receive-register?page=1&limit=200&hubId=${selectedHubId}`, headersOb);
+            const response = searchData ? await API.get(`get-receive-register${queryParams}&page=1?limit=100000&hubId=${selectedHubId}`, headersOb)
+                : await API.get(`get-receive-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
             let allreceive;
             setLoading(false)
             if (response.data.dispatchData.length == 0) {
-                allreceive = response.data.disptachData
-                console.log(allreceive)
+                console.log(response.data.dispatchData.length)
+                allreceive = []; // Set to empty array when there are no dispatchData objects
+                console.log(allreceive);
                 setreceive(allreceive);
             } else {
                 allreceive = response.data.dispatchData[0].data || "";
@@ -124,6 +156,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         b = b.vehicleNumber.toLowerCase();
                         return a < b ? -1 : a > b ? 1 : 0;
                     });
+                    console.log(arrRes)
                     setreceive(arrRes);
                     return arrRes;
                 }
@@ -185,7 +218,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         onSearch={handleSearch}
                         style={{ width: 320 }}
                     />
-                    <DatePicker
+                    {/* <DatePicker
                         size='large'
                         value={startDateValue}
                         onChange={handleStartDateChange}
@@ -197,9 +230,24 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         onChange={handleEndDateChange}
                         disabledDate={disabledEndDate}
                         placeholder='To date'
+                    /> */}
+                    <DatePicker
+                        size='large'
+                        onChange={handleStartDateChange}
+                        value={startDate} // Set Date object directly as the value
+                        placeholder='From date'
+                        format='DD/MM/YYYY' // Display format for the DatePicker
                     />
+                    <DatePicker
+                        size='large'
+                        // value={endDateValue}
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                        placeholder='To date'
+                        format='DD/MM/YYYY' // Display format for the DatePicker
 
-                    {searchQuery5 !== null && searchQuery5 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
+                    />
+                    {searchQuery5 !== null && searchQuery5 !== "" || startDate !== null && startDate !== "" || endDate !== null && endDate !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
             </div>
 
@@ -428,27 +476,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 ),
             },
         ];
-        const changePagination = async (pageNumber, pageSize) => {
-            try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setreceive(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
 
-        const changePaginationAll = async (pageNumber, pageSize) => {
-            try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setreceive(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
         const totalQty = receive.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
         const totalAmout = receive.reduce((sum, record) => sum + ((record.quantityInMetricTons) * (record.rate) || 0), 0).toFixed(2);
 

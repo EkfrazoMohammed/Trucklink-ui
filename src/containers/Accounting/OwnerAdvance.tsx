@@ -43,21 +43,8 @@ const OwnerAdvance = () => {
     const unixTimestamp = new Date(date).getTime();
     setStartDate(unixTimestamp);
   };
-  const handleEndDateChange1 = (date, dateString) => {
-    // Set the date to the last minute of the day (23:59:59.999)
-    const endOfDay = new Date(date);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-
-    // Get Unix timestamp in milliseconds
-    const unixTimestamp = endOfDay.getTime();
-
-    console.log(unixTimestamp);
-    setEndDateValue(date);
-    setEndDate(unixTimestamp);
-  };
   const handleEndDateChange = (date, dateString) => {
     if (date) {
-      // Format the date for display
       const formattedDate = dayjs(date).format("DD/MM/YYYY");
       setEndDateValue(formattedDate); // Set formatted date for display
       setEndDate(date); // Set Date object for further processing if needed
@@ -66,24 +53,6 @@ const OwnerAdvance = () => {
       setEndDate(null);
     }
   };
-
-  // const handleEndDateChange = (date,dateString) => {
-  //   console.log(dateString.getTime())
-  //   setEndDateValue(date)
-  //   const unixTimestamp = new Date(date).getTime();
-  //   setEndDate(unixTimestamp);
-  // };
-  // const handleEndDateChange = (date, dateString) => {
-  //   if (date) {
-  //     // Set endDate to the last minute of the selected day in IST
-  //     const endOfDay = moment(date).endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-  //     setEndDateValue(date);
-  //     setEndDate(endOfDay.valueOf());
-  //   } else {
-  //     setEndDateValue("");
-  //     setEndDate(null);
-  //   }
-  // };
   const handleFilter = () => {
     const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
 
@@ -254,7 +223,7 @@ const OwnerAdvance = () => {
         narration: "Vehicle Advance",
         hubId: selectedHubId
       }
-      console.log(payload)
+
       await API.post(`create-owner-advance`, payload, headersOb)
         .then(() => {
           message.success("Successfully Added Owner Advance Outstanding");
@@ -835,21 +804,12 @@ const OwnerAdvance = () => {
               onChange={handleStartDateChange}
               style={{ marginRight: 16 }}
             />
-            {/* <DatePicker
-              placeholder="End Date"
-              size="large"
-              format={dateFormat}
-              value={endDateValue}
-              onChange={handleEndDateChange}
-              style={{ marginRight: 16 }}
-            /> */}
+
             <DatePicker
               size='large'
               placeholder="End Date"
-              // value={endDateValue}
               value={endDate}
               onChange={handleEndDateChange}
-
               format='DD/MM/YYYY' // Display format for the DatePicker
 
             />
@@ -857,7 +817,6 @@ const OwnerAdvance = () => {
               APPLY
             </Button>
           </div>
-          {/* {startDate} */}
           {ownerId !== null && ownerId !== "" || startDate !== null && startDate !== 0 || endDate !== null && endDate !== 0 ? <><Button onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
 
@@ -868,37 +827,7 @@ const OwnerAdvance = () => {
           ADD OWNER BALANCE
         </Button>
       </div>
-      {/*   <div className="flex justify-end items-center">
-        <div className='dashboard-table-pagination-container'>
-       
-          <Button
-            onClick={() => handlePageSizeChange(10)}
-            style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
-          >
-            10
-          </Button>
 
-          <Button
-            onClick={() => handlePageSizeChange(25)}
-            style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
-          >
-            25
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(50)}
-            style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
-          >
-            50
-          </Button>
-
-          <Button
-            onClick={() => handlePageSizeChange(100)}
-            style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
-          >
-            100
-          </Button>
-        </div>
-      </div> */}
       <div className="myowneradvancetab-content">
         <Form form={form} component={false}>
           <Table
@@ -921,7 +850,6 @@ const OwnerAdvance = () => {
               },
             }}
             loading={loading}
-
           />
         </Form>
       </div>
@@ -938,7 +866,10 @@ const OwnerAdvance = () => {
           {totalOutstanding > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalOutstanding}</p> : <p style={{ color: "red" }}>{totalOutstanding}</p>}
         </div>
 
+
       </div>
+
+      <h1>{JSON.stringify(dataSource, null, 2)}</h1>
     </div>
   );
 };

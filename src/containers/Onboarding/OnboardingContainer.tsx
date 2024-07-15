@@ -558,73 +558,7 @@ const OnboardingContainer = ({ onData }) => {
       // Cleanup
       document.body.removeChild(link);
     };
-    // const downloadCSV = () => {
-    //     const accountDetails = data.ownerDetails[0].data.flatMap(owner => 
-    //         owner.accountIds.map(account => ({
-    //             accountNumber: account.accountNumber,
-    //             accountHolderName: account.accountHolderName,
-    //             ifscCode: account.ifscCode,
-    //             bankName: account.bankName,
-    //             branchName: account.branchName,
-    //             ownerName: owner.name,
-    //             ownerEmail: owner.email,
-    //             ownerPhoneNumber: owner.phoneNumber,
-    //             ownerPanNumber: owner.panNumber,
-    //             ownerAddress: owner.address,
-    //             ownerDistrict: owner.district,
-    //             ownerState: owner.state,
-    //             ownerHubId: owner.hubId
-    //         }))
-    //     );
-
-    //     const headers = [
-    //         "Account Number", 
-    //         "Account Holder Name", 
-    //         "IFSC Code", 
-    //         "Bank Name", 
-    //         "Branch Name",
-    //         "Owner Name",
-    //         "Owner Email",
-    //         "Owner Phone Number",
-    //         "Owner PAN Number",
-    //         "Owner Address",
-    //         "Owner District",
-    //         "Owner State",
-    //         "Owner Hub ID"
-    //     ];
-
-    //     const csvContent = [
-    //         headers.join(","),
-    //         ...accountDetails.map(row => 
-    //             [
-    //                 row.accountNumber,
-    //                 row.accountHolderName,
-    //                 row.ifscCode,
-    //                 row.bankName,
-    //                 row.branchName,
-    //                 row.ownerName,
-    //                 row.ownerEmail,
-    //                 row.ownerPhoneNumber,
-    //                 row.ownerPanNumber,
-    //                 row.ownerAddress,
-    //                 row.ownerDistrict,
-    //                 row.ownerState,
-    //                 row.ownerHubId
-    //             ].join(",")
-    //         )
-    //     ].join("\n");
-
-    //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    //     const link = document.createElement("a");
-    //     const url = URL.createObjectURL(blob);
-    //     link.setAttribute("href", url);
-    //     link.setAttribute("download", "account_details.csv");
-    //     link.style.visibility = 'hidden';
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     document.body.removeChild(link);
-    // };
-    return (
+     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
 
@@ -642,13 +576,12 @@ const OnboardingContainer = ({ onData }) => {
 
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
             <Button icon={<UploadOutlined />} loading={loading}>
-              {/* {loading ? "Uploading" : "Click to Upload"} */}
-              {loading ? "" : ""}
+             {loading ? "" : ""}
             </Button>
           </Upload>
           {/* <Upload> */}
           {/* <Button icon={<UploadOutlined />}></Button> */}
-          <Button icon={<DownloadOutlined />} ></Button>
+          {/* <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button> */}
           {/* </Upload> */}
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>

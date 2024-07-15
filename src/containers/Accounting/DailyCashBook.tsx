@@ -29,11 +29,44 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
+  // const getTableData = async (month, year) => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await API.get(`get-cash-book-by-month/${month}/${year}/${selectedHubId}`, headersOb);
+  //     const { cashBookEntries, amounts } = response.data || [];
+  //     if (cashBookEntries && cashBookEntries.length > 0) {
+  //       const dataSource = cashBookEntries.map((entry) => ({
+  //         key: entry._id,
+  //         date: entry.entryDate,
+  //         debit: entry.debit,
+  //         credit: entry.credit,
+  //         narration: entry.narration,
+  //       }));
+  //       setDataSource(dataSource);
+  //       console.log(dataSource)
+  //       setCount(dataSource.length);
+  //     } else {
+  //       setDataSource([]);
+  //     }
+  //     if (amounts) {
+  //       console.log(amounts)
+  //       setAmountData(amounts);
+  //     } else {
+  //       setAmountData([]);
+  //     }
+  //     setLoading(false);
+  //   } catch (err) {
+  //     setLoading(false);
+  //     message.error("Error fetching data. Please try again later", 2);
+  //   }
+  // };
+
   const getTableData = async (month, year) => {
     try {
       setLoading(true);
       const response = await API.get(`get-cash-book-by-month/${month}/${year}/${selectedHubId}`, headersOb);
       const { cashBookEntries, amounts } = response.data || [];
+
       if (cashBookEntries && cashBookEntries.length > 0) {
         const dataSource = cashBookEntries.map((entry) => ({
           key: entry._id,
@@ -42,22 +75,36 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           credit: entry.credit,
           narration: entry.narration,
         }));
+
+        // Calculate the sum of debits and credits
+        const currentMonthDebit = cashBookEntries.reduce((sum, entry) => sum + entry.debit, 0);
+        const currentMonthCredit = cashBookEntries.reduce((sum, entry) => sum + entry.credit, 0);
+        const currentMonthOutStanding = currentMonthCredit - currentMonthDebit
+
+        // Add currentMonthDebit and currentMonthCredit to amounts
+        const updatedAmounts = {
+          ...amounts,
+          currentMonthDebit,
+          currentMonthCredit,
+          currentMonthOutStanding,
+        };
+        console.log(updatedAmounts)
+
         setDataSource(dataSource);
         setCount(dataSource.length);
+        setAmountData(updatedAmounts);
       } else {
         setDataSource([]);
-      }
-      if (amounts) {
-        setAmountData(amounts);
-      } else {
         setAmountData([]);
       }
+
       setLoading(false);
     } catch (err) {
       setLoading(false);
       message.error("Error fetching data. Please try again later", 2);
     }
   };
+
 
   const createCashBookEntry = async (row) => {
     const { date, debit, credit, narration } = row;
@@ -367,16 +414,16 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           columns={columns}
           pagination={{
             showSizeChanger: false,
-          position: ['bottomCenter'],
-          current: currentPage,
-          pageSize: pageSize,
-          onChange: (page, pageSize) => {
-            setCurrentPage(page);
-            setPageSize(pageSize);
-          },
-        }}
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
           loading={loading}
-        
+
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
@@ -386,16 +433,18 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             Current Month balance
           </div>
           <div style={{ textAlign: 'right', width: '160px', fontWeight: 'bold' }}>
-            {amountData.monthlyTotalDebit}
+            {/* {amountData.monthlyTotalDebit}  */}
+            {amountData.currentMonthDebit}
           </div>
           <div style={{ fontWeight: 'bold', width: '160px' }}>
             {/* {amountData.monthlyTotalCredit} */}
           </div>
           <div style={{ fontWeight: 'bold', width: '260px' }}>
-            {amountData.monthlyTotalCredit}
+            {/* {amountData.monthlyTotalCredit}  */}
+            {amountData.currentMonthCredit}
           </div>
           <div style={{ fontWeight: 'bold', width: '160px' }}>
-            {amountData.monthlyOutstanding > 0 ? <p style={{ color: "green" }}>{amountData.monthlyOutstanding}</p> : <p style={{ color: "red" }}>{amountData.monthlyOutstanding}</p>}
+            {amountData.currentMonthOutStanding > 0 ? <p style={{ color: "green" }}>{amountData.currentMonthOutStanding}</p> : <p style={{ color: "red" }}>{amountData.currentMonthOutStanding}</p>}
           </div>
 
         </div>

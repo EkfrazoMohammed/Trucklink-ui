@@ -513,7 +513,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "80px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
+                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
                     {formData.rcBookProof !== null ?
                       <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
@@ -646,7 +646,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     };
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-  
+
 
     const columns = [
       // {
@@ -763,14 +763,14 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           // }}
           pagination={{
             showSizeChanger: true,
-          position: ['bottomCenter'],
-          current: currentPage,
-          pageSize: pageSize,
-          onChange: (page, pageSize) => {
-            setCurrentPage(page);
-            setPageSize(pageSize);
-          },
-        }}
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
         // loading={loading}
         />
       </>
@@ -1033,7 +1033,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "110px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
+                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
 
                       {/* <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button> */}
                     </Upload>
@@ -1377,7 +1377,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       showUploadList={false}
                       beforeUpload={() => false}
                     >
-                      <Button size="large" style={{ width: "110px" }}><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
+                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
                     {formData.rcBookProof !== null ?
                       <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />

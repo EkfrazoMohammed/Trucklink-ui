@@ -339,7 +339,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             {
                 title: 'Owner Name',
 
-                width: 160,
+                width: 210,
                 render: (_, record) => {
                     return <p>{record.ownerName}</p>
                 }
@@ -385,24 +385,53 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             },
             {
                 title: 'Total',
-                width: 110,
+                width: 150,
                 render: (_, record) => {
                     return (record.quantityInMetricTons * record.rate).toFixed(2);
                 }
             },
+            // {
+            //     title: 'Commission',
+            //     width: 160,
+            //     render: (_, record) => {
+            //         const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
+            //         const percentCommissionINR = (percentCommission / 100)
+            //         return (
+            //             <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
+
+            //                 {record.isMarketRate ? <>
+            //                     <p>-</p>
+            //                     <p>
+            //                         {`${record.commisionTotal}`}
+            //                     </p>
+            //                 </>
+            //                     :
+            //                     <><p>
+            //                         {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
+            //                     </p>
+            //                         <p>
+            //                             {`${percentCommissionINR}`}
+            //                         </p>
+            //                     </>
+            //                 }
+
+            //             </div>
+            //         );
+            //     }
+            // },
             {
                 title: 'Commission',
                 width: 160,
                 render: (_, record) => {
                     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
-                    const percentCommissionINR = (percentCommission / 100)
+                    const percentCommissionINR = (percentCommission / 100).toFixed(2);
                     return (
                         <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
                             {record.isMarketRate ? <>
                                 <p>-</p>
                                 <p>
-                                    {`${record.commisionTotal}`}
+                                    {`${record.commisionTotal.toFixed(2)}`}
                                 </p>
                             </>
                                 :
@@ -419,6 +448,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     );
                 }
             },
+
             {
                 title: 'Diesel',
                 dataIndex: 'diesel',
@@ -485,7 +515,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const totalBankTransfer = receive.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
         const totalShortage = receive.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
         // const totalCommission = (totalPercentCommission + totalMarketCommission);
-        const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0);
+        const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0).toFixed(2);
         console.log(totalPercentCommission)
         const totalMarketCommission = receive.reduce((sum, record) => {
             if (record.marketRate !== 0) {
@@ -503,15 +533,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
-                    // pagination={{
-                    //     position: ['bottomCenter'],
-                    //     showSizeChanger: true,
-                    //     current: currentPage,
-                    //     total: totalChallanData,
-                    //     defaultPageSize: currentPageSize, // Set the default page size
-                    //     onChange: changePagination,
-                    //     onShowSizeChange: changePaginationAll,
-                    // }}
                     pagination={{
                         showSizeChanger: true,
                         position: ['bottomCenter'],
@@ -527,8 +548,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             <Table.Summary.Cell colSpan={10} align="right">Total</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalQty}</Table.Summary.Cell>
                             <Table.Summary.Cell></Table.Summary.Cell>
-                            {/* <Table.Summary.Cell>{totalPercentCommission}</Table.Summary.Cell> */}
-                            {/* <Table.Summary.Cell>{totalMarketCommission}</Table.Summary.Cell> */}
                             <Table.Summary.Cell></Table.Summary.Cell>
                             <Table.Summary.Cell>{totalAmout}</Table.Summary.Cell>
                             <Table.Summary.Cell></Table.Summary.Cell>
@@ -536,11 +555,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
-                            {/* <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
-                          <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell> */}
+
                         </Table.Summary.Row>
                     )}
                 />

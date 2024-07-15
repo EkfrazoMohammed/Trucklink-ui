@@ -275,14 +275,15 @@ const DispatchContainer = ({ onData }) => {
 
     const onReset = () => {
       setSearchQuery4("");
-      setStartDateValue("")
-      setEndDateValue("")
       localStorage.removeItem("searchQuery4");
       setSearchQuery("");
       handleSearch("")
+      setStartDateValue("")
+      setEndDateValue("")
       setMaterialSearch("")
       setVehicleTypeSearch("")
-      window.location.reload()
+      // window.location.reload()
+      getTableData()
     }
 
 
@@ -1034,9 +1035,12 @@ const DispatchContainer = ({ onData }) => {
     const response = await API.delete(`delete-dispatch-challan/${challanId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 1000)
+      localStorage.removeItem("searchQuery4");
+      setSearchQuery("");
+      getTableData();
     } else {
       alert(`unable to delete data`)
       console.log(response.data)

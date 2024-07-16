@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
 import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
@@ -116,10 +122,20 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             data.searchTDNo = [searchQuery];
         }
 
+        // if (startDate) {
+        //     // Calculate the start of the day in IST (5:30 AM)
+        //     const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+        //     data.startDate = startOfDayInIST;
+        // }
         if (startDate) {
             // Calculate the start of the day in IST (5:30 AM)
             const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-            data.startDate = startOfDayInIST;
+            // Convert the IST timestamp to a dayjs object in IST timezone
+            const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+
+            // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
+            const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+            data.startDate = utcStartOfDay;
         }
         // if (endDate) {
         //   data.endDate = endDate;
@@ -345,7 +361,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     return <p>{record.ownerName}</p>
                 },
                 sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
-      
       ellipsis: true,
 
             },

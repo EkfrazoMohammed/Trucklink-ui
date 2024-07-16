@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { API } from "../../API/apirequest"
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
 import moment from 'moment-timezone';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
@@ -64,7 +70,11 @@ const ReportsContainer = ({ onData }) => {
       const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
       setStartDateValue(date);
       const startOfDayInIST = dayjs(formattedDate, "DD/MM/YYYY").startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-      setFilters({ ...filters, startDate: startOfDayInIST || "" });
+        // Convert the IST timestamp to a dayjs object in IST timezone
+        const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+    // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
+        const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+      setFilters({ ...filters, startDate: utcStartOfDay || "" });
     } else {
       setStartDateValue(null);
     }

@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
 import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
@@ -28,43 +34,18 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentPageSize, setCurrentPageSize] = useState(50);
-    const [totalChallanData, setTotalChallanData] = useState(100)
+    const [currentPageSize, setCurrentPageSize] = useState(100000);
+    const [totalChallanData, setTotalChallanData] = useState(100000)
     const [searchQuery, setSearchQuery] = useState('');
     const [startDate, setStartDate] = useState("")
-    const [endDate, setEndDate] = useState("")
     const [startDateValue, setStartDateValue] = useState("")
+    const [endDate, setEndDate] = useState("")
     const [endDateValue, setEndDateValue] = useState("")
     const [loading, setLoading] = useState(false);
     // const handleSearch = (e) => {
     //     setSearchQuery(e);
     // };
 
-    const convertToIST = (date) => {
-        const istDate = moment.tz(date, "Asia/Kolkata");
-        return istDate.valueOf();
-    };
-    // const handleStartDateChange = (date, dateString) => {
-    //     console.log(convertToIST(dateString))
-    //     setStartDateValue(date)
-    //     setStartDate(date ? convertToIST(dateString) : null);
-    // };
-
-    // const handleEndDateChange = (date, dateString) => {
-    //     setEndDateValue(date)
-    //     setEndDate(date ? convertToIST(dateString) : null);
-    // };
-    // const handleEndDateChange = (date, dateString) => {
-    //     if (date) {
-    //         // Set endDate to the last minute of the selected day in IST
-    //         const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-    //         setEndDateValue(date);
-    //         setEndDate(endOfDay.valueOf());
-    //     } else {
-    //         setEndDateValue(null);
-    //         setEndDate(null);
-    //     }
-    // };
     const handleStartDateChange = (date, dateString) => {
         if (date) {
             // Format the date for display
@@ -87,10 +68,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             setEndDate(null);
         }
     };
-    // Disable dates before the selected start date
-    const disabledEndDate = (current) => {
-        return current && current < moment(startDate).startOf('day');
-    };
+
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -120,8 +98,19 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         if (startDate) {
             // Calculate the start of the day in IST (5:30 AM)
             const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-            data.startDate = startOfDayInIST;
+            //    console.log(startOfDayInIST)
+
+            // Convert the IST timestamp to a dayjs object in IST timezone
+            const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+
+            // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
+            const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+
+            console.log(utcStartOfDay); // Output: Equivalent UTC timestamp in milliseconds
+
+            data.startDate = utcStartOfDay;
         }
+
         // if (endDate) {
         //   data.endDate = endDate;
         // }
@@ -141,8 +130,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
 
             const response = searchData
-                ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=50&hubId=${selectedHubId}`, headersOb)
-                : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
+                ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=100000&hubId=${selectedHubId}`, headersOb)
+                : await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
             let allAcknowledgement;
             setLoading(false)
@@ -352,7 +341,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const today = new Date();
                     const differenceInMs = today - givenDate;
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-                    console.log("givendDate=>", givenDate, "today=>", today, "difference=>", differenceInDays)
                     return (
                         <span>{differenceInDays}</span>
 

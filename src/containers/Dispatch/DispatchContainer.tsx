@@ -1764,6 +1764,7 @@ const DispatchContainer = ({ onData }) => {
         dataIndex: 'grNumber',
         key: 'grNumber',
         width: 100,
+        sorter: (a, b) => a.grNumber - b.grNumber,
       },
       // {
       //   title: 'GR Date',

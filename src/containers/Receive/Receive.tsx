@@ -312,10 +312,11 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
 
             },
             {
-                title: 'GR Number',
+                title: 'GR No',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
                 width: 100,
+                sorter: (a, b) => a.grNumber - b.grNumber,
             },
             // {
             //     title: 'GR Date',
@@ -342,7 +343,10 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 width: 210,
                 render: (_, record) => {
                     return <p>{record.ownerName}</p>
-                }
+                },
+                sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
+      
+      ellipsis: true,
 
             },
             {

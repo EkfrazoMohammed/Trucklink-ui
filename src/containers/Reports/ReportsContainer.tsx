@@ -574,7 +574,6 @@ const ReportsContainer = ({ onData }) => {
             triggerUpdate();
           } else {
             const tripData = response.data.tripAggregates[0];
-            console.log(response.data.tripAggregates[0].tripDetails)
             localStorage.setItem("Dispatch Table", JSON.stringify(tripData));
             setchallanData(tripData.tripDetails || []);
             const saveTripReportsinLocalStorage = {
@@ -599,7 +598,6 @@ const ReportsContainer = ({ onData }) => {
           console.log(err);
         }
       };
-      console.log('first=>', challanData)
 
       useEffect(() => {
         if (editingRowId) {
@@ -1030,6 +1028,7 @@ const ReportsContainer = ({ onData }) => {
           const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}${queryParams}`, headersOb)
             : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
+          console.log(response.data.voucher)
           // const response = searchData ? await API.get(`get-owner-voucher/${editingRowId}?startDate=${sd}`, headersOb)
           //   : await API.get(`get-owner-voucher/${editingRowId}`, headersOb)
 
@@ -1044,7 +1043,7 @@ const ReportsContainer = ({ onData }) => {
           } else {
             setLoading(false)
             const ledgerEntries = response.data.voucher[0].voucherDetails;
-            const ownersVoucherAmount = response.data.voucher[0].length > 0 ? response.data.voucher[0].total : 0
+            const ownersVoucherAmount = response.data.voucher[0].voucherDetails.length > 0 ? response.data.voucher[0].total : 0
 
             setTotal(response.data.voucher[0].total)
             const saveLocal = {
@@ -1178,12 +1177,6 @@ const ReportsContainer = ({ onData }) => {
               <hr />
               {renderExpenseItem('Advance Voucher', ownersVoucherAmount.ownersVoucherAmount || 0)}
               <hr />
-              {/* Example of a total row */}
-              {/* <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
-                <div className=''>Total</div>
-                <div className="">₹  {((totalData.totalAmount)) - ((totalData.totalDiesel) + (totalData.totalCash) + (totalData.totalBankTransfer) + (totalData.totalShortage) + (ownersAdavanceAmountDebit && ownersAdavanceAmountDebit.totalOutstandingDebit) + (ownersVoucherAmount && ownersVoucherAmount.ownersVoucherAmount)).toFixed(2)}
-                </div>
-              </div> */}
               <div className="flex justify-between items-center p-2 px-4 bg-[#F6F6F6] text-[#1572B6] font-semibold rounded-b-[20px]">
                 <div>Total</div>
                 <div>

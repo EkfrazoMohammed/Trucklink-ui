@@ -375,10 +375,11 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 width: 80,
             },
             {
-                title: 'GR Number',
+                title: 'GR No',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
                 width: 100,
+                sorter: (a, b) => a.grNumber - b.grNumber,
             },
             // {
             //     title: 'GR Date',

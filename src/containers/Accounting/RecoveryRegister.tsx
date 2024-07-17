@@ -23,7 +23,10 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       "Authorization": `Bearer ${authToken}`
     }
   };
-
+  const goBack = () => {
+    setShowTabs(true);
+    setShowAddRecoveryForm(false);
+  };
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     try {
       setLoading(true);
@@ -252,11 +255,12 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
           await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
             .then(() => {
-              message.success("Successfully Updated Ledger Entry");
-              getTableData("", "1", "100000", selectedHubId);
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
+              message.success("Successfully Updated Ledger Entry, re-open the row");
+              setTimeout(()=>{
+
+                getTableData("", "1", "100000", selectedHubId);
+                goBack()
+              },1000)
             })
             .catch((error) => {
               const { response } = error;
@@ -321,9 +325,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             console.log("Second API Response:", secondResponse.data);
 
             message.success("Successfully Updated Ledger Entry");
-            getTableData("", "1", "10000", selectedHubId);
             setTimeout(() => {
-              window.location.reload();
+              getTableData("", "1", "10000", selectedHubId);
+              goBack()
             }, 1000);
           } catch (error) {
             const { response } = error;
@@ -621,18 +625,16 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log('Recovery code created successfully:', response.data);
         message.success("Recovery code created successfully");
         setTimeout(() => {
-          window.location.reload();
-        }, 1000)
+          getTableData("", "1", "10000", selectedHubId);
+          goBack()
+        }, 1000);
       } catch (error) {
         console.error('Error creating recovery code:', error);
         message.error("Error occurred");
       }
     };
 
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
+
 
     const onResetClick = () => {
       setFormData({
@@ -890,7 +892,8 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log('Recovery code updated successfully:', response.data);
         message.success("Recovery code updated successfully");
         setTimeout(() => {
-          window.location.reload();
+          getTableData("", "1", "10000", selectedHubId);
+          goBack()
         }, 1000);
       } catch (error) {
         console.error('Error creating recovery code:', error);

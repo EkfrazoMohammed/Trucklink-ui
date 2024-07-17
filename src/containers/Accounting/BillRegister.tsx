@@ -43,6 +43,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     setEditRowData(data);
 
   };
+  const goBack = () => {
+    setShowTabs(true);
+    setShowAddRecoveryForm(false);
+  };
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     try {
@@ -115,7 +119,9 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           setEditingKey('');
           setShowSaveButton(false)
           setTimeout(() => {
-            window.location.reload()
+            getTableData("", 1, 100000, selectedHubId);
+            goBack()
+            
           }, 1000)
         } else {
           setShowSaveButton(false)
@@ -409,7 +415,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
             setTimeout(() => {
-              window.location.reload()
+              getTableData("", 1, 100000, selectedHubId);
+              goBack()
             }, 1000)
 
           })
@@ -641,7 +648,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         .then(() => {
           message.success("Successfully Deleted Bill Entry");
           setTimeout(() => {
-            window.location.reload()
+            getTableData("", 1, 100000, selectedHubId);
+            goBack()
           }, 1000)
         })
         .catch((error) => {
@@ -746,7 +754,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.post('create-bill-register', payload, headersOb);
         console.log('Bill registered successfully:', response.data);
         message.success("Bill registered successfully");
-        window.location.reload();
+        setTimeout(()=>{
+          getTableData("", 1, 100000, selectedHubId);
+          goBack()
+        },1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {
@@ -758,10 +769,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     };
 
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
+
 
     const onResetClick = () => {
       setFormData({
@@ -1040,7 +1048,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.put(`update-bill-register-data/${editRowData.key}`, payload, headersOb);
         console.log('Bill updated successfully:', response.data);
         message.success("Bill updated successfully");
-        window.location.reload();
+        setTimeout(()=>{
+          getTableData("", 1, 100000, selectedHubId);
+          goBack()
+        },1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {

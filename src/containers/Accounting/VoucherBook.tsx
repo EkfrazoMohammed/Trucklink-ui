@@ -26,6 +26,10 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const [showVoucherView, setshowVoucherView] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
+  const goBack = () => {
+    setshowVoucherTable(true);
+    setShowTabs(true);
+  };
 
   const handleEditVoucherClick = (rowData) => {
     setShowTabs(false);
@@ -48,28 +52,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     setRowDataForTruckEdit(null);
     setshowVoucherTable(false);
   };
-
-  const handleDeleteVoucherClick = async (rowData) => {
-    const voucherId = rowData._id;
-    const headersOb = {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`,
-      },
-    };
-    const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
-    if (response.status === 201) {
-      alert("Deleted data");
-      window.location.reload();
-    } else {
-      alert("Unable to delete data");
-    }
-  };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalVoucherData, setTotalVoucherData] = useState(null);
-
   const getTableData = useCallback(async (searchData, month, year) => {
     const headersOb = {
       headers: {
@@ -97,7 +79,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         setTotalMonthlyAmount(amount);
       } else {
         truckDetails = response.data.vaucharEntries || "";
-        setTotalVoucherData(response.data.vaucharEntries.count);
+
         setFilteredVoucherData(truckDetails);
         amount = response.data.amounts.monthlyTotalAmount;
         setTotalMonthlyAmount(amount);
@@ -113,6 +95,30 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     getTableData(searchQuery, month, year);
   }, [selectedDate, searchQuery, getTableData]);
 
+
+  const handleDeleteVoucherClick = async (rowData) => {
+    const voucherId = rowData._id;
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`,
+      },
+    };
+    const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
+    if (response.status === 201) {
+      alert("Deleted data");
+      setTimeout(() => {
+        goBack()
+        const month = selectedDate.month;
+        const year = selectedDate.year;
+        getTableData("", month, year);
+      },2000)
+    } else {
+      alert("Unable to delete data");
+    }
+  };
+  
+ 
   const Truck = ({ onAddVoucherClick }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery6') || '';
     const [searchQuery6, setSearchQuery6] = useState(initialSearchQuery);
@@ -233,17 +239,20 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.post('create-voucher', formData, headersOb);
         console.log('Voucher created successfully:', response.data);
         alert("Voucher created successfully");
-        window.location.reload();
+        setTimeout(() => {
+          goBack()
+          const month = selectedDate.month;
+          const year = selectedDate.year;
+          getTableData("", month, year);
+        },2000)
+
       } catch (error) {
         console.error('Error creating voucher:', error);
         alert("An error occurred while creating the voucher. Please try again.");
       }
     };
 
-    const goBack = () => {
-      setshowVoucherTable(true);
-      setShowTabs(true);
-    };
+  
     const [materials, setMaterials] = useState([]);
 
     const fetchMaterials = async () => {
@@ -709,7 +718,12 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.put(url, payload, headersOb);
         if (response.status === 201) {
           alert("Voucher data updated successfully");
-          window.location.reload(); // Optional: Reload the page after successful submission
+          setTimeout(() => {
+            goBack()
+            const month = selectedDate.month;
+            const year = selectedDate.year;
+            getTableData("", month, year);
+          },2000)
         } else {
           alert('Error occurred while updating truck data');
         }

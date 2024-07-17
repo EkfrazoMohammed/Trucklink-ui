@@ -136,11 +136,11 @@ const OwnerAdvance = () => {
     }
   };
 
-  useEffect(() => {
-    if (filterRequest === null) {
-      getTableData();
-    }
-  }, [filterRequest]);
+  // useEffect(() => {
+  //   if (filterRequest === null) {
+  //     getTableData();
+  //   }
+  // }, [filterRequest]);
   const updateFilterAndFetchData = async (filters) => {
     setFilterRequest(filters);
     await getTableData(filters);
@@ -157,11 +157,15 @@ const OwnerAdvance = () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
       const response = await API.get(`get-owner-advance-outstanding-details/${selectedHubId}`, headersOb);
-      const outstandingEntries = response.data.amountData || "";
-      if (outstandingEntries && outstandingEntries.length > 0) {
-        setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
-      } else {
-        setTotalOutstanding("0.00");
+      if(response.status == 201){
+
+
+        const outstandingEntries = response.data.amountData || "";
+        if (outstandingEntries && outstandingEntries.length > 0) {
+          setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
+        } else {
+          setTotalOutstanding("0.00");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -273,7 +277,6 @@ const OwnerAdvance = () => {
   const cancel = () => {
     getTableData()
   };
-  const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
 
   const columns = [
 
@@ -281,7 +284,7 @@ const OwnerAdvance = () => {
       title: 'Sl No',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
-      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+      render: (text, record, index) => index + 1,
       width: 80,
       fixed: 'left',
     },
@@ -404,11 +407,11 @@ const OwnerAdvance = () => {
       </div>
     );
   };
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(10);
-  useEffect(() => {
-    getTableData(currentPage, currentPageSize, selectedHubId);
-  }, [currentPage, currentPageSize, selectedHubId]);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPageSize, setCurrentPageSize] = useState(10);
+  // useEffect(() => {
+  //   getTableData(currentPage, currentPageSize, selectedHubId);
+  // }, [currentPage, currentPageSize, selectedHubId]);
   const LedgerTable = ({ record, entries, hideLedgerAction }) => {
     const [form] = Form.useForm();
     const [editingKeyIn, setEditingKeyIn] = useState("");
@@ -842,12 +845,7 @@ const OwnerAdvance = () => {
             pagination={{
               showSizeChanger: true,
               position: ['bottomCenter'],
-              current: currentPage,
-              pageSize: pageSize,
-              onChange: (page, pageSize) => {
-                setCurrentPage(page);
-                setPageSize(pageSize);
-              },
+
             }}
             loading={loading}
           />

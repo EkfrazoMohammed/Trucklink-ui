@@ -45,7 +45,11 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
     // const handleSearch = (e) => {
     //     setSearchQuery(e);
     // };
-
+    const goBack = () => {
+        setShowTable(true)
+        onData('flex')
+        setShowTabs(true); // Set showTabs to false when adding owner
+    }
     const handleStartDateChange = (date, dateString) => {
         if (date) {
             // Format the date for display
@@ -599,7 +603,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 .then((response) => {
                     console.log('Challan moved to register successfully:', response.data);
                     alert("Challan moved to register successfully")
-                    window.location.reload(); // Reload the page or perform any necessary action
+                    goBack()
+                    getTableData("");
                 })
                 .catch((error) => {
                     alert("error occurred")
@@ -947,7 +952,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
                     alert("Challan updated successfully")
-                    window.location.reload(); // Reload the page or perform any necessary action
+                    goBack()
+                    getTableData("");
                 })
                 .catch((error) => {
                     alert("error occurred")
@@ -955,11 +961,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 });
 
         }
-        const goBack = () => {
-            setShowTable(true)
-            onData('flex')
-            setShowTabs(true); // Set showTabs to false when adding owner
-        }
+      
 
         return (
             <>

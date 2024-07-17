@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image, message } from 'antd';
-import axios from "axios"
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -32,8 +31,6 @@ const DispatchContainer = ({ onData }) => {
 
   // Initialize state variables for current page and page size
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalDispatchData, setTotalDispatchData] = useState(100)
   const [searchQuery, setSearchQuery] = useState('');
   const [materialType, setMaterialType] = useState('')
   const [vehicleType, setVehicleType] = useState("")
@@ -46,7 +43,10 @@ const DispatchContainer = ({ onData }) => {
   const [materialSearch, setMaterialSearch] = useState("")
   const [vehicleTypeSearch, setVehicleTypeSearch] = useState(null)
 
-
+  const goBack = () => {
+    setShowDispatchTable(true)
+    onData('flex')
+  }
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
     console.log(value)
@@ -58,30 +58,7 @@ const DispatchContainer = ({ onData }) => {
     setVehicleType(value);
     setVehicleTypeSearch(value)
   };
-  const formatDate = (date) => {
-    if (!date) return null;
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
-  const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split('/');
-    return new Date(year, month - 1, day);
-  };
-  const convertToIST = (date) => {
-    const istDate = moment.tz(date, "Asia/Kolkata");
-    return istDate.valueOf();
-  };
-  // const handleStartDateChange = (date, dateString) => {
-  //   console.log(date)
-  //   console.log(dateString)
-  //   setStartDateValue(date)
-  //   console.log(convertToIST(dateString))
-  //   setStartDate(date ? convertToIST(dateString) : null);
-  // };
   // Function to handle date change
   const handleStartDateChange = (date, dateString) => {
     if (date) {
@@ -95,17 +72,6 @@ const DispatchContainer = ({ onData }) => {
     }
   };
 
-  // const handleEndDateChange = (date, dateString) => {
-  //   if (date) {
-  //     // Set endDate to the last minute of the selected day in IST
-  //     const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-  //     setEndDateValue(date);
-  //     setEndDate(endOfDay.valueOf());
-  //   } else {
-  //     setEndDateValue(null);
-  //     setEndDate(null);
-  //   }
-  // };
   const handleEndDateChange = (date, dateString) => {
     if (date) {
       // Format the date for display
@@ -141,27 +107,15 @@ const DispatchContainer = ({ onData }) => {
       data.searchTDNo = [searchQuery];
     }
 
-    // if (startDate) {
-    //   // Calculate the start of the day in IST (5:30 AM)
-    //   const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-    //   data.startDate = startOfDayInIST;
-    // }
+    
     if (startDate) {
-      // Calculate the start of the day in IST (5:30 AM)
       const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-     // Convert the IST timestamp to a dayjs object in IST timezone
       const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
-
-      // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
-      const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+   const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
       data.startDate = utcStartOfDay;
     }
-    // if (endDate) {
-    //   data.endDate = endDate;
-    // }
     if (endDate) {
       const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
-
       data.endDate = endOfDayInIST;
     }
     setLoading(true)
@@ -176,7 +130,6 @@ const DispatchContainer = ({ onData }) => {
         allChallans = response.data.disptachData
         setchallanData(allChallans);
       } else {
-
         allChallans = response.data.disptachData[0].data || "";
         setchallanData(allChallans);
         setTotalDispatchData(allChallans.length);
@@ -210,7 +163,7 @@ const DispatchContainer = ({ onData }) => {
   }, [])
   useEffect(() => {
     getTableData();
-  }, [searchQuery, currentPage, currentPageSize, selectedHubId, materialType, vehicleType, startDate, endDate]);
+  }, [searchQuery, currentPage, selectedHubId, materialType, vehicleType, startDate, endDate]);
 
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
@@ -265,7 +218,7 @@ const DispatchContainer = ({ onData }) => {
           }
           setTimeout(() => {
             window.location.reload();
-          }, 3000)
+          }, 2000)
         } else {
           message.error("Network Failed, Please Try Again");
         }
@@ -297,7 +250,6 @@ const DispatchContainer = ({ onData }) => {
       setEndDateValue("")
       setMaterialSearch("")
       setVehicleTypeSearch("")
-      // window.location.reload()
       getTableData()
     }
 
@@ -745,7 +697,9 @@ const DispatchContainer = ({ onData }) => {
           .then((response) => {
             console.log('Challan added successfully:', response.data);
             alert("Challan added successfully")
-            window.location.reload(); // Reload the page or perform any necessary action
+            getTableData()
+            goBack()
+            // window.location.reload();
           })
           .catch((error) => {
             if (error.response.data.message == 'This Delivery Number already exists') {
@@ -761,10 +715,7 @@ const DispatchContainer = ({ onData }) => {
         alert("GR Date is required")
       }
     };
-    const goBack = () => {
-      setShowDispatchTable(true)
-      onData('flex')
-    }
+   
 
     return (
       <>
@@ -1063,9 +1014,6 @@ const DispatchContainer = ({ onData }) => {
     const response = await API.delete(`delete-dispatch-challan/${challanId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      // setTimeout(() => {
-      //   window.location.reload()
-      // }, 1000)
       localStorage.removeItem("searchQuery4");
       setSearchQuery("");
       getTableData();
@@ -1078,7 +1026,10 @@ const DispatchContainer = ({ onData }) => {
 
   const EditableChallan = ({ editingRow }) => {
 
-
+    const goBack = () => {
+      onData('flex')
+      setShowDispatchTable(true)
+    }
     const selectedHubId = localStorage.getItem("selectedHubID");
 
     const [formData, setFormData] = useState(
@@ -1410,7 +1361,9 @@ const DispatchContainer = ({ onData }) => {
         .then((response) => {
           console.log('Challan updated successfully:', response.data);
           alert("Challan updated successfully");
-          window.location.reload(); // Reload the page or perform any necessary action
+          getTableData()
+          goBack()
+          // window.location.reload(); // Reload the page or perform any necessary action
         })
         .catch((error) => {
           alert("error occurred");
@@ -1418,10 +1371,7 @@ const DispatchContainer = ({ onData }) => {
         });
     };
 
-    const goBack = () => {
-      onData('flex')
-      setShowDispatchTable(true)
-    }
+   
 
     return (
       <>

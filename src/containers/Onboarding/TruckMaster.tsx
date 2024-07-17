@@ -30,6 +30,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
   const [rowDataForTruckView, setRowDataForTruckView] = useState(null);
   const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
+  const goBack = () => {
+    setShowTruckTable(true)
+    onData('flex')
+    setShowTabs(true); // Set showTabs to false when adding owner
+  }
   const handleEditTruckClick = (rowData) => {
     onData('none')
     setShowTabs(false); // Set showTabs to false when adding owner
@@ -76,7 +81,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      window.location.reload()
+      goBack()
+      getTableData("", 1, 100000, selectedHubId);
 
     } else {
       alert(`unable to delete data`)
@@ -100,13 +106,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
       setLoading(true);
       const pages = page;
-      // const limitData = limit ? limit : null;
-
-      const limitData = 10000;
-
-      // this.setState({loading: true});
-      // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-      //   : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      const limitData = 100000;
       const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
@@ -395,7 +395,10 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
-          window.location.reload();
+          setTimeout(()=>{
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
+          },1000)
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
@@ -424,11 +427,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         });
     };
 
-    const goBack = () => {
-      setShowTruckTable(true)
-      onData('flex')
-      setShowTabs(true); // Set showTabs to false when adding owner
-    }
+
 
     return (
       <>
@@ -719,48 +718,14 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       },
     ];
 
-
-    // Update the changePagination and changePaginationAll functions to set currentPage and currentPageSize
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredTruckData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredTruckData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     return (
       <>
-
-
         <Table
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredTruckData}
           scroll={{ x: 800 }}
           rowKey="_id"
-          // pagination={{
-          //   position: ['bottomCenter'],
-          //   showSizeChanger: false,
-          //   current: currentPage,
-          //   total: totalTruckData,
-          //   defaultPageSize: currentPageSize, // Set the default page size
-          //   onChange: changePagination,
-          //   onShowSizeChange: changePaginationAll,
-          // }}
           pagination={{
             showSizeChanger: true,
             position: ['bottomCenter'],
@@ -771,7 +736,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               setPageSize(pageSize);
             },
           }}
-        // loading={loading}
         />
       </>
     );
@@ -915,7 +879,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           if (res.status == 201) {
             console.log('Truck transfered successfully:', res.data);
             alert("Owner Transfered successfully")
-            window.location.reload();
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
           } else {
             console.error('Error adding truck data:', res);
 
@@ -1242,10 +1207,12 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           console.log(response)
           if (response.status == 201) {
             alert("Truck data updated successfully");
-            window.location.reload();
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
           } else if (response.status == 400) {
             alert("Truck data updated successfully");
-            window.location.reload();
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
           } else {
             alert('error occured')
           }
@@ -1253,7 +1220,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           console.error('Error updating truck data:', error);
           if (error.response.data.message == "Unable to Find Challan Information") {
             alert("Truck data updated successfully");
-            window.location.reload();
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
           } else {
             alert("An error occurred while updating truck data");
           }

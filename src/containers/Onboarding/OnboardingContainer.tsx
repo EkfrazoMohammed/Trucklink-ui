@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination,message } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -49,7 +49,12 @@ const OnboardingContainer = ({ onData }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
-
+  
+  const goBack = () => {
+    setShowOwnerTable(true)
+    setShowTabs(true);
+    onData('flex')
+  }
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
@@ -183,10 +188,13 @@ const OnboardingContainer = ({ onData }) => {
         }
       }
       const response = await API.delete(`delete-owner-details/${rowData._id}`, headersOb);
+      console.log(response)
       alert("deleted data")
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      goBack()
+      getTableData("", 1, 100000, selectedHubId);
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 1000)
 
     }
     return (
@@ -647,11 +655,7 @@ const OnboardingContainer = ({ onData }) => {
 
     const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
 
-    const goBack = () => {
-      setShowOwnerTable(true)
-      setShowTabs(true);
-      onData('flex')
-    }
+  
 
     const LastTripComponent = ({ dispatchData }) => {
       const isoDate = dispatchData;
@@ -801,8 +805,7 @@ const OnboardingContainer = ({ onData }) => {
         bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
       }));
     };
-    const [message, setMessage] = useState('');
-
+   
     const handleChangeBank = (index, e) => {
       const { value } = e.target;
       const updatedBankAccounts = [...formData.bankAccounts];
@@ -817,14 +820,14 @@ const OnboardingContainer = ({ onData }) => {
       const bankAccount = formData.bankAccounts[index];
       const { ifscCode } = bankAccount;
       if (!ifscCode) {
-        setMessage('Please fill IFSC code');
+
+        message.warning('Please fill IFSC code');
         return;
       }
 
       fetch(`https://ifsc.razorpay.com/${ifscCode}`)
         .then(response => response.json())
         .then(data => {
-          // Update formData state with bank details for the specified bank account
           setFormData(prevFormData => ({
             ...prevFormData,
             bankAccounts: prevFormData.bankAccounts.map((account, i) => {
@@ -833,7 +836,6 @@ const OnboardingContainer = ({ onData }) => {
                   ...account,
                   bankName: data.BANK,
                   branchName: data.BRANCH
-                  // You can add more fields as needed
                 };
               }
               return account;
@@ -841,7 +843,7 @@ const OnboardingContainer = ({ onData }) => {
           }));
         })
         .catch(error => {
-          setMessage('Invalid IFSC code');
+          message.error('Invalid IFSC code');
         });
     };
 
@@ -917,9 +919,8 @@ const OnboardingContainer = ({ onData }) => {
             if (response.status == 201) {
 
               alert('Owner data added successfully!');
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
+              goBack()
+              getTableData("", 1, 100000, selectedHubId);
 
             }
           })
@@ -932,9 +933,10 @@ const OnboardingContainer = ({ onData }) => {
               description: `${errorMessage}`,
               duration: 2,
             });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000)
+            // goBack()
+            //   getTableData("", 1, 100000, selectedHubId);
+
+
           });
       }
 
@@ -1270,7 +1272,7 @@ const OnboardingContainer = ({ onData }) => {
       const bankAccount = formData.bankAccounts[index];
       const { ifscCode } = bankAccount;
       if (!ifscCode) {
-        setMessage('Please fill IFSC code');
+        message.warning('Please fill IFSC code')
         return;
       }
 
@@ -1292,7 +1294,7 @@ const OnboardingContainer = ({ onData }) => {
           }));
         })
         .catch(error => {
-          setMessage('Invalid IFSC code');
+          message.warning('Invalid IFSC code');
         });
     };
 
@@ -1428,9 +1430,11 @@ const OnboardingContainer = ({ onData }) => {
         await updateOwnerAccounts();
 
         alert('Owner data and bank details updated successfully!');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        goBack()
+        getTableData("", 1, 100000, selectedHubId);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
       } catch (error) {
         console.error('Submission error:', error);
       }

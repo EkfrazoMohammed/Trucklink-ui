@@ -46,7 +46,11 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
     const [startDateValue, setStartDateValue] = useState("")
     const [endDateValue, setEndDateValue] = useState("")
     const [loading, setLoading] = useState(false);
-
+    const goBack = () => {
+        setShowTable(true)
+        onData('flex')
+        setShowTabs(true); // Set showTabs to false when adding owner
+    }
 
     const convertToIST = (date) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
@@ -863,75 +867,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             fetchVehicleDetails();
         }, [selectedHubId]);
 
-        //     const handleSubmit = (e) => {
-        //         e.preventDefault();
-        //         // Calculate commissionTotal based on isMarketRate
-        //   let commissionTotal = 0;
-        //   let commisionRate=0
-        //   if (formData.isMarketRate) {
-        //     console.log("isMarketRate", formData.isMarketRate)
-
-        //     commissionTotal = ((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.rate))-((parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate)) ; 
-
-        //     commisionRate=0;
-        //   } else {
-        //     console.log("isMarketRate", formData.isMarketRate)
-        //     // If isMarketRate is false, calculate commissionTotal as commisionRate * rate
-        //     const commissionTotalInPercentage = (parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) * parseFloat(selectedvehicleCommission);
-        //     commissionTotal = commissionTotalInPercentage / 100;
-        //     commisionRate=parseFloat(selectedvehicleCommission);
-
-        //   }
-
-        //   const payload = {
-        //     "balance": ((parseFloat(formData.quantityInMetricTons)*parseFloat(formData.rate)) - (commissionTotal)) -(parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-        //     "bankTransfer": formData.bankTransfer,
-        //     "cash": formData.cash,
-        //     "deliveryLocation": formData.deliveryLocation,
-        //     "deliveryNumber": formData.deliveryNumber,
-        //     "diesel": formData.diesel,
-        //     "grDate": formData.grDate,
-        //     "grNumber": formData.grNumber,
-        //     "invoiceProof": null,
-        //     "loadLocation": formData.loadLocation,
-        //     "materialType": formData.materialType,
-        //     "ownerId": formData.ownerId,
-        //     "ownerName": formData.ownerName,
-        //     "ownerPhone": formData.ownerPhone,
-        //     "quantityInMetricTons": formData.quantityInMetricTons,
-        //     "rate": formData.rate,
-        //     "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
-        //     "vehicleBank": formData.vehicleBank,
-        //     "vehicleId": formData.vehicleId,
-        //     "vehicleNumber": formData.vehicleNumber,
-        //     "vehicleType": formData.vehicleType,
-        //     "commisionRate": commisionRate,
-        //     "commisionTotal": commissionTotal,
-        //     "isMarketRate": formData.isMarketRate,
-        //     "marketRate": formData.marketRate,
-        //     "hubId": selectedHubId,
-        //   "shortage": formData.shortage,
-        //   }
-        //   const headersOb = {
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //       "Authorization": `Bearer ${authToken}`
-        //     }
-        //   }
-
-        //         API.put(`update-dispatch-challan-invoice/${editingRow._id}`, payload,headersOb)
-        //             .then((response) => {
-        //                 console.log('Challan updated successfully:', response.data);
-        //                 alert("Challan updated successfully")
-        //                 window.location.reload(); // Reload the page or perform any necessary action
-        //             })
-        //             .catch((error) => {
-        //                 alert("error occurred")
-        //                 console.error('Error adding truck data:', error);
-        //             });
-
-        //     };
-
         const [a, setA] = useState(null);
         const handleSubmit = (e) => {
             e.preventDefault();
@@ -998,7 +933,8 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
                     alert("Challan updated successfully")
-                    window.location.reload(); // Reload the page or perform any necessary action
+                    goBack()
+                    getTableData("");
                 })
                 .catch((error) => {
                     alert("error occurred")
@@ -1006,11 +942,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 });
 
         }
-        const goBack = () => {
-            setShowTable(true)
-            onData('flex')
-            setShowTabs(true); // Set showTabs to false when adding owner
-        }
+      
         return (
             <>
                 <div className="flex flex-col gap-2">

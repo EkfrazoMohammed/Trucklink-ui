@@ -233,32 +233,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                         format='DD/MM/YYYY' // Display format for the DatePicker
 
                     />
-                    {/* <DatePicker
-                        size='large'
-                        value={startDateValue}
-                        onChange={handleStartDateChange}
-                        placeholder='From date'
-                    /> -
-                    <DatePicker
-                        size='large'
-                        value={endDateValue}
-                        onChange={handleEndDateChange}
-                        disabledDate={disabledEndDate}
-                        placeholder='To date'
-                    /> */}
-                    {/* <DatePicker
-                        size='large'
-                        value={startDateValue}
-                        onChange={handleStartDateChange}
-                        placeholder='From date'
-                    /> -
-                    <DatePicker
-                        size='large'
-                        value={endDateValue}
-                        onChange={handleEndDateChange}
-                        disabledDate={disabledEndDate}
-                        placeholder='To date'
-                    /> */}
 
                     {searchQuery3 !== null && searchQuery3 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
@@ -267,7 +241,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         );
     };
 
-    const DispatchChallanComponentTable = ({ onEditChallanClick, onSaveAndMoveToReceive }) => {
+    const DispatchChallanComponentTable = ({ onEditChallanClick, onSaveAndMarkToPost, onSaveAndMoveToReceive }) => {
 
         const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -528,12 +502,22 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'action',
                 width: 120,
                 fixed: 'right',
-                render: (record: unknown) => (
-                    <Space size="middle">
-                        <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
-                        <Tooltip placement="top" title="save"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Save</Button></Tooltip>
-                    </Space>
-                ),
+                render: (record: unknown) => {
+                    return (
+
+
+                        <Space size="middle">
+
+                            {record.isReceived == true ? <>
+                                <Tooltip placement="top" title="post"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Post</Button></Tooltip>
+                            </> : <>
+                                <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
+                                <Tooltip placement="top" title="save"><Button type='primary' onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
+                            </>}
+                        </Space>
+                    )
+
+                }
             },
         ];
         return (
@@ -603,33 +587,32 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             console.log(err)
         }
     }
-    // const handleSaveAndMoveToReceiveChallan = (rowData) => {
-    //     const headersOb = {
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "Authorization": `Bearer ${authToken}`
-    //         }
-    //     }
 
-    //         const payload={...rowData,isReceived:true}
-        
-    //     try {
-    //         // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
-    //         API.put(`update-dispatch-challan-invoice/${rowData._id}`, payload, headersOb)
-    //             .then((response) => {
-    //                 console.log('Challan marked as POST:', response.data);
-    //                 alert("Challan marked as POST")
-    //                 goBack()
-    //                 getTableData("");
-    //             })
-    //             .catch((error) => {
-    //                 alert("error occurred")
-    //                 console.error('Error moving challan data:', error);
-    //             });
-    //     } catch (error) {
-    //         console.log(err)
-    //     }
-    // }
+    const handleSaveAndMarkToPost = (rowData) => {
+        const headersOb = {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
+        }
+        try {
+            // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
+            API.put(`update-challan-status/${rowData._id}/CHECK`, rowData, headersOb)
+                .then((response) => {
+                    console.log('Challan moved to register successfully:', response.data);
+                    alert("Challan moved to register successfully")
+                    goBack()
+                    getTableData("");
+                })
+                .catch((error) => {
+                    alert("error occurred")
+                    console.error('Error moving challan data:', error);
+                });
+        } catch (error) {
+            console.log(err)
+        }
+    }
+
 
     const EditableChallan = ({ editingRow }) => {
         const selectedHubId = localStorage.getItem("selectedHubID");
@@ -668,7 +651,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
 
         const onResetClick = () => {
-            console.log('reset clicked')
             setFormData(
                 {
                     "balance": editingRow.balance,
@@ -737,7 +719,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         // Function to handle date change
         const handleDateChange = (date, dateString) => {
             const formattedGrDate = formatDate(dateString);
-            console.log(formattedGrDate); // Output: "01/05/2024"
             // dateString will be in the format 'YYYY-MM-DD'
             handleChange('grDate', formattedGrDate);
         };
@@ -1267,7 +1248,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             {showTable ? (
                 <>
                     <DispatchChallanComponent />
-                    <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} onSaveAndMoveToReceive={handleSaveAndMoveToReceiveChallan} />
+                    <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} onSaveAndMarkToPost={handleSaveAndMarkToPost} onSaveAndMoveToReceive={handleSaveAndMoveToReceiveChallan} />
                 </>
             ) : (
                 <EditableChallan editingRow={editingRow} />

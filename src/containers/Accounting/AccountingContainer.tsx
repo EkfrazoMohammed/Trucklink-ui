@@ -4,10 +4,7 @@ import { Tabs, Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicke
 
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-const { Search } = Input;
-import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
-import debounce from 'lodash/debounce';
 import moment from "moment";
 import dayjs from 'dayjs';
 import 'moment-timezone';
@@ -16,7 +13,6 @@ import VoucherBook from './VoucherBook';
 import DailyCashBook from './DailyCashBook';
 import RecoveryRegister from './RecoveryRegister';
 import BillRegister from './BillRegister';
-import OwnerAdvance from './OwnerAdvance';
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -285,7 +281,8 @@ const AccountingContainer = ({ onData }) => {
 
             const dataSource = ledgerEntries.map((data) => {
               const date = data.entryDate;
-              const eDate = moment(date, "DD/MM/YYYY");
+              const eDate = moment(date, "DD/MM/YYYY")
+
               return {
                 ...data,
                 entDate: eDate,
@@ -509,6 +506,8 @@ const AccountingContainer = ({ onData }) => {
       const isEditing = (record) => record.key === editingKeyIn;
 
       const edit = (record) => {
+        console.log( dayjs(record.entryDate, "DD/MM/YYYY"))
+        
         form.setFieldsValue({
           entDate: dayjs(record.entryDate, "DD/MM/YYYY"),
           credit: record.credit,
@@ -701,7 +700,9 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
                 rules={[{ required: true, message: 'Please input date!' }]}
               >
-                <DatePicker format={dateFormat} />
+                
+                <DatePicker />
+                {/* <DatePicker format={dateFormat} /> */}
               </Form.Item>
             ) : (
               // dayjs(text).format('DD/MM/YYYY')
@@ -906,7 +907,7 @@ const AccountingContainer = ({ onData }) => {
                 format='DD/MM/YYYY' // Display format for the DatePicker
 
               />
-              <Button type="primary" style={{marginLeft:".5rem"}} onClick={handleFilter}>
+              <Button type="primary" style={{ marginLeft: ".5rem" }} onClick={handleFilter}>
                 APPLY
               </Button>
             </div>

@@ -157,7 +157,7 @@ const OwnerAdvance = () => {
     try {
       // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
       const response = await API.get(`get-owner-advance-outstanding-details/${selectedHubId}`, headersOb);
-      if(response.status == 201){
+      if (response.status == 201) {
 
 
         const outstandingEntries = response.data.amountData || "";
@@ -783,7 +783,7 @@ const OwnerAdvance = () => {
       <div className="flex items-center justify-between mb-4">
         <div className='flex gap-2 items-center'>
 
-          <div className="filter-container">
+          <div className="filter-container ">
             <Select
               showSearch
               placeholder="Select Owner"
@@ -816,6 +816,7 @@ const OwnerAdvance = () => {
               format='DD/MM/YYYY' // Display format for the DatePicker
 
             />
+            <div></div>
             <Button type="primary" onClick={handleFilter}>
               APPLY
             </Button>

@@ -224,7 +224,7 @@ const OnboardingContainer = ({ onData }) => {
     // const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
     const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
     const [searchQuery1, setSearchQuery1] = useState<string>(initialSearchQuery);
-    const [loading, setLoading] = useState<boolean>(false); 
+    const [loading, setLoading] = useState<boolean>(false);
     useEffect(() => {
       if (searchQuery1 !== initialSearchQuery) {
         localStorage.setItem('searchQuery1', searchQuery1);
@@ -1154,10 +1154,10 @@ const OnboardingContainer = ({ onData }) => {
                     />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
+                    <Input disabled placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
+                    <Input disabled placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
                     <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
@@ -1552,8 +1552,8 @@ const OnboardingContainer = ({ onData }) => {
                       onSearch={() => fetchBankDetails(index)}
                     />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
-                  <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
+                  <Col className="gutter-row mt-2" span={8}><Input disabled placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
+                  <Col className="gutter-row mt-2" span={8}><Input disabled placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                   <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                   <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                 </Row>

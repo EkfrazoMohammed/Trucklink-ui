@@ -906,7 +906,7 @@ const AccountingContainer = ({ onData }) => {
                 format='DD/MM/YYYY' // Display format for the DatePicker
 
               />
-              <Button type="primary" onClick={handleFilter}>
+              <Button type="primary" style={{marginLeft:".5rem"}} onClick={handleFilter}>
                 APPLY
               </Button>
             </div>

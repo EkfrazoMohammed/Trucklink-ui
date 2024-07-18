@@ -439,18 +439,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'marketRate',
                 width: 110,
             },
-            // {
-            //     title: 'Total',
-            //     dataIndex: 'commisionTotal',
-            //     key: 'commisionTotal',
-            //     width: 110,
-            // },
-            // {
-            //     title: 'Commission',
-            //     dataIndex: 'commisionTotal',
-            //     key: 'commisionTotal',
-            //     width: 140,
-            // },
+
             {
                 title: 'Total',
                 width: 110,
@@ -463,14 +452,14 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 width: 160,
                 render: (_, record) => {
                     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
-                    const percentCommissionINR = (percentCommission / 100)
+                    const percentCommissionINR = (percentCommission / 100).toFixed(2);
                     return (
                         <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
                             {record.isMarketRate ? <>
                                 <p>-</p>
                                 <p>
-                                    {`${record.commisionTotal}`}
+                                    {`${record.commisionTotal.toFixed(2)}`}
                                 </p>
                             </>
                                 :

@@ -49,7 +49,7 @@ const OnboardingContainer = ({ onData }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
-  
+
   const goBack = () => {
     setShowOwnerTable(true)
     setShowTabs(true);
@@ -192,10 +192,6 @@ const OnboardingContainer = ({ onData }) => {
       alert("deleted data")
       goBack()
       getTableData("", 1, 100000, selectedHubId);
-      // setTimeout(() => {
-      //   window.location.reload()
-      // }, 1000)
-
     }
     return (
       <>
@@ -224,20 +220,21 @@ const OnboardingContainer = ({ onData }) => {
   };
 
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
+    // const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
+    // const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
     const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
-    const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
-
-    // Update localStorage whenever searchQuery1 changes
-    // useEffect(() => {
-    //   localStorage.setItem('searchQuery1', searchQuery1);
-    // }, [searchQuery1]);
-    // Update localStorage whenever searchQuery1 changes
+    const [searchQuery1, setSearchQuery1] = useState<string>(initialSearchQuery);
+    const [loading, setLoading] = useState<boolean>(false); 
     useEffect(() => {
       if (searchQuery1 !== initialSearchQuery) {
         localStorage.setItem('searchQuery1', searchQuery1);
       }
     }, [searchQuery1, initialSearchQuery]);
-
+    // useEffect(() => {
+    //   // Reset search query and remove from local storage on component mount
+    //   setSearchQuery1('');
+    //   localStorage.removeItem('searchQuery1');
+    // }, []);
     const handleSearch = () => {
       getTableData(searchQuery1, 1, 100000, selectedHubId);
     };
@@ -566,7 +563,7 @@ const OnboardingContainer = ({ onData }) => {
       // Cleanup
       document.body.removeChild(link);
     };
-     return (
+    return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
 
@@ -670,7 +667,7 @@ const OnboardingContainer = ({ onData }) => {
 
       return (
         <p className="flex flex-col w-100 font-normal m-2">
-          <span className="label text-sm">Last trip</span>
+          <span className="label text-sm font-bold">Last trip</span>
           {formattedDate}
         </p>
       );
@@ -682,26 +679,26 @@ const OnboardingContainer = ({ onData }) => {
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowData.email}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowData.panNumber}</p></Col>
-            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowData.district}</p></Col>
-            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowData.state}</p> </Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Address</span> {rowData.address}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {rowData.name}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {rowData.phoneNumber}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {rowData.email}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {rowData.panNumber}</p></Col>
+            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {rowData.district}</p></Col>
+            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {rowData.state}</p> </Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Address</span> {rowData.address}</p></Col>
           </Row>
         </div>
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Owner Bank Details</h2>
           {rowData.accountIds.map((account, index) => (
             <div key={index}>
-              <h3>Bank Account {index + 1}</h3>
+              <h3 className='font-semibold text-md'>Bank Account {index + 1}</h3>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code</span> {account.ifscCode}</p> </Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name</span> {account.bankName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name</span> {account.branchName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number</span> {account.accountNumber}</p> </Col>
-                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
+                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">IFSC Code</span> {account.ifscCode}</p> </Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Name</span> {account.bankName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Branch Name</span> {account.branchName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Account Number</span> {account.accountNumber}</p> </Col>
+                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
               </Row>
             </div>
           ))}
@@ -718,11 +715,11 @@ const OnboardingContainer = ({ onData }) => {
                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
                     <p>{index + 1}</p>
                     <p className="flex flex-col w-100 font-normal m-2">
-                      <span className="label text-sm">Vehicle No</span>
+                      <span className="label text-sm font-bold">Vehicle No</span>
                       {vehicle.registrationNumber}
                     </p>
                     <p className="flex flex-col w-100 font-normal m-2">
-                      <span className="label text-sm">Total trips</span>
+                      <span className="label text-sm font-bold">Total trips</span>
                       {dispatchData.totalTrips}
                     </p>
 

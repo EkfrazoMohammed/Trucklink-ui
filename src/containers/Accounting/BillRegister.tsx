@@ -591,7 +591,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     //  const calculateTotalExpense = () => {
     //   return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
     // };
-    const calculateTotalExpense = () => {
+    const calculateTotal = () => {
       const total = entries.reduce((total, entry) => {
         const rate = parseFloat(entry.rate);
         const qty = parseFloat(entry.quantityInMetricTons);
@@ -627,16 +627,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
-            // summary={() => (
-            //   <Table.Summary.Row>
-            //     <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
-            //       Total
-            //     </Table.Summary.Cell>
-            //     <Table.Summary.Cell>
-            //       {calculateTotalExpense()}
-            //     </Table.Summary.Cell>
-            //   </Table.Summary.Row>
-            // )}
+            summary={() => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {calculateTotal()}
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </Form>
       </div>

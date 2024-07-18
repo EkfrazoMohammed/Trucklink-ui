@@ -603,30 +603,55 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               />
             </div>
           </div>
+          <div className="section mx-2 my-1">
+            <h2 className='font-semibold text-md'>Vehicle Information</h2>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold font-bold">Vehicle Number</span> {filterTruckTableData.registrationNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Vehicle Type</span> {filterTruckTableData.truckType}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Commission % </span> {filterTruckTableData.commission}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Market Rate</span>
+                 {filterTruckTableData.isMarketRate ? <>Yes</> : <>No</>}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">RC Book</span>
+                  {filterTruckTableData.rcBookProof !== null ?
+                    <Image src={filterTruckTableData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                    : null}
+                </p>
+              </Col>
+            </Row>
+          </div>
           <div className="section mx-2 my-4">
             <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {filterTruckTableData['ownerId'][0].name}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {filterTruckTableData['ownerId'][0].name}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {filterTruckTableData['ownerId'][0].phoneNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {filterTruckTableData['ownerId'][0].phoneNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {filterTruckTableData['ownerId'][0].email}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {filterTruckTableData['ownerId'][0].email}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {filterTruckTableData['ownerId'][0].panNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {filterTruckTableData['ownerId'][0].panNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {filterTruckTableData['ownerId'][0].district}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {filterTruckTableData['ownerId'][0].district}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {filterTruckTableData['ownerId'][0].state}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {filterTruckTableData['ownerId'][0].state}</p>
               </Col>
-
             </Row>
           </div>
+       
         </div>
       </>
     );
@@ -1019,22 +1044,22 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
               </Col>
 
             </Row>

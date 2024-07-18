@@ -216,6 +216,11 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       dataIndex: 'difference',
       key: 'difference',
       width: 160,
+      render: (_,record) => {
+        return (
+          <p>{parseFloat(record.difference).toFixed(2)}</p>
+        )
+      }
     },
     {
       title: 'Remarks',
@@ -1337,16 +1342,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                   Total
                 </div>
                 <div style={{ fontWeight: 'bold', width: '160px' }}>
-                  {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
+                  {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueRaised).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueRaised).toFixed(2)}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '160px' }}>
-                  {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
+                  {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueReceived).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueReceived).toFixed(2)}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '160px' }}>
-                  {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueTax}</p> : <p style={{ color: "red" }}>{totalValueTax}</p>}
+                  {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueTax).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueTax).toFixed(2)}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '120px' }}>
-                  {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueDifference}</p> : <p style={{ color: "red" }}>{totalValueDifference}</p>}
+                  {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueDifference).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueDifference).toFixed(2)}</p>}
                 </div>
               </div>
             </Form>

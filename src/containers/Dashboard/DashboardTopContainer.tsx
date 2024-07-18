@@ -5,12 +5,14 @@ import QuantityIcon from "../../assets/Quantity.png"
 import RevenueIcon from "../../assets/Revenue.png"
 import CommissionIcon from "../../assets/Commission.png"
 
-const DashboardTopContainer = () => {
-
+const DashboardTopContainer = ({data}) => {
+    // const a=JSON.stringify(data[0].trips, null,2)
+    // console.log(a)
+    // console.log(JSON.stringify(data[0].trips, null,2))
     const topData = [
         {
             title: "Trips",
-            value: "10",
+            value: "13",
             icon: TripIcon
         },
         {

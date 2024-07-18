@@ -603,6 +603,33 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             console.log(err)
         }
     }
+    // const handleSaveAndMoveToReceiveChallan = (rowData) => {
+    //     const headersOb = {
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             "Authorization": `Bearer ${authToken}`
+    //         }
+    //     }
+
+    //         const payload={...rowData,isReceived:true}
+        
+    //     try {
+    //         // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
+    //         API.put(`update-dispatch-challan-invoice/${rowData._id}`, payload, headersOb)
+    //             .then((response) => {
+    //                 console.log('Challan marked as POST:', response.data);
+    //                 alert("Challan marked as POST")
+    //                 goBack()
+    //                 getTableData("");
+    //             })
+    //             .catch((error) => {
+    //                 alert("error occurred")
+    //                 console.error('Error moving challan data:', error);
+    //             });
+    //     } catch (error) {
+    //         console.log(err)
+    //     }
+    // }
 
     const EditableChallan = ({ editingRow }) => {
         const selectedHubId = localStorage.getItem("selectedHubID");
@@ -950,7 +977,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 });
 
         }
-      
+
 
         return (
             <>

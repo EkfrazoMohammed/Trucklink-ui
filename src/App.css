@@ -603,3 +603,13 @@
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
 }
+.dashboard-material-container{
+
+  padding: 16px;
+  height: auto;
+  background: #FFF;
+
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}

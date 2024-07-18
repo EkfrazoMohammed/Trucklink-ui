@@ -628,48 +628,92 @@ const OnboardingContainer = ({ onData }) => {
       getDispatchDetails()
     }, [])
 
+    // const aggregateDispatchData = (data) => {
+    //   if (!data) return {};
+    //   const aggregatedData = {};
+
+    //   data.forEach((dispatch) => {
+    //     const { vehicleNumber, createdAt,grDate } = dispatch;
+    //     console.log(grDate)
+    //     if (!aggregatedData[vehicleNumber]) {
+    //       aggregatedData[vehicleNumber] = {
+    //         totalTrips: 0,
+    //         lastTrip: null
+    //       };
+    //     }
+
+    //     aggregatedData[vehicleNumber].totalTrips += 1;
+    //     if (!aggregatedData[vehicleNumber].lastTrip || new Date(grDate) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
+    //       aggregatedData[vehicleNumber].lastTrip = grDate;
+    //     }
+    //   });
+
+    //   return aggregatedData;
+    // };
     const aggregateDispatchData = (data) => {
       if (!data) return {};
+      
       const aggregatedData = {};
-
+    
       data.forEach((dispatch) => {
-        const { vehicleNumber, createdAt } = dispatch;
+        const { vehicleNumber, grDate } = dispatch;
+    
         if (!aggregatedData[vehicleNumber]) {
           aggregatedData[vehicleNumber] = {
             totalTrips: 0,
             lastTrip: null
           };
         }
-
+    
         aggregatedData[vehicleNumber].totalTrips += 1;
-        if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
-          aggregatedData[vehicleNumber].lastTrip = createdAt;
+        
+        // Convert grDate to Date object for comparison
+        const dispatchDate = toDateObject(grDate);
+    
+        // Compare dates and update lastTrip if dispatchDate is later
+        if (!aggregatedData[vehicleNumber].lastTrip || dispatchDate > toDateObject(aggregatedData[vehicleNumber].lastTrip)) {
+          aggregatedData[vehicleNumber].lastTrip = grDate; // Store the date string if it's the latest
         }
       });
-
+    
       return aggregatedData;
     };
+    
+    // Helper function to convert DD/MM/YYYY string to Date object
+    const toDateObject = (dateString) => {
+      const [day, month, year] = dateString.split('/');
+      return new Date(`${year}-${month}-${day}`);
+    };
+    
+    
 
     const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
 
   
 
     const LastTripComponent = ({ dispatchData }) => {
-      const isoDate = dispatchData;
-      const date = new Date(isoDate);
-      let formattedDate
-      if (isoDate == "-") {
-        formattedDate = `-`
-      } else {
-        formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`
+    
+      let formattedDate = "-"; // Default value for formatted date
+
+      if (dispatchData && dispatchData !== "-") {
+        const dateParts = dispatchData.split('/');
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1; // Month is zero-indexed in JavaScript Date object
+        const year = parseInt(dateParts[2], 10);
+    
+        const date = new Date(year, month, day);
+    
+        // Format the date as DD/MM/YYYY
+        formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
       }
 
-
       return (
+        <>
         <p className="flex flex-col w-100 font-normal m-2">
           <span className="label text-sm font-bold">Last trip</span>
           {formattedDate}
         </p>
+        </>
       );
     };
     return (

@@ -111,7 +111,7 @@ const DispatchContainer = ({ onData }) => {
     if (startDate) {
       const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
       const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
-   const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+      const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
       data.startDate = utcStartOfDay;
     }
     if (endDate) {
@@ -1137,7 +1137,6 @@ const DispatchContainer = ({ onData }) => {
 
     const handleDateChange = (date, dateString) => {
       const formattedGrDate = formatDate(dateString);
-
       handleChange('grDate', formattedGrDate);
     };
 
@@ -1371,8 +1370,6 @@ const DispatchContainer = ({ onData }) => {
         });
     };
 
-   
-
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1441,26 +1438,6 @@ const DispatchContainer = ({ onData }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
-                  {/* <DatePicker
-                    required
-                    placeholder="GR Date"
-                    size="large"
-                    format="DD-MM-YYYY" // Display format
-                    // value={moment(formData.grDate)} // Set initial value if needed
-                    style={{ width: "100%" }}
-                    onChange={handleDateChange} // Call handleDateChange function on date change
-                  /> */}
-
-                  {/* <DatePicker
-                    required
-                    placeholder="GR Date"
-                    size="large"
-                    format="DD-MM-YYYY" // Display format
-                    style={{ width: "100%" }}
-                    onChange={handleDateChange} // Call handleDateChange function on date change
-                  /> */}
-
                   <DatePicker
                     required
                     placeholder="GR Date"
@@ -1468,6 +1445,7 @@ const DispatchContainer = ({ onData }) => {
                     format="DD-MM-YYYY"
                     style={{ width: "100%" }}
                     onChange={handleDateChange}
+                    value={dayjs(formData.grDate, 'DD/MM/YYYY')}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>

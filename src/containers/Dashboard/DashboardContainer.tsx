@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { DatePickerProps } from 'antd';
-import { DatePicker } from 'antd';
+import { API } from "../../API/apirequest";
+import { RedoOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { DatePicker, Button } from 'antd';
 import DashboardEarningContainer from "./DashboardEarningContainer";
 import DashboardExpenseContainer from "./DashboardExpenseContainer";
 import DashboardMaterialContainer from "./DashboardMaterialContainer";
 import DashboardTopContainer from "./DashboardTopContainer";
-import { API } from "../../API/apirequest";
+import DashboardBottomContainer from './DashboardBottomContainer';
 
 const DashboardContainer = () => {
   const authToken = localStorage.getItem("token");
@@ -18,7 +21,11 @@ const DashboardContainer = () => {
       "Authorization": `Bearer ${authToken}`
     }
   };
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  // const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentYear, setCurrentYear] = useState<number>(dayjs().year());
+  const onReset = () => {
+    setCurrentYear(dayjs().year())
+  };
   const [topContainerData, setTopContainerData] = useState<any>([]);
 
   const getTopData = async (year: number) => {
@@ -37,26 +44,48 @@ const DashboardContainer = () => {
     }
   };
 
+
   useEffect(() => {
     getTopData(currentYear);
-  }, [currentYear]);
+  }, [currentYear]); // This useEffect will run whenever currentYear changes
+
   const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    const selectedYear = date ? date.year() : new Date().getFullYear();
+    const selectedYear = date ? dayjs(date).year() : dayjs().year();
     setCurrentYear(selectedYear);
   };
+  // const onChange: DatePickerProps['onChange'] = (date, dateString) => {
+  //   const selectedYear = date ? date.year() : new Date().getFullYear();
+  //   setCurrentYear(selectedYear);
+  // };
+  // const onChange: DatePickerProps['onChange'] = (date, dateString) => {
+  //   console.log(date)
+  //   const selectedYear = date ? date.getFullYear() : new Date().getFullYear();
+  //   setCurrentYear(selectedYear);
+  // };
+
 
   return (
     <>
       <div>
         Dashboard Container
       </div>
-      <div>
-        <DatePicker onChange={onChange} picker="year" size="large" />
+      {/* <div className='flex items-center gap-2 my-2'>
+
+        <DatePicker
+          onChange={onChange}
+          picker="year"
+          size="large"
+          value={dayjs(new Date(currentYear, 0, 1))}
+        />
+
+        <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button>
       </div>
       <DashboardTopContainer data={topContainerData} />
       <DashboardEarningContainer />
       <DashboardExpenseContainer />
       <DashboardMaterialContainer />
+      <DashboardBottomContainer /> */}
+
     </>
   );
 };

@@ -8,31 +8,35 @@ import CommissionIcon from "../../assets/Commission.png"
 const DashboardTopContainer = ({data}) => {
    
     const tripData = !data || data.length === 0 ? 0 : data[0].trips;
-    const RevenueData = !data || data.length === 0 ? 0 : data[0].revenue;
+    const revenueData = !data || data.length === 0 ? 0 : data[0].revenue;
 
     const commissionData = !data || data.length === 0 ? 0 : data[0].commission;
     const quantityData = !data || data.length === 0 ? 0 : data[0].quantity;
-
+// Helper function to format number in Indian style
+const formatNumberToIndianStyle = (number) => {
+    if (number === 0) return '0';
+    return number.toLocaleString('en-IN');
+  };
     // console.log(JSON.stringify(data[0].trips, null,2))
     const topData = [
         {
             title: "Trips",
-            value: tripData,
+            value: formatNumberToIndianStyle(tripData),
             icon: TripIcon
         },
         {
             title: "Revenue",
-            value: `₹ ${RevenueData}`,
+            value: `₹ ${formatNumberToIndianStyle(revenueData)}`,
             icon:RevenueIcon
         },
         {
             title: "Commission",
-            value: `₹ ${commissionData}`,
+            value: `₹ ${formatNumberToIndianStyle(commissionData)}`,
             icon: CommissionIcon
         }
         , {
             title: "Quantity",
-            value: quantityData,
+            value: formatNumberToIndianStyle(quantityData),
             icon: QuantityIcon
         }
     ]

@@ -413,35 +413,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     return (record.quantityInMetricTons * record.rate).toFixed(2);
                 }
             },
-            // {
-            //     title: 'Commission',
-            //     width: 160,
-            //     render: (_, record) => {
-            //         const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
-            //         const percentCommissionINR = (percentCommission / 100)
-            //         return (
-            //             <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
-
-            //                 {record.isMarketRate ? <>
-            //                     <p>-</p>
-            //                     <p>
-            //                         {`${record.commisionTotal}`}
-            //                     </p>
-            //                 </>
-            //                     :
-            //                     <><p>
-            //                         {record.commisionRate == null || record.commisionRate == 0 ? <>-</> : <> {`${record.commisionRate} %`}</>}
-            //                     </p>
-            //                         <p>
-            //                             {`${percentCommissionINR}`}
-            //                         </p>
-            //                     </>
-            //                 }
-
-            //             </div>
-            //         );
-            //     }
-            // },
             {
                 title: 'Commission',
                 width: 160,
@@ -538,15 +509,18 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const totalBankTransfer = receive.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
         const totalShortage = receive.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
         // const totalCommission = (totalPercentCommission + totalMarketCommission);
-        const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0).toFixed(2);
-        console.log(totalPercentCommission)
+        const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0);
         const totalMarketCommission = receive.reduce((sum, record) => {
             if (record.marketRate !== 0) {
                 return sum + ((record.quantityInMetricTons * record.rate) - (record.marketRate || 0) * (record.quantityInMetricTons));
             }
             return sum;
         }, 0);
+        console.log(totalPercentCommission)
         console.log(totalMarketCommission)
+
+        const allTotalAmount= (totalPercentCommission + totalMarketCommission).toFixed(2);
+        console.log(allTotalAmount)
         return (
             <>
                 <Table
@@ -573,7 +547,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             <Table.Summary.Cell></Table.Summary.Cell>
                             <Table.Summary.Cell></Table.Summary.Cell>
                             <Table.Summary.Cell>{totalAmout}</Table.Summary.Cell>
-                            <Table.Summary.Cell></Table.Summary.Cell>
+                            <Table.Summary.Cell>{allTotalAmount}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>

@@ -6,33 +6,61 @@ import RevenueIcon from "../../assets/Revenue.png"
 import CommissionIcon from "../../assets/Commission.png"
 
 const DashboardTopContainer = ({data}) => {
-    // const a=JSON.stringify(data[0].trips, null,2)
-    // console.log(a)
+   
+    const tripData = !data || data.length === 0 ? 0 : data[0].trips;
+    const RevenueData = !data || data.length === 0 ? 0 : data[0].revenue;
+
+    const commissionData = !data || data.length === 0 ? 0 : data[0].commission;
+    const quantityData = !data || data.length === 0 ? 0 : data[0].quantity;
+
     // console.log(JSON.stringify(data[0].trips, null,2))
     const topData = [
         {
             title: "Trips",
-            value: "13",
+            value: tripData,
             icon: TripIcon
         },
         {
             title: "Revenue",
-            value: `₹ ${10}`,
+            value: `₹ ${RevenueData}`,
             icon:RevenueIcon
         },
         {
             title: "Commission",
-            value: `₹ ${10}`,
+            value: `₹ ${commissionData}`,
             icon: CommissionIcon
         }
         , {
             title: "Quantity",
-            value: "10",
+            value: quantityData,
             icon: QuantityIcon
         }
     ]
     return (
         <div className='dashboard-top-container'>
+            {!data || data.length === 0 ? <>
+                <Row gutter={16}>
+                {topData.map((item, i) => {
+                    return (
+                        <>
+
+                            <Col className="gutter-row" span={6}>
+                                <div className="flex justify-between items-center p-2 border border-y-2 border-x-2  rounded-md px-4">
+                                    <div className="flex flex-col gap-1">
+                                        <div className='flex font-semibold text-xl'>0</div>
+                                        <div className='flex font-medium text-md'>{item.title}</div>
+                                    </div>
+                                    <div className='flex'><img src={item.icon} alt="" className='w-16 h-12'/></div>
+                                </div>
+
+                            </Col>
+                        </>
+                    )
+                })}
+
+            </Row>
+            
+            </>:<>
             <Row gutter={16}>
                 {topData.map((item, i) => {
                     return (
@@ -53,6 +81,8 @@ const DashboardTopContainer = ({data}) => {
                 })}
 
             </Row>
+            </>}
+          
         </div>
     )
 }

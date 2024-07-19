@@ -1250,6 +1250,32 @@ const OnboardingContainer = ({ onData }) => {
       }))
     });
 
+    const onReset=()=>{
+      setFormData({
+        name: rowDataForEdit.name,
+        email: rowDataForEdit.email,
+        phoneNumber: rowDataForEdit.phoneNumber,
+        countryCode: rowDataForEdit.countryCode,
+        panNumber: rowDataForEdit.panNumber,
+        district: rowDataForEdit.district,
+        state: rowDataForEdit.state,
+        address: rowDataForEdit.address,
+        vehicleIds: [],
+        hubId: selectedHubId,
+        bankAccounts: rowDataForEdit.accountIds.map(account => ({
+          id: account._id,
+          accountNumber: account.accountNumber,
+          accountHolderName: account.accountHolderName,
+          ifscCode: account.ifscCode,
+          bankName: account.bankName,
+          branchName: account.branchName,
+          hubId: account.hubId,
+          ownerId: account.ownerId,
+        }))
+      
+    }
+  )}
+
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
       const updatedValue = name === 'panNumber' ? value.toUpperCase() : value;
@@ -1488,6 +1514,7 @@ const OnboardingContainer = ({ onData }) => {
     }
 
 
+
     return (
       <>
         <div className="flex flex-col gap-4">
@@ -1610,7 +1637,7 @@ const OnboardingContainer = ({ onData }) => {
 
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button onClick={() => { setShowOwnerTable(true) }}>Reset</Button>
+            <Button onClick={onReset}>Reset</Button>
             <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>
           </div>
         </div>

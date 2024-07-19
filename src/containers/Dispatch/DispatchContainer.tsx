@@ -248,8 +248,10 @@ const DispatchContainer = ({ onData }) => {
       setStartDate("");
       setEndDate("");
       setEndDateValue("")
-      setMaterialSearch("")
-      setVehicleTypeSearch("")
+      setMaterialType('')
+      setMaterialSearch(null)
+      setVehicleType('')
+      setVehicleTypeSearch(null)
       getTableData()
     }
 
@@ -292,7 +294,8 @@ const DispatchContainer = ({ onData }) => {
 
           <Select
             name="materialType"
-            value={materialType ? materialType : null}
+            // value={materialType ? materialType : null}
+            value={materialType || undefined}
             placeholder="Material Type*"
             size="large"
             style={{ width: "20%" }}

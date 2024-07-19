@@ -505,7 +505,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
@@ -523,7 +523,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
                     {/* {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>} */}
-                    {formData.isCommission ? <>Commission%*</> : <>Commission%*</>}
+                    {formData.isCommission ? <>Commission%</> : <>Commission%</>}
                     <Switch
                       defaultChecked={formData.isCommission}
                       name="isCommission"
@@ -1016,7 +1016,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
@@ -1363,7 +1363,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
@@ -1380,7 +1380,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
-                    {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>}
+                    {formData.isCommission ? <>Commission %</> : <>Market Rate (Rs)</>}
                     <Switch
                       defaultChecked={formData.isCommission}
                       name="isCommission"
@@ -1402,14 +1402,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     </>
                   ) : (
                     <>
-                      {/* <Input
-                        placeholder="Enter Market Rate"
-                        size="large"
-                        type='number'
-                        name="marketRate"
-                        value={formData.marketRate}
-                        onChange={(e) => handleChange('marketRate', e.target.value)}
-                      /> */}
+                     
                     </>
                   )}
                 </Col>

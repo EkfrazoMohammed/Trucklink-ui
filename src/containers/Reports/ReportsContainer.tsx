@@ -714,6 +714,13 @@ const ReportsContainer = ({ onData }) => {
         },
 
         {
+          title: 'Total',
+          width: 160,
+          render: (_, record) => {
+            return (record.quantityInMetricTons * record.ratePerTon).toFixed(2)
+          }
+        },
+        {
           title: 'Commission',
           width: 190,
           render: (_, record) => {
@@ -778,32 +785,61 @@ const ReportsContainer = ({ onData }) => {
           key: 'shortage',
           width: 120,
         },
+      
+        {
+          title: 'Balance',
+          width: 190,
+          render: (_, record) => {
+            // Ensure all values are numbers and provide default values if necessary
+            const totalAmount = parseFloat(record.quantityInMetricTons * record.ratePerTon) || 0;
+            const totalCom = parseFloat(record.commisionTotal) || 0;
+            // const totalCommisionTotal = parseFloat(record.totalCommisionTotal) || 0;
+            const totalDiesel = parseFloat(record.diesel) || 0;
+            const totalCash = parseFloat(record.cash) || 0;
+            const totalBankTransfer = parseFloat(record.bankTransfer) || 0;
+            const totalShortage = parseFloat(record.shortage) || 0;
+
+            // Calculate balance
+            const balance = (totalAmount) - (totalCom + totalDiesel + totalCash + totalBankTransfer + totalShortage);
+
+            // Return the formatted balance
+            return balance.toFixed(2);
+          }
+        }
+
       ];
-
       // Calculate the sums of necessary columns
-      const totalQuantity = challanData.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2);
-      const totalCompanyRate = challanData.reduce((sum, record) => sum + (record.ratePerTon || 0), 0).toFixed(2);
+      const totalQuantity = parseFloat(challanData.reduce((sum, record) => sum + (record.quantityInMetricTons || 0), 0).toFixed(2));
+      const totalAmountValue = parseFloat(challanData.reduce((sum, record) => {
+        const quantity = record.quantityInMetricTons || 0;
+        const rate = record.ratePerTon || 0;
+        return sum + (quantity * rate);
+      }, 0).toFixed(2));
+      
+      const totalPercentCommission = parseFloat(challanData.reduce((sum, record) => {
+        const commissionRate = record.commisionRate || 0;
+        const quantity = record.quantityInMetricTons || 0;
+        const rate = record.ratePerTon || 0;
+        return sum + ((commissionRate * (quantity * rate)) / 100);
+      }, 0).toFixed(2));
 
-      const totalMarketRate = challanData.reduce((sum, record) => sum + (record.marketRate || 0), 0).toFixed(2);
-      // const totalCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
-
-      // const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0).toFixed(2);
-      // const totalMarketCommission = challanData.reduce((sum, record) => sum + (record.marketRate > 0 ? ((record.amount) - (record.marketRate * record.quantityInMetricTons)) : 0), 0).toFixed(2);
-
-      const totalPercentCommission = challanData.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.ratePerTon) / 100), 0);
-
-      const totalMarketCommission = challanData.reduce((sum, record) => {
-        if (record.marketRate !== 0) {
-          return sum + ((record.quantityInMetricTons * record.ratePerTon) - (record.marketRate || 0) * (record.quantityInMetricTons));
+      const totalMarketCommission = parseFloat(challanData.reduce((sum, record) => {
+        const marketRate = record.marketRate || 0;
+        const quantity = record.quantityInMetricTons || 0;
+        const rate = record.ratePerTon || 0;
+        if (marketRate > 0) {
+          return sum + ((quantity * rate) - (marketRate * quantity));
         }
         return sum;
-      }, 0);
-      const totalDiesel = challanData.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2);
-      const totalCash = challanData.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2);
-      const totalBankTransfer = challanData.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2);
-      const totalShortage = challanData.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2);
-      const totalCommission = (totalPercentCommission + totalMarketCommission).toFixed(2);
+      }, 0).toFixed(2));
 
+      // Calculate other totals
+      const totalDiesel = parseFloat(challanData.reduce((sum, record) => sum + (record.diesel || 0), 0).toFixed(2));
+      const totalCash = parseFloat(challanData.reduce((sum, record) => sum + (record.cash || 0), 0).toFixed(2));
+      const totalBankTransfer = parseFloat(challanData.reduce((sum, record) => sum + (record.bankTransfer || 0), 0).toFixed(2));
+      const totalShortage = parseFloat(challanData.reduce((sum, record) => sum + (record.shortage || 0), 0).toFixed(2));
+      const totalCommission = parseFloat((totalPercentCommission + totalMarketCommission).toFixed(2));
+      const totalBalance = totalAmountValue - (totalCommission + totalShortage + totalBankTransfer + totalCash + totalDiesel);
       return (
         <>
           <Table
@@ -821,11 +857,13 @@ const ReportsContainer = ({ onData }) => {
                 <Table.Summary.Cell>{totalMarketRate}</Table.Summary.Cell> */}
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>{totalAmountValue}</Table.Summary.Cell>
                 <Table.Summary.Cell align="center">{totalCommission}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalDiesel}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
+                <Table.Summary.Cell>{totalBalance.toFixed(2)}</Table.Summary.Cell>
               </Table.Summary.Row>
             )}
           />
@@ -1316,7 +1354,7 @@ const ReportsContainer = ({ onData }) => {
         title: 'Owner Name',
         width: 160,
         render: (_, record) => {
-          return <p>{record.ownerDetails[0].ownerName !== null || record.ownerDetails[0].ownerName !== "" ? record.ownerDetails[0].ownerName.charAt(0).toUpperCase() + record.ownerDetails[0].ownerName.slice(1) : null}</p>
+          return <p className='cursor-pointer' onClick={() => onEditTruckClick(record)}>{record.ownerDetails[0].ownerName !== null || record.ownerDetails[0].ownerName !== "" ? record.ownerDetails[0].ownerName.charAt(0).toUpperCase() + record.ownerDetails[0].ownerName.slice(1) : null}</p>
         }
       },
       {
@@ -1342,9 +1380,9 @@ const ReportsContainer = ({ onData }) => {
         dataIndex: 'totalAmount',
         key: 'totalAmount',
         width: 120,
-        render: (_,record) => {
+        render: (_, record) => {
           return record.totalAmount.toFixed(2)
-        } 
+        }
 
       },
       {
@@ -1352,9 +1390,9 @@ const ReportsContainer = ({ onData }) => {
         dataIndex: 'totalCommisionTotal',
         key: 'totalCommisionTotal',
         width: 190,
-        render: (_,record) => {
+        render: (_, record) => {
           return record.totalCommisionTotal.toFixed(2)
-        } 
+        }
       },
       {
         title: 'Diesel',
@@ -1381,6 +1419,13 @@ const ReportsContainer = ({ onData }) => {
         width: 160,
       },
       {
+        title: 'Balance',
+        width: 190,
+        render: (_, record) => {
+          return (record.totalAmount - (record.totalCommisionTotal + record.totalDiesel + record.totalCash + record.totalBankTransfer + record.totalShortage)).toFixed(2)
+        }
+      },
+      {
         title: 'Action',
         key: 'action',
         width: 80,
@@ -1401,17 +1446,14 @@ const ReportsContainer = ({ onData }) => {
           scroll={{ x: 800 }}
           rowKey="_id"
           loading={loading}
-          // pagination={{
-          //   showSizeChanger: true,
-          //   position: ['bottomCenter'],
-          //   current: currentPage,
-          //   pageSize: pageSize,
-          //   onChange: (page, pageSize) => {
-          //     setCurrentPage(page);
-          //     setPageSize(pageSize);
-          //   },
-          // }}
           pagination={false}
+          onRow={(record) => ({
+            onClick: () => {
+              onEditTruckClick(record);
+            },
+            className: 'cursor-pointer',
+          })}
+          sticky
         />
       </>
     );
@@ -1429,8 +1471,6 @@ const ReportsContainer = ({ onData }) => {
           <UserInsideReport editingRowId={rowDataForDispatchEditId} editingRowName={rowDataForDispatchEditName} />
         ) : null
       )}
-      {/* <p>Reports Container</p> */}
-      {/* <NoData /> */}
 
     </>
   );

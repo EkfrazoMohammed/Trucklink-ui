@@ -119,8 +119,6 @@ const AccountingContainer = ({ onData }) => {
     const handleOwnerNameChange = (value) => {
       setOwnerId(value);
     };
-
-
     const handleStartDateChange = (date) => {
       setStartDateValue(date)
       const unixTimestamp = new Date(date).getTime();
@@ -219,17 +217,11 @@ const AccountingContainer = ({ onData }) => {
       }
     };
 
-    // useEffect(() => {
-    //   if (filterRequest === null) {
-    //     getTableData();
-    //   }
-    // }, [filterRequest]);
+
     const updateFilterAndFetchData = async (filters) => {
       setFilterRequest(filters);
       await getTableData(filters);
     };
-
-    // }, [filterRequest, ownerId]);
 
     useEffect(() => {
       if (filterRequest) {
@@ -238,11 +230,8 @@ const AccountingContainer = ({ onData }) => {
     }, [filterRequest]);
     const getOutstandingData = async () => {
       try {
-        // const response = await API.get(`get-owner-advance-outstanding-details&hubId=${selectedHubId}`, headersOb);
         const response = await API.get(`get-owner-advance-outstanding-details/${selectedHubId}`, headersOb);
         if (response.status == 201) {
-
-
           const outstandingEntries = response.data.amountData || "";
           if (outstandingEntries && outstandingEntries.length > 0) {
             setTotalOutstanding(outstandingEntries[0].outStandingAmount.toFixed(2));
@@ -255,52 +244,18 @@ const AccountingContainer = ({ onData }) => {
       }
     };
 
-    // Fetch the list of owners
     const getOwners = async () => {
       try {
-        // const response = await API.get(`get-owner-name&hubId=${selectedHubId}`, headersOb);
         const response = await API.get(`get-owner-name/${selectedHubId}`, headersOb);
-        
-        if(response.status == 201) {
+        if (response.status == 201) {
           setOwners(response.data.ownerDetails || []);
         }
       } catch (err) {
         console.log(err);
         setOwners([]);
-        // message.error("Error fetching owners. Please try again later", 2);
       }
     };
 
-    const handleTableRowExpand = async (expanded, record) => {
-      if (expanded) {
-        try {
-          if (record && record.key !== "") {
-            // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
-            const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
-            const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
-
-            const dataSource = ledgerEntries.map((data) => {
-              const date = data.entryDate;
-              const eDate = moment(date, "DD/MM/YYYY")
-
-              return {
-                ...data,
-                entDate: eDate,
-                IdofOwner: record.key,
-                key: data._id // Ensure unique key for each ledger entry
-              };
-            });
-
-            setLedgerEntries((prevEntries) => ({
-              ...prevEntries,
-              [record.key]: dataSource
-            }));
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
 
     const createOwnerAdvance = async (row) => {
       const { date, IntAmount, ownerName, ownerId } = row;
@@ -331,16 +286,21 @@ const AccountingContainer = ({ onData }) => {
         console.log(err);
       }
     };
+    const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
     const handleAdd = () => {
-      const newData = {
+      // Reset the newRow state
+      setNewRow({
         key: count.toString(),
         date: null,
         ownerName: '',
         ownerId: '',
         IntAmount: 0,
-      };
-      setNewRow(newData);
+      });
+
+      // Reset the form if you are using one
+      form.resetFields();
+
       setCount(count + 1);
     };
 
@@ -361,12 +321,14 @@ const AccountingContainer = ({ onData }) => {
         console.log("Validate Failed:", errInfo);
       }
     };
+
+    // Function to handle cancel action
     const cancel = () => {
-      getTableData()
+      setNewRow(null);  // Reset newRow to null or an empty object to close the form
+      getTableData();   // Optionally fetch table data if needed
     };
 
     const columns = [
-
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
@@ -375,15 +337,6 @@ const AccountingContainer = ({ onData }) => {
         width: 80,
         fixed: 'left',
       },
-      // {
-      //   title: 'Sl No',
-      //   dataIndex: 'serialNumber',
-      //   key: 'serialNumber',
-      //   render: (text, record, index) => index + 1,
-      //   width: 80,
-      //   fixed: 'left',
-      // },
-
       {
         title: 'Date',
         dataIndex: 'intDate',
@@ -470,9 +423,6 @@ const AccountingContainer = ({ onData }) => {
           }
           return (
             <Space size="middle">
-              {/* <Tooltip placement="top" title="Edit">
-                <a><FormOutlined /></a>
-              </Tooltip> */}
               <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
                 <Tooltip placement="top" title="Delete">
                   <a><DeleteOutlined /></a>
@@ -483,8 +433,72 @@ const AccountingContainer = ({ onData }) => {
         }
       }
     ];
+    const handleTableRowExpand = async (expanded, record) => {
+      if (expanded) {
+        try {
+          if (record && record.key !== "") {
+            const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
+            const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
+
+            const dataSource = ledgerEntries.map((data) => {
+              const date = data.entryDate;
+              const eDate = moment(date, "DD/MM/YYYY");
+
+              return {
+                ...data,
+                entDate: eDate,
+                IdofOwner: record.key,
+                key: data._id // Ensure unique key for each ledger entry
+              };
+            });
+
+            setLedgerEntries((prevEntries) => ({
+              ...prevEntries,
+              [record.key]: dataSource
+            }));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      // Update expandedRowKeys state
+      setExpandedRowKeys((prevKeys) =>
+        expanded ? [...prevKeys, record.key] : prevKeys.filter((key) => key !== record.key)
+      );
+    };
 
 
+    // const handleTableRowExpand = async (expanded, record) => {
+    //   if (expanded) {
+    //     try {
+    //       if (record && record.key !== "") {
+    //         // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
+    //         const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
+    //         const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
+
+    //         const dataSource = ledgerEntries.map((data) => {
+    //           const date = data.entryDate;
+    //           const eDate = moment(date, "DD/MM/YYYY")
+
+    //           return {
+    //             ...data,
+    //             entDate: eDate,
+    //             IdofOwner: record.key,
+    //             key: data._id // Ensure unique key for each ledger entry
+    //           };
+    //         });
+
+    //         setLedgerEntries((prevEntries) => ({
+    //           ...prevEntries,
+    //           [record.key]: dataSource
+    //         }));
+    //       }
+    //     } catch (err) {
+    //       console.error(err);
+    //     }
+    //   }
+    // };
     const expandedRowRender = (record) => {
       const entries = ledgerEntries[record.key] || [];
       const hideLedgerAction = entries.length - 1;
@@ -494,11 +508,7 @@ const AccountingContainer = ({ onData }) => {
         </div>
       );
     };
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const [currentPageSize, setCurrentPageSize] = useState(10);
-    // useEffect(() => {
-    //   getTableData(currentPage, currentPageSize, selectedHubId);
-    // }, [currentPage, currentPageSize, selectedHubId]);
+
     const LedgerTable = ({ record, entries, hideLedgerAction }) => {
       const [form] = Form.useForm();
       const [editingKeyIn, setEditingKeyIn] = useState("");
@@ -506,8 +516,8 @@ const AccountingContainer = ({ onData }) => {
       const isEditing = (record) => record.key === editingKeyIn;
 
       const edit = (record) => {
-        console.log( dayjs(record.entryDate, "DD/MM/YYYY"))
-        
+        console.log(dayjs(record.entryDate, "DD/MM/YYYY"))
+
         form.setFieldsValue({
           entDate: dayjs(record.entryDate, "DD/MM/YYYY"),
           credit: record.credit,
@@ -537,19 +547,16 @@ const AccountingContainer = ({ onData }) => {
           const index = newData.findIndex((item) => key === item.key);
 
           if (isAddingNew) {
-            // Logic for adding new entry
             const newEntry = {
               key: Date.now().toString(), // Generate a unique key
               ...row,
               entryDate: dayjs(row.entDate).format("DD/MM/YYYY"),
             };
-            // newData.push(newEntry);
             setLedgerEntries((prevEntries) => ({
               ...prevEntries,
               [record.key]: newData,
             }));
             setEditingKeyIn("");
-            console.log(newEntry.entryDate)
             const payload = {
               entryDate: newEntry.entryDate,
               debit: Number(newEntry.debit),
@@ -577,7 +584,6 @@ const AccountingContainer = ({ onData }) => {
               });
 
           } else {
-            // Logic for updating existing entry
             if (index > -1) {
               const item = newData[index];
               newData.splice(index, 1, { ...item, ...row });
@@ -586,10 +592,8 @@ const AccountingContainer = ({ onData }) => {
                 [record.key]: newData,
               }));
               setEditingKeyIn("");
-
               const { entDate, credit, debit, narration } = row;
               const formattedDate = dayjs(entDate).format("DD/MM/YYYY");
-
               const payload = {
                 entryDate: formattedDate,
                 debit: Number(debit),
@@ -597,7 +601,6 @@ const AccountingContainer = ({ onData }) => {
                 narration,
                 hubId: selectedHubId,
               };
-
               await API.put(`update-owner-ledger-entry/${record.key}/${key}`, payload, headersOb)
                 .then(() => {
                   message.success("Successfully updated Ledger Entry");
@@ -630,10 +633,11 @@ const AccountingContainer = ({ onData }) => {
             .then(() => {
               message.success("Successfully Deleted Ledger Entry");
               getTableData();
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
               getOutstandingData();
+
+              // Collapse the row by updating expandedRowKeys
+              setExpandedRowKeys((prevKeys) => prevKeys.filter((rowKey) => rowKey !== key));
+
             })
             .catch((error) => {
               const { response } = error;
@@ -660,7 +664,7 @@ const AccountingContainer = ({ onData }) => {
         setLedgerEntries((prevEntries) => {
           const updatedEntries = {
             ...prevEntries,
-            [record.key]: [...(prevEntries[record.key] || []), newEntry],
+            [record.key]: [newEntry, ...(prevEntries[record.key] || [])], // Add newEntry at the top
           };
 
           setEditingKeyIn(newEntryKey);
@@ -700,7 +704,7 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
                 rules={[{ required: true, message: 'Please input date!' }]}
               >
-                
+
                 <DatePicker />
                 {/* <DatePicker format={dateFormat} /> */}
               </Form.Item>
@@ -847,10 +851,10 @@ const AccountingContainer = ({ onData }) => {
         await API.delete(`delete-owner-record/${key}`, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000)
+
+            getTableData();
             getOutstandingData();
+            getOwners();
           })
           .catch((error) => {
             const { response } = error;
@@ -939,7 +943,9 @@ const AccountingContainer = ({ onData }) => {
 
               }}
               loading={loading}
+              expandedRowKeys={expandedRowKeys} // Pass the expandedRowKeys state here
             />
+
           </Form>
         </div>
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>

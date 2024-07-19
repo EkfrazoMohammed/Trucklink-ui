@@ -480,7 +480,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         {record.balance > 0 ?
                             <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(parseFloat(record.balance).toFixed(2))}</span>
                             :
-                            <span style={{ color: "red" }}>- {(parseFloat(record.balance).toFixed(2))}</span>
+                            <span style={{ color: "red" }}>{(parseFloat(record.balance).toFixed(2))}</span>
 
                         }
                     </p>
@@ -521,6 +521,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
 
         const allTotalAmount= (totalPercentCommission + totalMarketCommission).toFixed(2);
         console.log(allTotalAmount)
+        const totalBalance = receive.reduce((sum, record) => sum + (record.balance || 0), 0);    
         return (
             <>
                 <Table
@@ -552,6 +553,15 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             <Table.Summary.Cell>{totalCash}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
+                            <Table.Summary.Cell>
+                            {totalBalance > 0 ?
+                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(parseFloat(totalBalance).toFixed(2))}</span>
+                            :
+                            <span style={{ color: "red" }}>{(parseFloat(totalBalance).toFixed(2))}</span>
+
+                        }
+                                {/* {totalBalance} */}
+                                </Table.Summary.Cell>
 
                         </Table.Summary.Row>
                     )}

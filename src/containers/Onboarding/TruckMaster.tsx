@@ -395,10 +395,10 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
-          setTimeout(()=>{
+          setTimeout(() => {
             goBack()
             getTableData("", 1, 100000, selectedHubId);
-          },1000)
+          }, 1000)
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
@@ -503,6 +503,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                   </Select>
 
                 </Col>
+
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
                     RC Book : {' '}
@@ -511,11 +512,22 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
-                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
+                      <Button size="large">
+                        <span className='flex gap-2'>
+                          <UploadOutlined /> Upload
+                        </span>
+                      </Button>
                     </Upload>
                     {formData.rcBookProof !== null ?
-                      <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                      <Image
+                        src={formData.rcBookProof}
+                        alt="img"
+                        width={40}
+                        height={40}
+                        style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }}
+                      />
                       : null}
                   </div>
                 </Col>
@@ -617,7 +629,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               </Col>
               <Col className="gutter-row m-1" span={5}>
                 <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Market Rate</span>
-                 {filterTruckTableData.isMarketRate ? <>Yes</> : <>No</>}</p>
+                  {filterTruckTableData.isMarketRate ? <>Yes</> : <>No</>}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
                 <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">RC Book</span>
@@ -651,7 +663,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               </Col>
             </Row>
           </div>
-       
+
         </div>
       </>
     );
@@ -1022,10 +1034,9 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
                       <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
-
-                      {/* <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button> */}
                     </Upload>
                     {formData.rcBookProof !== null ?
                       <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
@@ -1369,6 +1380,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
                       <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
@@ -1402,7 +1414,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     </>
                   ) : (
                     <>
-                     
+
                     </>
                   )}
                 </Col>

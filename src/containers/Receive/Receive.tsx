@@ -364,8 +364,8 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 render: (_, record) => {
                     return <p>{record.ownerName}</p>
                 },
-                sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
-      ellipsis: true,
+    //             sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
+    //   ellipsis: true,
 
             },
             {

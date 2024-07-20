@@ -599,8 +599,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
             API.put(`update-challan-status/${rowData._id}/CHECK`, rowData, headersOb)
                 .then((response) => {
-                    console.log('Challan moved to register successfully:', response.data);
-                    alert("Challan moved to register successfully")
+                    console.log('Challan marked as POST:', response.data);
+                    alert("Challan marked as POST")
                     goBack()
                     getTableData("");
                 })

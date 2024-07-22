@@ -1,0 +1,40 @@
+{
+    "totalTrip": [
+        {
+            "month": "July",
+            "totalDiesel": 10669,
+            "totalCash": 850,
+            "totalBankTransfer": 5620,
+            "totalShortage": 5,
+            "hubId":"669e3a71ac963160781c1123"
+
+        },
+        {
+            "month": "July",
+            "totalDiesel": 1669,
+            "totalCash": 1850,
+            "totalBankTransfer": 56220,
+            "totalShortage": 15,
+            "hubId":"669613c3126836dd5c3c3e96"
+
+        },
+        {
+            "month": "July",
+            "totalDiesel": 103669,
+            "totalCash": 8350,
+            "totalBankTransfer": 15620,
+            "totalShortage": 522,
+            "hubId":"6696008c5ff154cfe3cc1a0e"
+
+        },
+        {
+            "month": "July",
+            "totalDiesel": 63669,
+            "totalCash": 850,
+            "totalBankTransfer": 1562,
+            "totalShortage": 52,
+            "hubId":"6696068a5ff154cfe3cc1a58"
+
+        }
+    ]
+}

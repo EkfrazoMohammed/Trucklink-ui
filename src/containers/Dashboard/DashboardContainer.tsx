@@ -66,10 +66,10 @@ const DashboardContainer = () => {
 
   return (
     <>
-      {/* <div>
+      <div>
         Dashboard Container
-      </div> */}
-       <div className='flex items-center gap-2 my-2'>
+      </div>
+       {/* <div className='flex items-center gap-2 my-2'>
 
         <DatePicker
           onChange={onChange}
@@ -81,10 +81,10 @@ const DashboardContainer = () => {
         <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button>
       </div>
       <DashboardTopContainer data={topContainerData} />
-      <DashboardEarningContainer />
+      <DashboardEarningContainer year={currentYear}/>
       <DashboardExpenseContainer />
       <DashboardMaterialContainer />
-      <DashboardBottomContainer /> 
+      <DashboardBottomContainer />  */}
     </>
   );
 };

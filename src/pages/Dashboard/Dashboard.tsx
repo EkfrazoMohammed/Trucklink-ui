@@ -55,11 +55,25 @@ const Dashboard: React.FC = () => {
   const handleMenuClick = (menuItemKey: string, menuTitle: string, disabled: boolean) => {
     if (!currentHub) {
       alert("select hub location first")
-    } else {
-      setSelectedMenuItem(menuItemKey);
-      setTitle(menuTitle);
-      setSelectedMenuTitle(menuTitle)
-      setDataFromChild("flex")
+    }
+    else {
+      if (menuItemKey == "1" && menuTitle == 'Dashboard') {
+        console.log('Dashboard')
+        setSelectedMenuItem('1');
+        setTitle('Dashboard');
+        setSelectedMenuTitle('Dashboard')
+        setDataFromChild("flex")
+        localStorage.removeItem("selectedHubID");
+        localStorage.removeItem("selectedHubName");
+        localStorage.removeItem("selectedHubColor");
+        // localStorage.setItem("selectedHubName", "All Locations")
+      } else {
+
+        setSelectedMenuItem(menuItemKey);
+        setTitle(menuTitle);
+        setSelectedMenuTitle(menuTitle)
+        setDataFromChild("flex")
+      }
     }
 
   };
@@ -167,8 +181,8 @@ const Dashboard: React.FC = () => {
         </div> */}
       </Sider>
       <Layout>
-      <Content style={{ margin: '1rem' }}>
-        {/* <Content style={{ margin: '1rem 1rem 0 1rem' }}> */}
+        <Content style={{ margin: '1rem' }}>
+          {/* <Content style={{ margin: '1rem 1rem 0 1rem' }}> */}
           <div
             style={{
               padding: 16,

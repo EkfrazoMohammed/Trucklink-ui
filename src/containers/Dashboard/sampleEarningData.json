@@ -1,0 +1,67 @@
+{
+    "currentEarningData": [
+        {
+            "month": "July",
+            "year": 2024,
+            "hubId": "6696068a5ff154cfe3cc1a58",
+            "totalEarning": 529040.96
+        },
+        {
+            "month": "July",
+            "year": 2024,
+            "hubId": "6696008c5ff154cfe3cc1a0e",
+            "totalEarning": 503857
+        },
+        {
+            "month": "July",
+            "year": 2024,
+            "hubId": "669e3a71ac963160781c1123",
+            "totalEarning": 20426.7
+        }
+    ],
+    "previousEarningData": [
+        {
+            "month": "June",
+            "year": 2024,
+            "hubId": "6696068a5ff154cfe3cc1a58",
+            "totalEarning": 71872
+        },
+        {
+            "month": "May",
+            "year": 2024,
+            "hubId": "669e3a71ac963160781c1123",
+           "totalEarning": 178240.96
+        },
+        {
+            "month": "April",
+            "year": 2024,
+            "hubId": "6696068a5ff154cfe3cc1a58",
+            "totalEarning": 120240.96
+        },
+        {
+            "month": "April",
+            "year": 2024,
+            "hubId": "6696008c5ff154cfe3cc1a0e",
+            "totalEarning": 503857
+        },
+        {
+            "month": "February",
+            "year": 2024,
+            "hubId": "669e3a71ac963160781c1123",
+            "totalEarning": 209426.7
+        },
+        {
+            "month": "January",
+            "year": 2024,
+            "hubId": "6696008c5ff154cfe3cc1a0e",
+            "totalEarning": 285787
+        },
+        {
+            "month": "March",
+            "year": 2024,
+            "hubId": "669e3a71ac963160781c1123",
+            "totalEarning": 204999
+        }
+    ],
+    "message": "Successfully retrieved all information"
+}

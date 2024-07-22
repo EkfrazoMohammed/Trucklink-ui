@@ -1,11 +1,106 @@
+import React, { useEffect, useState } from 'react';
+import { Col, Row, Radio, Select } from 'antd';
+import Chart from 'react-apexcharts';
+import { API } from "../../API/apirequest";
+import sampleData from "./sampleEarningData.json";
 
-import React from 'react'
-import { Col, Row, Radio, Select, Space } from 'antd';
+const { Option } = Select;
 
-import Chart from "react-apexcharts";
-
-const DashboardEarningContainer = () => {
+const DashboardEarningContainer = ({ year }) => {
   
+// Mapping month names to indices
+const monthIndexMap = {
+    "January": 0,
+    "February": 1,
+    "March": 2,
+    "April": 3,
+    "May": 4,
+    "June": 5,
+    "July": 6,
+    "August": 7,
+    "September": 8,
+    "October": 9,
+    "November": 10,
+    "December": 11
+};
+    const initialData = { currentEarningData: [], previousEarningData: [] };
+    const [earningData, setEarningData] = useState(initialData);
+    const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState("amount");
+    const [series, setSeries] = useState([]);
+    const [totalEarningsAllHubs, setTotalEarningsAllHubs] = useState(0);
+    const authToken = localStorage.getItem("token");
+    const [hubs, setHubs] = useState([]);
+    const [selectedHubs, setSelectedHubs] = useState([]);
+
+    const headersOb = {
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+        }
+    };
+
+    useEffect(() => {
+        const fetchHubs = async () => {
+            try {
+                const response = await API.get('get-hubs', headersOb);
+                setHubs(response.data.hubs);
+            } catch (error) {
+                console.error('Error fetching hub data:', error);
+            }
+        };
+
+        fetchHubs();
+
+        const fetchData = async () => {
+            try {
+                const response = await API.get(`get-earning-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
+                console.log(response.data);
+                setEarningData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [year]);
+
+    useEffect(() => {
+        if (earningData.currentEarningData.length === 0 && earningData.previousEarningData.length === 0) return;
+
+        const hubsData = {};
+        const monthlyTotals = Array(12).fill(0);
+        let totalEarnings = 0;
+
+        [...earningData.currentEarningData, ...earningData.previousEarningData].forEach(earning => {
+            if (!hubsData[earning.hubId]) {
+                hubsData[earning.hubId] = Array(12).fill(0);
+            }
+            const monthIndex = monthIndexMap[earning.month] ?? 0;
+            hubsData[earning.hubId][monthIndex] = earning.totalEarning;
+            monthlyTotals[monthIndex] += earning.totalEarning;
+            totalEarnings += earning.totalEarning;
+        });
+
+        setTotalEarningsAllHubs(totalEarnings);
+
+        const percentageHubs = {};
+        Object.keys(hubsData).forEach(hubId => {
+            percentageHubs[hubId] = hubsData[hubId].map((earning) =>
+                totalEarnings > 0 ? (earning / totalEarnings * 100).toFixed(2) : '0'
+            );
+        });
+
+        const updatedSeries = Object.keys(hubsData).map(hubId => ({
+            name: hubs.find(hub => hub._id === hubId)?.location || hubId,
+            data: viewMode === "amount" ? hubsData[hubId] : percentageHubs[hubId].map(value => parseFloat(value))
+        }));
+        setSeries(updatedSeries);
+
+    }, [earningData, viewMode, year, hubs]);
+
     const chartOptions = {
         chart: {
             id: "basic-bar",
@@ -34,14 +129,21 @@ const DashboardEarningContainer = () => {
             }
         },
         xaxis: {
-            categories: ['0', 'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'],
+            categories: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'],
             labels: {
                 rotate: 0,
                 style: {
                     fontSize: '12px'
                 }
             },
-            tickAmount: 6
+            tickAmount: 12
+        },
+        yaxis: {
+            labels: {
+                formatter: function (value) {
+                    return viewMode === "amount" ? (value >= 100000 ? (value / 100000).toFixed(1) + 'L' : value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value) : value.toFixed(2) + '%';
+                }
+            }
         },
         stroke: {
             width: 2
@@ -70,10 +172,10 @@ const DashboardEarningContainer = () => {
                     headerCategory: 'category',
                     headerValue: 'value',
                     categoryFormatter(x) {
-                        return new Date(x).toDateString()
+                        return new Date(x).toDateString();
                     },
                     valueFormatter(y) {
-                        return y
+                        return y;
                     }
                 },
                 svg: {
@@ -86,88 +188,92 @@ const DashboardEarningContainer = () => {
             autoSelected: 'zoom'
         },
     };
-    const series = [
-        {
-            name: "%",
-            data: [0, 30, 40, 45, 50, 49, 60, 70, 91, 60, 38, 33, 11]
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    const handleChange = (value) => {
+        if (value.length <= 3) {
+            setSelectedHubs(value);
         }
-    ]
+    };
 
     return (
         <div className='dashboard-earning-container'>
             <div className="cards-container">
-
                 <Row gutter={24} className='flex items-center'>
                     <Col className="gutter-row" span={6}>
-
                         <div className="flex justify-between items-center p-2 font-bold text-xl">
                             <h1>Monthly Earning</h1>
                         </div>
                     </Col>
                     <Col className="gutter-row" span={18}>
-
                         <div className="flex items-center justify-end px-4">
                             <div className="flex gap-4">
-                                <Radio.Group >
-                                    <Radio.Button value="middle">%</Radio.Button>
-                                    <Radio.Button value="large">Amount</Radio.Button>
-
+                                <Radio.Group onChange={(e) => setViewMode(e.target.value)} value={viewMode}>
+                                    <Radio.Button value="amount">Amount</Radio.Button>
+                                    <Radio.Button value="percentage">%</Radio.Button>
                                 </Radio.Group>
 
+                                <Select
+                                    mode="multiple"
+                                    placeholder="Select hubs"
+                                    value={selectedHubs}
+                                    maxCount={3}
+                                    onChange={handleChange}
+                                    style={{ width: '200px', maxHeight: '100px' }}
+                                    dropdownRender={menu => (
+                                        <div>
+                                            {menu}
+                                        </div>
+                                    )}
+                                >
+                                    {hubs.map(hub => (
+                                        <Option key={hub._id} value={hub._id}>
+                                            {hub.location}
+                                        </Option>
+                                    ))}
+                                </Select>
                             </div>
-
                         </div>
                     </Col>
                 </Row>
 
                 <Row gutter={16}>
                     <Col className="gutter-row flex flex-col gap-2" span={6}>
+                        {earningData.currentEarningData.map((earning, index) => {
+                            const totalEarnings = earningData.currentEarningData.reduce((acc, curr) => acc + curr.totalEarning, 0);
+                            const value = viewMode === "amount" ? earning.totalEarning.toFixed(2) : ((earning.totalEarning / totalEarningsAllHubs) * 100).toFixed(2) + ' %';
 
-                        <div className="flex justify-between flex-col gap-2  p-2 border border-y-2 border-x-2  rounded-md px-4 bg-white">
-                            <div className="category-value text-xl font-bold text-red-500">
-                                20 %
-                            </div>
-                            <div className="category-title">
-                                BENGALURU
-                            </div>
-                        </div>
-                        <div className="flex justify-between flex-col gap-2  p-2 border border-y-2 border-x-2  rounded-md px-4 bg-white">
-                            <div className="category-value text-xl font-bold text-yellow-500">
-                                20 %
-                            </div>
-                            <div className="category-title">
-                                CHENNAI
-                            </div>
-                        </div>
-                        <div className="flex justify-between flex-col gap-2  p-2 border border-y-2 border-x-2  rounded-md px-4 bg-white">
-                            <div className="category-value text-xl font-bold text-green-500">
-                                20 %
-                            </div>
-                            <div className="category-title">
-                                HYDERABAD
-                            </div>
-                        </div>
-
+                            return (
+                                <div key={index} className="flex justify-between flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md px-4 bg-white">
+                                    <div className={`category-value text-xl font-bold text-${index === 0 ? 'red' : index === 1 ? 'yellow' : 'green'}-500`}>
+                                        {value}
+                                    </div>
+                                    <div className="category-title">
+                                        {hubs.find(hub => hub._id === earning.hubId)?.location || earning.hubId}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </Col>
                     <Col className="gutter-row" span={18}>
-
-                        <div className="flex justify-between items-center p-2 border border-y-2 border-x-2  rounded-md px-4">
+                        <div className="flex justify-between items-center p-2 border border-y-2 border-x-2 rounded-md px-4">
                             <Chart
                                 options={chartOptions}
                                 series={series}
                                 type="line"
                                 width="100%"
-                                style={{ minWidth: '600px',width:"100%",maxwidth: '800px',margin: '0 auto' }}
+                                style={{ minWidth: '600px', width: "100%", maxWidth: '800px', margin: '0 auto' }}
                                 height='300'
                             />
                         </div>
                     </Col>
                 </Row>
             </div>
-
         </div>
-    )
-}
+    );
+};
 
-export default DashboardEarningContainer
-
+export default DashboardEarningContainer;

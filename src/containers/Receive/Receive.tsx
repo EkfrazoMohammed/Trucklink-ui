@@ -357,17 +357,31 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 key: 'vehicleNumber',
                 width: 140,
             },
+            //         {
+            //             title: 'Owner Name',
+
+            //             width: 210,
+            //             render: (_, record) => {
+            //                 return <p>{record.ownerName}</p>
+            //             },
+            // //             sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
+            // //   ellipsis: true,
+
+            //         },
             {
                 title: 'Owner Name',
-
                 width: 210,
                 render: (_, record) => {
-                    return <p>{record.ownerName}</p>
+                    return <p>{record.ownerName}</p>;
                 },
-    //             sorter: (a, b) => a.record.ownerName.length - b.record.ownerName.length,
-    //   ellipsis: true,
-
+                sorter: (a, b) => {
+                    const nameA = a.ownerName ? a.ownerName.toLowerCase() : '';
+                    const nameB = b.ownerName ? b.ownerName.toLowerCase() : '';
+                    return nameA.localeCompare(nameB);
+                },
+                ellipsis: true,
             },
+      
             {
                 title: 'Load Location',
                 dataIndex: 'loadLocation',
@@ -519,9 +533,9 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         console.log(totalPercentCommission)
         console.log(totalMarketCommission)
 
-        const allTotalAmount= (totalPercentCommission + totalMarketCommission).toFixed(2);
+        const allTotalAmount = (totalPercentCommission + totalMarketCommission).toFixed(2);
         console.log(allTotalAmount)
-        const totalBalance = receive.reduce((sum, record) => sum + (record.balance || 0), 0);    
+        const totalBalance = receive.reduce((sum, record) => sum + (record.balance || 0), 0);
         return (
             <>
                 <Table
@@ -554,14 +568,14 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                             <Table.Summary.Cell>{totalBankTransfer}</Table.Summary.Cell>
                             <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
                             <Table.Summary.Cell>
-                            {totalBalance > 0 ?
-                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(parseFloat(totalBalance).toFixed(2))}</span>
-                            :
-                            <span style={{ color: "red" }}>{(parseFloat(totalBalance).toFixed(2))}</span>
+                                {totalBalance > 0 ?
+                                    <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(parseFloat(totalBalance).toFixed(2))}</span>
+                                    :
+                                    <span style={{ color: "red" }}>{(parseFloat(totalBalance).toFixed(2))}</span>
 
-                        }
+                                }
                                 {/* {totalBalance} */}
-                                </Table.Summary.Cell>
+                            </Table.Summary.Cell>
 
                         </Table.Summary.Row>
                     )}
@@ -926,7 +940,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 });
 
         }
-      
+
         return (
             <>
                 <div className="flex flex-col gap-2">

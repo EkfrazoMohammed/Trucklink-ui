@@ -366,14 +366,27 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'vehicleNumber',
                 width: 140,
             },
+            // {
+            //     title: 'Owner Name',
+
+            //     width: 160,
+            //     render: (_, record) => {
+            //         return <p>{record.ownerName}</p>
+            //     }
+
+            // },
             {
                 title: 'Owner Name',
-
-                width: 160,
+                width: 210,
                 render: (_, record) => {
-                    return <p>{record.ownerName}</p>
-                }
-
+                    return <p>{record.ownerName}</p>;
+                },
+                sorter: (a, b) => {
+                    const nameA = a.ownerName ? a.ownerName.toLowerCase() : '';
+                    const nameB = b.ownerName ? b.ownerName.toLowerCase() : '';
+                    return nameA.localeCompare(nameB);
+                },
+                ellipsis: true,
             },
             {
                 title: 'Load Location',
@@ -512,7 +525,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                 <Tooltip placement="top" title="post"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Post</Button></Tooltip>
                             </> : <>
                                 <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
-                                <Tooltip placement="top" title="save"><Button type='primary' onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
+                                <Tooltip placement="top" title="save"><Button  onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
                             </>}
                         </Space>
                     )

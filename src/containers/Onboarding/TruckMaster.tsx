@@ -1092,7 +1092,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   const EditTruckDataRow = ({ filterTruckTableData }) => {
     const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
     const initialOwnerId = { "value": filterTruckTableData.ownerId[0]._id, "ownerName": filterTruckTableData.ownerId[0].name }
-    // `${filterTruckTableData.ownerId[0]._id}`;
 
     const [formData, setFormData] = useState({
       registrationNumber: filterTruckTableData.registrationNumber,
@@ -1124,6 +1123,27 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       });
     }
     const [bankData, setBankdata] = useState([])
+
+    const initialBankData = () => {
+      const headersOb = {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        }
+      }
+      const request = API.get(`get-owner-bank-details/${initialOwnerId.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+        .then((res) => {
+          console.log(res)
+          console.log(res.data.ownerDetails[0]['accountIds'])
+          setBankdata(res.data.ownerDetails[0]['accountIds'])
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    }
+    useEffect(() => {
+      initialBankData()
+    }, [])
     const axiosFileUploadRequest = async (file) => {
       try {
         const formData = new FormData();
@@ -1236,7 +1256,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         }
       }
 
-      localStorage.setItem("pay", JSON.stringify(payload))
+      localStorage.setItem("update-vehicle-details-payload", JSON.stringify(payload))
 
       const res = await API.put(url, payload, headersOb)
         .then((response) => {
@@ -1357,21 +1377,47 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
+                  {bankData && bankData.length > 0 ? (
+                    <Select
+                      size="large"
+                      placeholder="Select bank account"
+                      style={{ width: '100%' }}
+                      name="accountId"
+                      onChange={handleChange}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      value={bankData[0]._id} // Set initial value to the first account's _id
+                    >
+                      {bankData.map((bank) => (
+                        <Option key={bank._id} value={bank._id}>
+                          {`${bank.bankName} - ${bank.accountNumber}`}
+                        </Option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <div>No bank data available</div>
+                  )}
+                </Col>
+                {/* <Col className="gutter-row mt-6" span={8}>
                   <Select
                     size='large'
                     placeholder="Select bank account"
                     style={{ width: '100%' }}
                     name="accountId"
                     onChange={(value) => handleChange('accountId', value)}
-                  >
-                    {bankData.map((v, index) => (
-                      <Option key={v._id} value={v._id}>
-                        {`${v.bankName} - ${v.accountNumber}`}
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                   >
+                    {bankData.map((bank) => (
+                      <Option key={bank._id} value={bank._id}>
+                        {`${bank.bankName} - ${bank.accountNumber}`}
                       </Option>
                     ))}
                   </Select>
 
-                </Col>
+                </Col> */}
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
                     RC Book : {' '}

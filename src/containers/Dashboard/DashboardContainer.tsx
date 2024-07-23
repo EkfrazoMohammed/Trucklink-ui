@@ -69,7 +69,7 @@ const DashboardContainer = () => {
       <div>
         Dashboard Container
       </div>
-       {/* <div className='flex items-center gap-2 my-2'>
+      <div className='flex items-center gap-2 my-2'>
 
         <DatePicker
           onChange={onChange}
@@ -84,7 +84,7 @@ const DashboardContainer = () => {
       <DashboardEarningContainer year={currentYear}/>
       <DashboardExpenseContainer />
       <DashboardMaterialContainer />
-      <DashboardBottomContainer />  */}
+      <DashboardBottomContainer /> 
     </>
   );
 };

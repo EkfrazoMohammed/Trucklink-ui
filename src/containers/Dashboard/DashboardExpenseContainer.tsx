@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Col, Row, Select } from 'antd';
 import Chart from 'react-apexcharts';
 import axios from 'axios';
-import sampleData from "./sampleExpenseData.json"
+import sampleData from "./sampleExpenseData.json";
 
 // Mapping month names to indices
 const monthIndexMap = {
@@ -20,37 +20,41 @@ const monthIndexMap = {
     "December": 11
 };
 
-// Available hub IDs and names
-const hubOptions = [
-    { id: '6696008c5ff154cfe3cc1a0e', name: 'Testing' },
-    { id: '6696068a5ff154cfe3cc1a58', name: 'Tayib' },
-    { id: '669613c3126836dd5c3c3e96', name: 'Testing_sarvani 123' },
-    { id: '669e3a71ac963160781c1123', name: 'Pune' }
-];
 
-const DashboardExpenseContainer = () => {
-    // const [selectedHub, setSelectedHub] = useState(localStorage.getItem("selectedHubID") || hubOptions[0].id);
-    const [selectedHub, setSelectedHub] = useState(localStorage.getItem("selectedHubID"));
+const DashboardExpenseContainer = ({year}) => {
+    const selectedHub =localStorage.getItem("selectedHubID");
+    console.log(selectedHub)
     const [allSeries, setAllSeries] = useState([]);
-    const [selectedSeries, setSelectedSeries] = useState(null); // Initialize as null
+    const [selectedSeries, setSelectedSeries] = useState(null);
     const [totalExpenses, setTotalExpenses] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Handle default data case if localStorage values are not set
-                // const hubId = selectedHub || hubOptions[0].id;
                 const hubId = selectedHub;
-                const response = await axios.get(`https://trucklinkuatnew.thestorywallcafe.com/prod/v1/get-expenses-visualtion?entryYear=2024&hubId=${hubId}`, {
-                    headers: {
-                        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjE2MzI4MjUsImV4cCI6MTcyNDIyNDgyNSwiaXNzIjoiaHV0ZWNoc29sdXRpb25zLmNvbSIsInN1YiI6ImVtYWlsPWRocnV2YUB0cnVja2xpbmsuY29tcm9sZT1BZG1pbiIsInJvbGUiOiJBZG1pbiIsImVtYWlsIjoiZGhydXZhQHRydWNrbGluay5jb20ifQ.fSHdxzHtRmZASvaaQAi3zs84eMJ39XxdJR_miz9A5PE'
-                    }
-                });
+                let data;
+                if(selectedHub !== "" || selectedHub !== undefined || selectedHub !==null){
 
-                // const data = response.data.totalTrip;
-                const data = sampleData;
-                
-
+                    data = sampleData.totalTrip.filter(item => item.hubId === hubId);
+                 // data = sampleData.totalTrip.filter(item => item.hubId === hubId);
+                //  try {
+                //     const response = await API.get(`get-expenses-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
+                //     console.log(response.data);
+                //     data =response.data;
+                // } catch (error) {
+                //     console.error('Error fetching data:', error);
+                // }   
+                }else{
+                     // Using the sample data instead of making an actual API call
+                // data = sampleData.totalTrip.filter(item => item.hubId === hubId);
+                try {
+                    const response = await API.get(`get-expenses-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
+                    console.log(response.data);
+                    data =response.data;
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }   
+                }
                 // Initialize arrays for each category with 0 values for each month
                 const defaultData = {
                     Diesel: Array(12).fill(0),
@@ -59,7 +63,7 @@ const DashboardExpenseContainer = () => {
                     Shortage: Array(12).fill(0)
                 };
 
-                // Populate data with the API response
+                // Populate data with the filtered response
                 data.forEach(item => {
                     const monthIndex = monthIndexMap[item.month];
                     if (monthIndex !== undefined) {
@@ -179,21 +183,8 @@ const DashboardExpenseContainer = () => {
                     </Col>
                     <Col className="gutter-row" span={18}>
                         <div className="flex items-center justify-end px-4">
-                            <Select 
-                                value={selectedHub} 
-                                onChange={value => {
-                                    setSelectedHub(value);
-                                    localStorage.setItem("selectedHubID", value); // Save to localStorage
-                                }}
-                                style={{ width: 200 }}
-                            >
-                                {hubOptions.map(hub => (
-                                    <Select.Option key={hub.id} value={hub.id}>
-                                        {hub.name}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                            <div className="flex justify-between flex-col  p-2 ml-4">
+
+                            <div className="flex justify-between flex-col p-2 ml-4">
                                 <div className="category-value text-xl font-bold text-red-500">
                                     ₹ {totalExpenses.toLocaleString()}
                                 </div>
@@ -209,7 +200,7 @@ const DashboardExpenseContainer = () => {
                     <Col className="gutter-row flex flex-col gap-2 p-0" span={6}>
                         {allSeries.map(series => (
                             <div key={series.name} className="gutter-row flex flex-col gap-2" onClick={() => handleCardClick(series.name)}>
-                                <div className={`flex flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md  bg-white cursor-pointer ${selectedSeries && selectedSeries[0].name === series.name ? 'border-blue-500' : ''}`}>
+                                <div className={`flex flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md bg-white cursor-pointer ${selectedSeries && selectedSeries[0].name === series.name ? 'border-blue-500' : ''}`}>
                                     <div className={`category-value text-xl font-bold ${series.name === 'Diesel' ? 'text-red-500' : series.name === 'Cash' ? 'text-yellow-500' : series.name === 'Bank Transfer' ? 'text-green-500' : 'text-pink-500'}`}>
                                         ₹ {series.data.reduce((a, b) => a + b, 0).toLocaleString()}
                                     </div>

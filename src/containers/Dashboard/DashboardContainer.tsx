@@ -82,7 +82,7 @@ const DashboardContainer = () => {
       </div>
       <DashboardTopContainer data={topContainerData} />
       <DashboardEarningContainer year={currentYear}/>
-      <DashboardExpenseContainer />
+      <DashboardExpenseContainer year={currentYear}/>
       <DashboardMaterialContainer />
       <DashboardBottomContainer /> 
     </>

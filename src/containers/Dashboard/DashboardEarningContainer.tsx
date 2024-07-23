@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Col, Row, Radio, Select } from 'antd';
 import Chart from 'react-apexcharts';
 import { API } from "../../API/apirequest";
-import sampleData from "./sampleEarningData.json";
 
 const { Option } = Select;
 
@@ -23,6 +22,8 @@ const monthIndexMap = {
     "November": 10,
     "December": 11
 };
+const selectedHub =localStorage.getItem("selectedHubID");
+    console.log(selectedHub)
     const initialData = { currentEarningData: [], previousEarningData: [] };
     const [earningData, setEarningData] = useState(initialData);
     const [loading, setLoading] = useState(true);
@@ -31,7 +32,7 @@ const monthIndexMap = {
     const [totalEarningsAllHubs, setTotalEarningsAllHubs] = useState(0);
     const authToken = localStorage.getItem("token");
     const [hubs, setHubs] = useState([]);
-    const [selectedHubs, setSelectedHubs] = useState([]);
+    const [select3HubId, setsSelect3HubId] = useState([]);
 
     const headersOb = {
         headers: {
@@ -52,10 +53,13 @@ const monthIndexMap = {
 
         fetchHubs();
 
-        const fetchData = async () => {
+        const fetchDataAll = async () => {
             try {
-                const response = await API.get(`get-earning-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
-                console.log(response.data);
+                const payload={
+                    "hubIds":select3HubId
+                }
+                const response = await API.post(`get-earning-visualtion?entryYear=${year}`,payload, headersOb);
+                console.log(response.data.currentEarningData);
                 setEarningData(response.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -64,8 +68,30 @@ const monthIndexMap = {
             }
         };
 
-        fetchData();
-    }, [year]);
+        const fetchDataHubSpecific = async () => {
+            try {
+                // const payload={
+                //     "hubIds":select3HubId
+                // }
+                const response = await API.get(`get-earning-visualtion?entryYear=${year}&hubId=${selectedHub}`, headersOb);
+                console.log(response.data.currentEarningData);
+                setEarningData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        console.log("selectedHub",selectedHub !== "" || selectedHub !==null)
+        if(selectedHub !== "" || selectedHub !==null){
+            // fetchDataHubSpecific();
+            fetchDataAll();
+        }else{
+            fetchDataAll();
+
+        }
+
+    }, [year,selectedHub,select3HubId]);
 
     useEffect(() => {
         if (earningData.currentEarningData.length === 0 && earningData.previousEarningData.length === 0) return;
@@ -195,9 +221,11 @@ const monthIndexMap = {
 
     const handleChange = (value) => {
         if (value.length <= 3) {
-            setSelectedHubs(value);
+            setsSelect3HubId(value);
         }
+        
     };
+
 
     return (
         <div className='dashboard-earning-container'>
@@ -219,7 +247,7 @@ const monthIndexMap = {
                                 <Select
                                     mode="multiple"
                                     placeholder="Select hubs"
-                                    value={selectedHubs}
+                                    value={select3HubId}
                                     maxCount={3}
                                     onChange={handleChange}
                                     style={{ width: '200px', maxHeight: '100px' }}

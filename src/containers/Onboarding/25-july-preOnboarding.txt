@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import states from './states.json';
-import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
+import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination,message } from 'antd';
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
@@ -65,8 +65,8 @@ const OnboardingContainer = ({ onData }) => {
 
     setLoading(true);
     try {
-      const pages = 1;
-      const limitData = 10000;
+      const pages = page;
+      const limitData = 1000;
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData
@@ -581,12 +581,13 @@ const OnboardingContainer = ({ onData }) => {
 
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
             <Button icon={<UploadOutlined />} loading={loading}>
-              {loading ? "" : ""}
+             {loading ? "" : ""}
             </Button>
           </Upload>
-          <Upload> 
-          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
-           </Upload>
+          {/* <Upload> */}
+          {/* <Button icon={<UploadOutlined />}></Button> */}
+          {/* <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button> */}
+          {/* </Upload> */}
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>
       </div>
@@ -651,47 +652,47 @@ const OnboardingContainer = ({ onData }) => {
     // };
     const aggregateDispatchData = (data) => {
       if (!data) return {};
-
+      
       const aggregatedData = {};
-
+    
       data.forEach((dispatch) => {
         const { vehicleNumber, grDate } = dispatch;
-
+    
         if (!aggregatedData[vehicleNumber]) {
           aggregatedData[vehicleNumber] = {
             totalTrips: 0,
             lastTrip: null
           };
         }
-
+    
         aggregatedData[vehicleNumber].totalTrips += 1;
-
+        
         // Convert grDate to Date object for comparison
         const dispatchDate = toDateObject(grDate);
-
+    
         // Compare dates and update lastTrip if dispatchDate is later
         if (!aggregatedData[vehicleNumber].lastTrip || dispatchDate > toDateObject(aggregatedData[vehicleNumber].lastTrip)) {
           aggregatedData[vehicleNumber].lastTrip = grDate; // Store the date string if it's the latest
         }
       });
-
+    
       return aggregatedData;
     };
-
+    
     // Helper function to convert DD/MM/YYYY string to Date object
     const toDateObject = (dateString) => {
       const [day, month, year] = dateString.split('/');
       return new Date(`${year}-${month}-${day}`);
     };
-
-
+    
+    
 
     const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
 
-
+  
 
     const LastTripComponent = ({ dispatchData }) => {
-
+    
       let formattedDate = "-"; // Default value for formatted date
 
       if (dispatchData && dispatchData !== "-") {
@@ -699,19 +700,19 @@ const OnboardingContainer = ({ onData }) => {
         const day = parseInt(dateParts[0], 10);
         const month = parseInt(dateParts[1], 10) - 1; // Month is zero-indexed in JavaScript Date object
         const year = parseInt(dateParts[2], 10);
-
+    
         const date = new Date(year, month, day);
-
+    
         // Format the date as DD/MM/YYYY
         formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
       }
 
       return (
         <>
-          <p className="flex flex-col w-100 font-normal m-2">
-            <span className="label text-sm font-bold">Last trip</span>
-            {formattedDate}
-          </p>
+        <p className="flex flex-col w-100 font-normal m-2">
+          <span className="label text-sm font-bold">Last trip</span>
+          {formattedDate}
+        </p>
         </>
       );
     };
@@ -845,7 +846,7 @@ const OnboardingContainer = ({ onData }) => {
         bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
       }));
     };
-
+   
     const handleChangeBank = (index, e) => {
       const { value } = e.target;
       const updatedBankAccounts = [...formData.bankAccounts];
@@ -1249,7 +1250,7 @@ const OnboardingContainer = ({ onData }) => {
       }))
     });
 
-    const onReset = () => {
+    const onReset=()=>{
       setFormData({
         name: rowDataForEdit.name,
         email: rowDataForEdit.email,
@@ -1271,10 +1272,9 @@ const OnboardingContainer = ({ onData }) => {
           hubId: account.hubId,
           ownerId: account.ownerId,
         }))
-
-      }
-      )
+      
     }
+  )}
 
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
@@ -1646,16 +1646,12 @@ const OnboardingContainer = ({ onData }) => {
   };
 
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(10);
   const [currentPageSize, setCurrentPageSize] = useState(10);
-  const [activePageSize, setActivePageSize] = useState(10);
-
   useEffect(() => {
-    // getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
-    getTableData("", 1, 100000, selectedHubId);
-  }, [selectedHubId]);
-
-  const OwnerTable = ({ filteredOwnerData, onEditClick, onViewClick, onDeleteClick, loading }) => {
+    getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
+  }, [currentPage, currentPageSize, selectedHubId]);
+  const OwnerTable = ({ filteredOwnerData, onEditClick, onViewClick, onDeleteClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -1665,34 +1661,35 @@ const OnboardingContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-    const handlePageSizeChange = (newPageSize) => {
-      setCurrentPageSize(newPageSize);
-      setCurrentPage(1); // Reset to the first page
-      setActivePageSize(newPageSize); // Update the active page size
-    };
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
+
+
 
     const columns = [
+
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
         width: 80,
       },
+      // {
+      //   title: 'Sl No',
+      //   dataIndex: 'serialNumber',
+      //   key: 'serialNumber',
+      //   render: (text, record, index) => index + 1,
+      //   width: 80,
+      // },
       {
         title: 'Owner Name',
         dataIndex: 'name',
         key: 'name',
         width: "auto",
         render: (_, record) => {
-          return record.name.charAt(0).toUpperCase() + record.name.slice(1);
-        },
-        sorter: (a, b) => {
-          const nameA = a.name ? a.name.toLowerCase() : '';
-          const nameB = b.name ? b.name.toLowerCase() : '';
-          return nameA.localeCompare(nameB);
-      },
-      ellipsis: true,
+          return record.name.charAt(0).toUpperCase() + record.name.slice(1)
+        }
       },
       {
         title: 'District',
@@ -1717,6 +1714,7 @@ const OnboardingContainer = ({ onData }) => {
         key: 'action',
         width: 120,
         render: (record) => (
+
           <Space size="middle">
             <Tooltip placement="top" title="Preview"><a onClick={() => onViewClick(record)}><EyeOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditClick(record)}><FormOutlined /></a></Tooltip>
@@ -1726,94 +1724,40 @@ const OnboardingContainer = ({ onData }) => {
       },
     ];
 
-
     return (
       <>
-       
-        <div className='flex items-items justify-end mb-2 my-paginations '>
-          <span className='bg-[#F8F9FD] p-1'>
-          <Button
-            onClick={() => handlePageSizeChange(10)}
-            style={{ 
-              backgroundColor: activePageSize === 10 ? 'grey' : 'white',
-              color: activePageSize === 10 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 10 ? '6px' : '0' ,
-              boxShadow:activePageSize === 10 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            10
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(25)}
-            style={{ 
-              backgroundColor: activePageSize === 25 ? 'grey' : 'white',
-              color: activePageSize === 25 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 25 ? '6px' : '0' ,
-              boxShadow:activePageSize === 25 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            25
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(50)}
-            style={{ 
-              backgroundColor: activePageSize === 50 ? 'grey' : 'white',
-              color: activePageSize === 50 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 50 ? '6px' : '0' ,
-              boxShadow:activePageSize === 50 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            50
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(100)}
-            style={{ 
-              backgroundColor: activePageSize === 100 ? 'grey' : 'white',
-              color: activePageSize === 100 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 100 ? '6px' : '0' ,
-              boxShadow:activePageSize === 100 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            100
-          </Button>
-          </span>
-        </div>
+
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={filteredOwnerData}   
+          dataSource={filteredOwnerData}
+          scroll={{ x: 800 }}
           rowKey="_id"
-      //     pagination={{
-      //       showSizeChanger: false,
-      //       position: ['bottomCenter'],
-      //       current: currentPage,
-      //       pageSize: currentPageSize,
-      //       onChange: (page) => {
-      //         setCurrentPage(page);
-      //       },
-      //     }}
-         
-      //      // antd site header height
-      // sticky={true}
+          // pagination={{
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   total: totalOwnerData,
+          //   defaultPageSize: currentPageSize,
+          //   // onChange: changePagination,
+          //   // onShowSizeChange: changePaginationAll,
+          // }}
+          pagination={{
+            showSizeChanger: true,
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+          }}
           loading={loading}
-      pagination={{
-        showSizeChanger: false,
-        position: ['bottomCenter'],
-        current: currentPage,
-        pageSize: currentPageSize,
-        onChange: (page) => {
-          setCurrentPage(page);
-        },
-      }}
-      // antd site header height
-  sticky={{
-    offsetHeader: 10,
-  }}
         />
+
       </>
     );
-
   };
+
 
   const [showTabs, setShowTabs] = useState(true);
 

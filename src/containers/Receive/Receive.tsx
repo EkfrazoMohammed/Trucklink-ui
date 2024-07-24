@@ -18,9 +18,6 @@ import backbutton_logo from "../../assets/backbutton.png"
 
 import type { DatePickerProps } from 'antd';
 
-const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
-};
 
 const filterOption = (input, option) =>
     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
@@ -56,27 +53,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
     };
-    // const handleStartDateChange = (date, dateString) => {
-    //     console.log(convertToIST(dateString))
-    //     setStartDateValue(date)
-    //     setStartDate(date ? convertToIST(dateString) : null);
-    // };
-
-    // const handleEndDateChange = (date, dateString) => {
-    //     setEndDateValue(date)
-    //     setEndDate(date ? convertToIST(dateString) : null);
-    // };
-    // const handleEndDateChange = (date, dateString) => {
-    //     if (date) {
-    //         // Set endDate to the last minute of the selected day in IST
-    //         const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-    //         setEndDateValue(date);
-    //         setEndDate(endOfDay.valueOf());
-    //     } else {
-    //         setEndDateValue(null);
-    //         setEndDate(null);
-    //     }
-    // };
+    
     const handleStartDateChange = (date, dateString) => {
         if (date) {
             // Format the date for display
@@ -162,9 +139,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             let allreceive;
             setLoading(false)
             if (response.data.dispatchData.length == 0) {
-                console.log(response.data.dispatchData.length)
                 allreceive = []; // Set to empty array when there are no dispatchData objects
-                console.log(allreceive);
                 setreceive(allreceive);
             } else {
                 allreceive = response.data.dispatchData[0].data || "";
@@ -176,7 +151,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                         b = b.vehicleNumber.toLowerCase();
                         return a < b ? -1 : a > b ? 1 : 0;
                     });
-                    console.log(arrRes)
                     setreceive(arrRes);
                     return arrRes;
                 }
@@ -304,14 +278,14 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         };
 
         const [currentPage, setCurrentPage] = useState(1);
-        const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-
+        const [currentPageSize, setCurrentPageSize] = useState(10);
+        const [activePageSize, setActivePageSize] = useState(10);
         const columns = [
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
-                render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+                render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
                 width: 80,
             },
             // {
@@ -381,7 +355,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 },
                 ellipsis: true,
             },
-      
+
             {
                 title: 'Load Location',
                 dataIndex: 'loadLocation',
@@ -530,14 +504,69 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             }
             return sum;
         }, 0);
-        console.log(totalPercentCommission)
-        console.log(totalMarketCommission)
-
+       
         const allTotalAmount = (totalPercentCommission + totalMarketCommission).toFixed(2);
-        console.log(allTotalAmount)
         const totalBalance = receive.reduce((sum, record) => sum + (record.balance || 0), 0);
+       
+        const handlePageSizeChange = (newPageSize) => {
+            setCurrentPageSize(newPageSize);
+            setCurrentPage(1); // Reset to the first page
+            setActivePageSize(newPageSize); // Update the active page size
+          };
         return (
             <>
+                <div className='flex gap-2 mb-2 items-center justify-end'>
+                    <Button icon={<DownloadOutlined />}></Button>
+
+                    <div className='flex   my-paginations '>
+                        <span className='bg-[#F8F9FD] p-1'>
+                            <Button
+                                onClick={() => handlePageSizeChange(10)}
+                                style={{
+                                    backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                                    color: activePageSize === 10 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 10 ? '6px' : '0',
+                                    boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                10
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(25)}
+                                style={{
+                                    backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                                    color: activePageSize === 25 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 25 ? '6px' : '0',
+                                    boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                25
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(50)}
+                                style={{
+                                    backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                                    color: activePageSize === 50 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 50 ? '6px' : '0',
+                                    boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                50
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(100)}
+                                style={{
+                                    backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                                    color: activePageSize === 100 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 100 ? '6px' : '0',
+                                    boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                100
+                            </Button>
+                        </span>
+                    </div>
+                </div>
                 <Table
                     rowSelection={rowSelection}
                     columns={columns}
@@ -545,15 +574,29 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                     scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
+                    // pagination={{
+                    //     showSizeChanger: true,
+                    //     position: ['bottomCenter'],
+                    //     current: currentPage,
+                    //     pageSize: pageSize,
+                    //     onChange: (page, pageSize) => {
+                    //         setCurrentPage(page);
+                    //         setPageSize(pageSize);
+                    //     },
+                    // }}
+
                     pagination={{
-                        showSizeChanger: true,
+                        showSizeChanger: false,
                         position: ['bottomCenter'],
                         current: currentPage,
-                        pageSize: pageSize,
-                        onChange: (page, pageSize) => {
+                        pageSize: currentPageSize,
+                        onChange: (page) => {
                             setCurrentPage(page);
-                            setPageSize(pageSize);
                         },
+                    }}
+                    // antd site header height
+                    sticky={{
+                        offsetHeader: 0,
                     }}
                     summary={() => (
                         <Table.Summary.Row>
@@ -632,7 +675,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         );
 
         const onResetClick = () => {
-            console.log('reset clicked')
             setFormData(
                 {
                     "balance": editingRow.balance,
@@ -701,7 +743,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         // Function to handle date change
         const handleDateChange = (date, dateString) => {
             const formattedGrDate = formatDate(dateString);
-            console.log(formattedGrDate); // Output: "01/05/2024"
             // dateString will be in the format 'YYYY-MM-DD'
             handleChange('grDate', formattedGrDate);
         };
@@ -1078,7 +1119,6 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                                         onChange={(value) => {
                                             const selectedVehicle = vehicleDetails.find((v) => v.registrationNumber === value);
                                             if (selectedVehicle) {
-                                                console.log(selectedVehicle._id)
                                                 setselectedVehicleId(selectedVehicle._id);
                                             }
                                             handleChange('vehicleNumber', value);

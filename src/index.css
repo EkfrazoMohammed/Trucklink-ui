@@ -479,7 +479,7 @@
 }
 
 :where(.css-11xg00t).ant-layout .ant-layout-sider-children,
-.ant-layout .ant-layout-sider-children  {
+.ant-layout .ant-layout-sider-children {
   height: 100% !important;
   margin-top: -0.1px !important;
   padding-top: 0.1px !important;
@@ -487,4 +487,21 @@
   top: 0 !important;
   left: 0 !important;
   max-height: 100vh !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary),
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
+  /* color: #03b9e7 !important; */
+  /* background-color: transparent !important; */
+  color: #000000 !important;
+  border-left: 0 !important;
+  padding: 0 !important;
+}
+
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-group-wrapper-outlined .ant-input-group-addon {
+  /* background: rgba(0, 0, 0, 0.02);
+  border: 1px solid #d9d9d9; */
+  background: transparent !important;
+  border: 1px solid #d9d9d9;
 }

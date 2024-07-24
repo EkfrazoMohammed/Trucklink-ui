@@ -91,9 +91,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   }
 
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalTruckData, setTotalTruckData] = useState(100)
+  
   const getOwnerData = async (page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
@@ -164,7 +162,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       } else {
 
         truckDetails = response.data.truck[0].data || "";
-        setTotalTruckData(response.data.truck[0].count);
 
         if (truckDetails && truckDetails.length > 0) {
           const arrRes = truckDetails.sort(function (a, b) {
@@ -191,6 +188,9 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     setLoading(false);
 
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
   // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getOwnerData(currentPage, currentPageSize, selectedHubId);
@@ -668,7 +668,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       </>
     );
   };
-
+  
+  
   const TruckTable = ({ onEditTruckClick, onTransferTruckClick, onViewTruckClick, onDeleteTruckClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -680,23 +681,18 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10); // Default page size, adjust if needed
-
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
 
     const columns = [
-      // {
-      //   title: 'Sl No',
-      //   dataIndex: 'serialNumber',
-      //   key: 'serialNumber',
-      //   render: (text, record, index: any) => index + 1,
-      //   width: 40,
-      // },
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
         width: 80,
       },
       {
@@ -757,22 +753,83 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     return (
       <>
+      <div className='flex items-items justify-end mb-2 my-paginations '>
+          <span className='bg-[#F8F9FD] p-1'>
+          <Button
+            onClick={() => handlePageSizeChange(10)}
+            style={{ 
+              backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+              color: activePageSize === 10 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 10 ? '6px' : '0' ,
+              boxShadow:activePageSize === 10 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
+          >
+            10
+          </Button>
+          <Button
+            onClick={() => handlePageSizeChange(25)}
+            style={{ 
+              backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+              color: activePageSize === 25 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 25 ? '6px' : '0' ,
+              boxShadow:activePageSize === 25 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
+          >
+            25
+          </Button>
+          <Button
+            onClick={() => handlePageSizeChange(50)}
+            style={{ 
+              backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+              color: activePageSize === 50 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 50 ? '6px' : '0' ,
+              boxShadow:activePageSize === 50 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
+          >
+            50
+          </Button>
+          <Button
+            onClick={() => handlePageSizeChange(100)}
+            style={{ 
+              backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+              color: activePageSize === 100 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 100 ? '6px' : '0' ,
+              boxShadow:activePageSize === 100 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
+          >
+            100
+          </Button>
+          </span>
+        </div>
         <Table
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredTruckData}
           scroll={{ x: 800 }}
           rowKey="_id"
+          // pagination={{
+          //   showSizeChanger: true,
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   pageSize: pageSize,
+          //   onChange: (page, pageSize) => {
+          //     setCurrentPage(page);
+          //     setPageSize(pageSize);
+          //   },
+          // }}
           pagination={{
-            showSizeChanger: true,
+            showSizeChanger: false,
             position: ['bottomCenter'],
             current: currentPage,
-            pageSize: pageSize,
-            onChange: (page, pageSize) => {
+            pageSize: currentPageSize,
+            onChange: (page) => {
               setCurrentPage(page);
-              setPageSize(pageSize);
             },
           }}
+          // antd site header height
+      sticky={{
+        offsetHeader: 20,
+      }}
         />
       </>
     );

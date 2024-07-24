@@ -70,10 +70,10 @@ const ReportsContainer = ({ onData }) => {
       const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
       setStartDateValue(date);
       const startOfDayInIST = dayjs(formattedDate, "DD/MM/YYYY").startOf('day').set({ hour: 5, minute: 30 }).valueOf();
-        // Convert the IST timestamp to a dayjs object in IST timezone
-        const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
-    // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
-        const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+      // Convert the IST timestamp to a dayjs object in IST timezone
+      const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+      // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
+      const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
       setFilters({ ...filters, startDate: utcStartOfDay || "" });
     } else {
       setStartDateValue(null);
@@ -90,10 +90,10 @@ const ReportsContainer = ({ onData }) => {
   const handleEndDateChange = (date, dateString) => {
     if (date) {
       const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
-    setEndDateValue(date);
+      setEndDateValue(date);
 
       const endOfDayInIST = dayjs(formattedDate, "DD/MM/YYYY").endOf('day').set({ hour: 5, minute: 30 }).valueOf();
-    setFilters({ ...filters, endDate: endOfDayInIST || "" });
+      setFilters({ ...filters, endDate: endOfDayInIST || "" });
     } else {
       setEndDateValue(null);
     }
@@ -727,7 +727,7 @@ const ReportsContainer = ({ onData }) => {
             // Calculate percent rate commission and convert to INR
             const percentRateCommission = (record.commisionRate || 0) * (record.quantityInMetricTons * (record.ratePerTon || 0));
             const percentCommissionINR = (percentRateCommission / 100).toFixed(2);
-        
+
             // Market rate commission calculation
             let marketRateCommission = 0;
             if (record.marketRate > 0) {
@@ -735,7 +735,7 @@ const ReportsContainer = ({ onData }) => {
             } else if (!record.isMarketRate) {
               marketRateCommission = (percentRateCommission / 100).toFixed(2);
             }
-        
+
             return (
               <div style={{ display: "flex", gap: "2rem", alignItems: "center", justifyContent: "center" }}>
                 {record.marketRate > 0 ? (
@@ -785,7 +785,7 @@ const ReportsContainer = ({ onData }) => {
           key: 'shortage',
           width: 120,
         },
-      
+
         {
           title: 'Balance',
           width: 190,
@@ -815,7 +815,7 @@ const ReportsContainer = ({ onData }) => {
         const rate = record.ratePerTon || 0;
         return sum + (quantity * rate);
       }, 0).toFixed(2));
-      
+
       const totalPercentCommission = parseFloat(challanData.reduce((sum, record) => {
         const commissionRate = record.commisionRate || 0;
         const quantity = record.quantityInMetricTons || 0;
@@ -849,6 +849,7 @@ const ReportsContainer = ({ onData }) => {
             rowKey="_id"
             loading={loading}
             pagination={false}
+
             summary={() => (
               <Table.Summary.Row>
                 <Table.Summary.Cell colSpan={9} align="right">Total</Table.Summary.Cell>
@@ -865,7 +866,14 @@ const ReportsContainer = ({ onData }) => {
                 <Table.Summary.Cell>{totalShortage}</Table.Summary.Cell>
                 <Table.Summary.Cell>{totalBalance.toFixed(2)}</Table.Summary.Cell>
               </Table.Summary.Row>
+
             )}
+
+
+            // antd site header height
+            sticky={{
+              offsetHeader: 10,
+            }}
           />
           {/* <div className="flex justify-between items-center my-1 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
             <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding</div>
@@ -989,6 +997,7 @@ const ReportsContainer = ({ onData }) => {
               position: ["none", "none"],
               showSizeChanger: false,
             }}
+
           />
           <div className="flex justify-between items-center my-1 text-md text-[#1572B6]  bg-[#eee] p-3">
             <div className="px-8" style={{ fontWeight: 'bold' }}>Total Outstanding Debit</div>
@@ -1341,12 +1350,16 @@ const ReportsContainer = ({ onData }) => {
   const UserTable = ({ onEditTruckClick }) => {
 
 
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPageSize, setCurrentPageSize] = useState(10);
+    const [activePageSize, setActivePageSize] = useState(10);
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
         width: 80,
       },
 
@@ -1362,6 +1375,9 @@ const ReportsContainer = ({ onData }) => {
         dataIndex: 'totalQuantity',
         key: 'totalQuantity',
         width: 100,
+        render: (_, record) => {
+          return record.totalQuantity.toFixed(2)
+        }
       },
       {
         title: 'Company Rate',
@@ -1438,22 +1454,94 @@ const ReportsContainer = ({ onData }) => {
       },
     ];
 
+
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
     return (
       <>
+        <div className='flex gap-2 mb-2 items-center justify-end'>
+          <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button>
+
+          <div className='flex   my-paginations '>
+            <span className='bg-[#F8F9FD] p-1'>
+              <Button
+                onClick={() => handlePageSizeChange(10)}
+                style={{
+                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                  color: activePageSize === 10 ? 'white' : 'black',
+                  borderRadius: activePageSize === 10 ? '6px' : '0',
+                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                10
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(25)}
+                style={{
+                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                  color: activePageSize === 25 ? 'white' : 'black',
+                  borderRadius: activePageSize === 25 ? '6px' : '0',
+                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                25
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(50)}
+                style={{
+                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                  color: activePageSize === 50 ? 'white' : 'black',
+                  borderRadius: activePageSize === 50 ? '6px' : '0',
+                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                50
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(100)}
+                style={{
+                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                  color: activePageSize === 100 ? 'white' : 'black',
+                  borderRadius: activePageSize === 100 ? '6px' : '0',
+                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                100
+              </Button>
+            </span>
+          </div>
+        </div>
         <Table
           columns={columns}
           dataSource={tripData}
           scroll={{ x: 800 }}
           rowKey="_id"
           loading={loading}
-          pagination={false}
+          pagination={{
+            showSizeChanger: false,
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: currentPageSize,
+            onChange: (page) => {
+              setCurrentPage(page);
+            },
+          }}
+
           onRow={(record) => ({
             onClick: () => {
               onEditTruckClick(record);
             },
             className: 'cursor-pointer',
           })}
-          sticky
+
+          // antd site header height
+          sticky={{
+            offsetHeader: 10,
+          }}
         />
       </>
     );

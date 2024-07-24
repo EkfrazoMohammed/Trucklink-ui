@@ -583,7 +583,7 @@
   font-size: 2rem;
 }
 
-.dashboard-earning-container{
+.dashboard-earning-container {
 
   padding: 16px;
   height: auto;
@@ -593,7 +593,7 @@
   box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
 }
 
-.dashboard-expense-container{
+.dashboard-expense-container {
 
   padding: 16px;
   height: auto;
@@ -603,7 +603,8 @@
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
 }
-.dashboard-material-container{
+
+.dashboard-material-container {
 
   padding: 16px;
   height: auto;
@@ -612,4 +613,31 @@
   margin: 1rem auto;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.my-paginations Button {
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0px 0px 4px 0px #00000040;
+  font-size: 14px;
+  /* line-height: 1.5714285714285714; */
+  line-height: 12px !important;
+  height: 28px;
+  padding: 4px 10px !important;
+  border-radius: 6px;
+
+}
+.my-paginations Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+  color: #4096ff;
+  border-color: #4096ff;
+  background-color: grey !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary),
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
+  /* color: #03b9e7 !important; */
+  /* background-color: transparent !important; */
+  color: #000000 !important;
+  border-left: 0 !important;
+  padding: 0 !important;
 }

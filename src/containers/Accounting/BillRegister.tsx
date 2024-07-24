@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
+import {  UploadOutlined, DownloadOutlined, PrinterOutlined,FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -134,15 +134,19 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log('Validate Failed:', errInfo);
     }
   };
-  const columns = [
-    {
-      title: 'Sl No',
-      dataIndex: 'serialNumber',
-      key: 'serialNumber',
-      render: (text, record, index) => index + 1,
-      width: 80,
-      fixed: 'left',
-    },
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
+      const columns = [
+        {
+          title: 'Sl No',
+          dataIndex: 'serialNumber',
+          key: 'serialNumber',
+          render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+          width: 80,
+          fixed: 'left',
+        },
     {
       title: 'Bill Number',
       dataIndex: 'billNumber',
@@ -1265,7 +1269,11 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     localStorage.removeItem('searchQuery8');
     getTableData("", 1, 100000, selectedHubId);
   };
-
+  const handlePageSizeChange = (newPageSize) => {
+    setCurrentPageSize(newPageSize);
+    setCurrentPage(1); // Reset to the first page
+    setActivePageSize(newPageSize); // Update the active page size
+  };
   return (
     <>
       {showAddRecoveryForm ?
@@ -1309,6 +1317,62 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                 CREATE BILL
               </Button>
             </div>
+
+        
+  
+      <div className='flex gap-2 mb-2 items-center justify-end'>
+          <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button>
+
+          <div className='flex   my-paginations '>
+            <span className='bg-[#F8F9FD] p-1'>
+              <Button
+                onClick={() => handlePageSizeChange(10)}
+                style={{
+                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                  color: activePageSize === 10 ? 'white' : 'black',
+                  borderRadius: activePageSize === 10 ? '6px' : '0',
+                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                10
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(25)}
+                style={{
+                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                  color: activePageSize === 25 ? 'white' : 'black',
+                  borderRadius: activePageSize === 25 ? '6px' : '0',
+                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                25
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(50)}
+                style={{
+                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                  color: activePageSize === 50 ? 'white' : 'black',
+                  borderRadius: activePageSize === 50 ? '6px' : '0',
+                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                50
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(100)}
+                style={{
+                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                  color: activePageSize === 100 ? 'white' : 'black',
+                  borderRadius: activePageSize === 100 ? '6px' : '0',
+                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                100
+              </Button>
+            </span>
+          </div>
+        </div>
             <Form form={form} component={false}>
               <Table
                 rowKey={(record) => record.key}

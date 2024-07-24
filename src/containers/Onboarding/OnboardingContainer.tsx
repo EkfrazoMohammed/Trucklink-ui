@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import states from './states.json';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
 import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined,PrinterOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
@@ -125,9 +128,6 @@ const OnboardingContainer = ({ onData }) => {
     document.body.removeChild(a);
   };
 
-  const handleDownload = () => {
-    downloadCSV(filteredOwnerData, 'filteredOwnerData.csv');
-  };
 
   const [showEditForm, setShowEditForm] = useState(false)
   const OwnerMaster = ({ showTabs, setShowTabs }) => {
@@ -500,20 +500,97 @@ const OnboardingContainer = ({ onData }) => {
 
       return csvContent;
     };
+    // const handleDownload = () => {
+    //   console.log(filteredOwnerData)
+    //   // const owners = data.ownerDetails[0].data;
+    //   const owners=filteredOwnerData
+    //   const csvData = owners.map((owner) => {
+    //     return {
+    //       id: owner._id,
+    //       name: owner.name,
+    //       email: owner.email,
+    //       phoneNumber: owner.phoneNumber,
+    //       panNumber: owner.panNumber,
+    //       address: owner.address,
+    //       district: owner.district,
+    //       state: owner.state,
+    //       hubId: owner.hubId,
+    //       accountDetails: owner.accountIds.map((account) => ({
+    //         accountNumber: account.accountNumber,
+    //         accountHolderName: account.accountHolderName,
+    //         ifscCode: account.ifscCode,
+    //         bankName: account.bankName,
+    //         branchName: account.branchName,
+    //         createdAt: account.createdAt,
+    //         modifiedAt: account.modifiedAt,
+    //       })),
+    //       oldVehicleDetails: owner.oldVehicleDetails.map((vehicle) => ({
+    //         vehicleNumber: vehicle.vehicleNumber,
+    //         truckType: vehicle.truckType,
+    //         ownerTransferDate: vehicle.ownerTransferDate,
+    //         ownerTransferToDate: vehicle.ownerTransferToDate,
+    //         commission: vehicle.commission,
+    //       })),
+    //       vehicleDetails: owner.vehicleDetails.map((vehicle) => ({
+    //         vehicleNumber: vehicle.vehicleNumber,
+    //         truckType: vehicle.truckType,
+    //         ownerTransferDate: vehicle.ownerTransferDate,
+    //         ownerTransferToDate: vehicle.ownerTransferToDate,
+    //         isOwnerTransfer: vehicle.isOwnerTransfer,
+    //       })),
+    //       createdAt: owner.createdAt,
+    //       modifiedAt: owner.modifiedAt,
+    //     };
+    //   });
+
+    //   const csvContent = convertJSONToCSV(csvData);
+
+    //   // Create a blob with the CSV data
+    //   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    //   // Create a temporary URL for the blob
+    //   const url = window.URL.createObjectURL(blob);
+
+    //   // Create a link element
+    //   const link = document.createElement('a');
+    //   link.href = url;
+    //   link.setAttribute('download', 'ownerDetails.csv');
+
+    //   // Append the link to the body
+    //   document.body.appendChild(link);
+
+    //   // Trigger the download
+    //   link.click();
+
+    //   // Cleanup
+    //   document.body.removeChild(link);
+    // };
+
     const handleDownload = () => {
-      const owners = data.ownerDetails[0].data;
-      const csvData = owners.map((owner) => {
-        return {
-          id: owner._id,
-          name: owner.name,
-          email: owner.email,
-          phoneNumber: owner.phoneNumber,
-          panNumber: owner.panNumber,
-          address: owner.address,
-          district: owner.district,
-          state: owner.state,
-          hubId: owner.hubId,
-          accountDetails: owner.accountIds.map((account) => ({
+      console.log(filteredOwnerData);
+      const owners = filteredOwnerData;
+    
+      // Prepare data for owner details
+      const ownerDetails = owners.map((owner) => ({
+        id: owner._id,
+        name: owner.name,
+        email: owner.email,
+        phoneNumber: owner.phoneNumber,
+        panNumber: owner.panNumber,
+        address: owner.address,
+        district: owner.district,
+        state: owner.state,
+        hubId: owner.hubId,
+        createdAt: owner.createdAt,
+        modifiedAt: owner.modifiedAt,
+      }));
+    
+      // Prepare data for account details
+      const accountDetails = [];
+      owners.forEach((owner) => {
+        owner.accountIds.forEach((account) => {
+          accountDetails.push({
+            ownerId: owner._id,
             accountNumber: account.accountNumber,
             accountHolderName: account.accountHolderName,
             ifscCode: account.ifscCode,
@@ -521,48 +598,105 @@ const OnboardingContainer = ({ onData }) => {
             branchName: account.branchName,
             createdAt: account.createdAt,
             modifiedAt: account.modifiedAt,
-          })),
-          oldVehicleDetails: owner.oldVehicleDetails.map((vehicle) => ({
-            vehicleNumber: vehicle.vehicleNumber,
-            truckType: vehicle.truckType,
-            ownerTransferDate: vehicle.ownerTransferDate,
-            ownerTransferToDate: vehicle.ownerTransferToDate,
-            commission: vehicle.commission,
-          })),
-          vehicleDetails: owner.vehicleDetails.map((vehicle) => ({
-            vehicleNumber: vehicle.vehicleNumber,
-            truckType: vehicle.truckType,
-            ownerTransferDate: vehicle.ownerTransferDate,
-            ownerTransferToDate: vehicle.ownerTransferToDate,
-            isOwnerTransfer: vehicle.isOwnerTransfer,
-          })),
-          createdAt: owner.createdAt,
-          modifiedAt: owner.modifiedAt,
-        };
+          });
+        });
       });
-
-      const csvContent = convertJSONToCSV(csvData);
-
-      // Create a blob with the CSV data
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a link element
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'ownerDetails.csv');
-
-      // Append the link to the body
-      document.body.appendChild(link);
-
-      // Trigger the download
-      link.click();
-
-      // Cleanup
-      document.body.removeChild(link);
+    
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+    
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Owner Details');
+    
+      // Add the account details sheet to the workbook
+      const accountWS = XLSX.utils.json_to_sheet(accountDetails);
+      XLSX.utils.book_append_sheet(wb, accountWS, 'Account Details');
+    
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'OwnerAndAccountDetails.xlsx');
     };
+
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+        const items = filteredOwnerData.map((d, index) => [
+          index + 1,
+          d.name || "-",
+          d.address || "-",
+          d.phoneNumber || "-",
+          d.district || "-",
+          d.state || "-",
+          d.panNumber || "-",
+          d.email || "-",
+        ]);
+    
+        if (items.length === 0) {
+          message.error("No data available to download");
+        } else {
+          doc.setFontSize(10);
+          const d = new Date();
+          const m = d.getMonth() + 1;
+          const day = d.getDate();
+          const year = d.getFullYear();
+    
+          doc.autoTable({
+            head: [
+              [
+                "Sl No",
+                "Owner Name",
+                "Address",
+                "Phone Number",
+                "District",
+                "State",
+                "PAN Card",
+                "Email ID",
+              ],
+            ],
+            body: items,
+            startY: 10,
+            headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+            bodyStyles: { fontSize: 8, textAlign: "center" },
+            didDrawPage: function (data) {
+              // Header
+              doc.setFontSize(10);
+              doc.text("Owner Details", data.settings.margin.left + 0, 5);
+              doc.text("Date:-", data.settings.margin.left + 155, 5);
+              doc.text(
+                day + "/" + m + "/" + year,
+                data.settings.margin.left + 170,
+                5
+              );
+    
+              // Footer
+              var str = "Page " + doc.internal.getNumberOfPages();
+              // Total page number plugin only available in jspdf v1.0+
+              if (typeof doc.putTotalPages === "function") {
+                str = str + " of " + totalPagesExp;
+              }
+              doc.setFontSize(10);
+    
+              // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+              var pageSize = doc.internal.pageSize;
+              var pageHeight = pageSize.height
+                ? pageSize.height
+                : pageSize.getHeight();
+              doc.text(str, data.settings.margin.left, pageHeight - 10);
+            },
+            margin: { top: 10 },
+          });
+          if (typeof doc.putTotalPages === "function") {
+            doc.putTotalPages(totalPagesExp);
+          }
+          doc.save("ownerdetails.pdf");
+        }
+      } catch (err) {
+        message.error("Unable to Print");
+      }
+    };
+    
+  
     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
@@ -584,9 +718,10 @@ const OnboardingContainer = ({ onData }) => {
               {loading ? "" : ""}
             </Button>
           </Upload>
-          <Upload> 
+         
           <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
-           </Upload>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+           
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>
       </div>

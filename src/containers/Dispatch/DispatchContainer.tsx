@@ -10,14 +10,14 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 import moment from 'moment-timezone';
-import { UploadOutlined, DownloadOutlined, PrinterOutlined,EyeOutlined, FormOutlined, DeleteOutlined,  SwapOutlined, RedoOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined, RedoOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import type { DatePickerProps } from 'antd';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-  console.log(date, dateString);
-};
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
@@ -107,7 +107,7 @@ const DispatchContainer = ({ onData }) => {
       data.searchTDNo = [searchQuery];
     }
 
-    
+
     if (startDate) {
       const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
       const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
@@ -256,7 +256,355 @@ const DispatchContainer = ({ onData }) => {
     }
 
 
+    const handleDownload = () => {
+      const challans = challanData;
 
+      // Prepare data for owner details
+      const ownerDetails = challans.map((challan) => (
+        {
+          "_id": challan._id,
+          "quantityInMetricTons": challan.quantityInMetricTons,
+          "rate": challan.rate,
+          "commisionRate": challan.commisionRate,
+          "commisionTotal": challan.commisionTotal,
+          "totalExpense": challan.totalExpense,
+          "shortage": challan.shortage,
+          "balance": challan.balance,
+          "diesel": challan.diesel,
+          "cash": challan.cash,
+          "bankTransfer": challan.bankTransfer,
+          "recovery": challan.recovery,
+          "outstanding": challan.outstanding,
+          "isAcknowledged": challan.isAcknowledged,
+          "isReceived": challan.isReceived,
+          "isMarketRate": challan.isMarketRate,
+          "marketRate": challan.marketRate,
+          "billNumber": challan.billNumber,
+          "excel": challan.excel,
+          "materialType": challan.materialType,
+          "grDate": challan.grDate,
+          "grISODate": challan.grISODate,
+          "loadLocation": challan.loadLocation,
+          "deliveryLocation": challan.deliveryLocation,
+          "vehicleNumber": challan.vehicleNumber,
+          "ownerId": challan.ownerId,
+          "ownerName": challan.ownerName,
+          "vehicleId": challan.vehicleId,
+          "vehicleBank": challan.vehicleBank,
+          "ownerPhone": challan.ownerPhone,
+          "vehicleType": challan.vehicleType,
+          "deliveryNumber": challan.deliveryNumber,
+          "vehicleReferenceId": challan.vehicleReferenceId,
+          "vehicleBankReferenceId": challan.vehicleBankReferenceId,
+          "ownerReferenceId": challan.ownerReferenceId,
+          "hubId": challan.hubId,
+          "createdAt": challan.createdAt,
+          "modifiedAt": challan.modifiedAt,
+          "__v": 0
+          ,
+        }
+      ));
+
+
+
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Dispatch Challans Details');
+
+
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'Dispatch Challans.xlsx');
+    };
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+        const items = challanData.map((challan, index) => [
+          index + 1,
+          challan.materialType || "-",
+          challan.grNumber || "-",
+          challan.grDate || "-",
+          challan.loadLocation || "-",
+          challan.deliveryLocation || "-",
+          challan.vehicleNumber || "-",
+          challan.ownerName || "-",
+          challan.vehicleType || "-",
+          challan.deliveryNumber || "-",
+          challan.quantityInMetricTons || "-",
+          challan.rate || "-",
+          challan.commisionRate || "-",
+          challan.commisionTotal || "-",
+          challan.diesel || "-",
+          challan.cash || "-",
+          challan.bankTransfer || "-",
+          // challan.totalExpense || "-",
+          challan.balance || "-",
+          challan.excel || "-",
+          challan.hubId || "-",
+          
+        ]);
+
+        if (items.length === 0) {
+          message.error("No data available to download");
+        } else {
+          doc.setFontSize(10);
+          const d = new Date();
+          const m = d.getMonth() + 1;
+          const day = d.getDate();
+          const year = d.getFullYear();
+
+          doc.autoTable({
+            head: [
+              [
+                "Sl No",
+                "materialType",
+                "gr No ",
+                "gr Date    ",
+                "loadLocation",
+                "deliveryLocation",
+                "Vehicle No         ",
+                "Owner Name             ",
+                "Vehicle Type           ",
+                "DO Number        ",
+                "Qty  ",
+                "rate                  ",
+                "commisionRate (%)",
+                "Total commision ",
+                "diesel ",
+                "cash",
+                "bank Transfer ",
+                // "totalExpense ",
+                "balance   ",
+                "excel   ",
+                "hubId   ",
+
+              ],
+            ],
+            body: items,
+            startY: 10,
+            headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+            bodyStyles: { fontSize: 8, textAlign: "center" },
+            columnStyles: {
+              0: { cellWidth: 7 },
+              1: { cellWidth: 14 },
+              2: { cellWidth: 14 },
+              3: { cellWidth: 14 },
+              4: { cellWidth: 14 },
+              5: { cellWidth: 14 },
+              6: { cellWidth: 14 },
+              7: { cellWidth: 14 },
+              8: { cellWidth: 14 },
+              9: { cellWidth: 14 },
+              10: { cellWidth: 14 },
+              11: { cellWidth: 14 },
+              12: { cellWidth: 14 },
+              13: { cellWidth: 14 },
+              14: { cellWidth: 14 },
+              15: { cellWidth: 14 },
+              16: { cellWidth: 14 },
+              17: { cellWidth: 14 },
+              18: { cellWidth: 14 },
+              19: { cellWidth: 14 },
+              20: { cellWidth: 14 },
+              21: { cellWidth: 14 },
+              22: { cellWidth: 14 },
+              23: { cellWidth: 14 },
+              // 24: { cellWidth: 14 },
+             
+            },
+            didDrawPage: function (data) {
+              // Header
+              doc.setFontSize(10);
+              doc.text("Challan Details", data.settings.margin.left + 0, 5);
+              doc.text("Date:-", data.settings.margin.left + 155, 5);
+              doc.text(
+                day + "/" + m + "/" + year,
+                data.settings.margin.left + 170,
+                5
+              );
+
+              // Footer
+              var str = "Page " + doc.internal.getNumberOfPages();
+              // Total page number plugin only available in jspdf v1.0+
+              if (typeof doc.putTotalPages === "function") {
+                str = str + " of " + totalPagesExp;
+              }
+              doc.setFontSize(10);
+
+
+              // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+              var pageSize = doc.internal.pageSize;
+              var pageHeight = pageSize.height
+                ? pageSize.height
+                : pageSize.getHeight();
+              doc.text(str, data.settings.margin.left, pageHeight - 10);
+            },
+            margin: { top: 10 },
+          });
+
+
+          if (typeof doc.putTotalPages === "function") {
+            doc.putTotalPages(totalPagesExp);
+          }
+          doc.save("challans.pdf");
+        }
+      } catch (err) {
+        message.error("Unable to Print");
+      }
+    };
+
+    // const handlePrint = () => {
+    //   const totalPagesExp = "{total_pages_count_string}";
+    //   try {
+    //     const doc = new jsPDF("l", "mm", "a4");
+    //     const items = challanData.map((challan, index) => [
+
+
+    //       index + 1,
+    //       challan._id || "-",
+    //       challan.quantityInMetricTons || "-",
+    //       challan.rate || "-",
+    //       challan.commisionRate || "-",
+    //       challan.commisionTotal || "-",
+    //       challan.totalExpense || "-",
+    //       challan.shortage || "-",
+    //       challan.balance || "-",
+    //       challan.diesel || "-",
+    //       challan.cash || "-",
+    //       challan.bankTransfer || "-",
+    //       challan.recovery || "-",
+    //       challan.outstanding || "-",
+    //       challan.isAcknowledged || "-",
+    //       challan.isReceived || "-",
+    //       challan.isMarketRate || "-",
+    //       challan.marketRate || "-",
+    //       challan.billNumber || "-",
+    //       challan.excel || "-",
+    //       challan.materialType || "-",
+    //       challan.grDate || "-",
+    //       challan.grISODate || "-",
+    //       challan.loadLocation || "-",
+    //       challan.deliveryLocation || "-",
+    //       challan.vehicleNumber || "-",
+    //       challan.ownerId || "-",
+    //       challan.ownerName || "-",
+    //       challan.vehicleId || "-",
+    //       challan.vehicleBank || "-",
+    //       challan.ownerPhone || "-",
+    //       challan.vehicleType || "-",
+    //       challan.deliveryNumber || "-",
+    //       challan.vehicleReferenceId || "-",
+    //       challan.vehicleBankReferenceId || "-",
+    //       challan.ownerReferenceId || "-",
+    //       challan.hubId || "-",
+    //       challan.createdAt || "-",
+    //       challan.modifiedAt || "-",
+
+
+    //     ]);
+
+
+    //     if (items.length === 0) {
+    //       message.error("No data available to download");
+    //     } else {
+    //       doc.setFontSize(10);
+    //       const d = new Date();
+    //       const m = d.getMonth() + 1;
+    //       const day = d.getDate();
+    //       const year = d.getFullYear();
+
+    //       doc.autoTable({
+    //         head: [
+    //           [
+
+
+    //             "Sl No",
+    //             "             _id",
+    //             "quantityInMetricTons",
+    //             "            rate",
+    //             "   commisionRate",
+    //             "  commisionTotal",
+    //             "    totalExpense",
+    //             "        shortage",
+    //             "         balance",
+    //             "          diesel",
+    //             "            cash",
+    //             "    bankTransfer",
+    //             "        recovery",
+    //             "     outstanding",
+    //             "  isAcknowledged",
+    //             "      isReceived",
+    //             "    isMarketRate",
+    //             "      marketRate",
+    //             "      billNumber",
+    //             "   challan.excel",
+    //             "    materialType",
+    //             "  challan.grDate",
+    //             "       grISODate",
+    //             "    loadLocation",
+    //             "deliveryLocation",
+    //             "   vehicleNumber",
+    //             "         ownerId",
+    //             "       ownerName",
+    //             "       vehicleId",
+    //             "     vehicleBank",
+    //             "      ownerPhone",
+    //             "                ",
+    //             "  deliveryNumber",
+    //             "vehicleReferenceId",
+    //             "vehicleBankReferenceId",
+    //             "ownerReferenceId",
+    //             "           hubId",
+    //             "       createdAt",
+    //             "      modifiedAt",
+
+
+    //           ]
+    //         ],
+    //         body: items,
+    //         startY: 10,
+    //         headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+    //         bodyStyles: { fontSize: 8, textAlign: "center" },
+    //         didDrawPage: function (data) {
+    //           // Header
+    //           doc.setFontSize(10);
+    //           doc.text("Challan Details", data.settings.margin.left + 0, 5);
+    //           doc.text("Date:-", data.settings.margin.left + 155, 5);
+    //           doc.text(
+    //             day + "/" + m + "/" + year,
+    //             data.settings.margin.left + 170,
+    //             5
+    //           );
+
+    //           // Footer
+    //           var str = "Page " + doc.internal.getNumberOfPages();
+    //           // Total page number plugin only available in jspdf v1.0+
+    //           if (typeof doc.putTotalPages === "function") {
+    //             str = str + " of " + totalPagesExp;
+    //           }
+    //           doc.setFontSize(10);
+
+    //           // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+    //           var pageSize = doc.internal.pageSize;
+    //           var pageHeight = pageSize.height
+    //             ? pageSize.height
+    //             : pageSize.getHeight();
+    //           doc.text(str, data.settings.margin.left, pageHeight - 10);
+    //         },
+    //         margin: { top: 10 },
+    //       });
+    //       if (typeof doc.putTotalPages === "function") {
+    //         doc.putTotalPages(totalPagesExp);
+    //       }
+    //       doc.save("challans.pdf");
+    //     }
+    //   } catch (err) {
+    //     message.error("Unable to Print");
+    //   }
+    // };
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
         <div className='flex gap-2 items-center'>
@@ -308,18 +656,6 @@ const DispatchContainer = ({ onData }) => {
               </Option>
             ))}
           </Select>
-          {/* <Select
-            name="truckType"
-            placeholder="Truck Type*"
-            size="large"
-            style={{ width: "20%" }}
-            value={vehicleTypeSearch}
-            options={[
-              { value: 'Open', label: 'Open' },
-              { value: 'Bulk', label: 'Bulk' },
-            ]}
-            onChange={handleVehicleTypeChange}
-          /> */}
           <Select
             name="truckType"
             placeholder="Truck Type*"
@@ -337,10 +673,10 @@ const DispatchContainer = ({ onData }) => {
 
         </div>
         <div className='flex gap-2 justify-end'>
-           {/* <Upload>
+          {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
           </Upload> */}
-          
+
           <div className='flex gap-2'>
 
             <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
@@ -349,8 +685,8 @@ const DispatchContainer = ({ onData }) => {
                 {loading ? "" : ""}
               </Button>
             </Upload>
-            <Button icon={<DownloadOutlined />}></Button>
-            <Button icon={<PrinterOutlined />}></Button>
+            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+            <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
           </div>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
@@ -711,7 +1047,7 @@ const DispatchContainer = ({ onData }) => {
         alert("GR Date is required")
       }
     };
-   
+
 
     return (
       <>
@@ -1670,18 +2006,18 @@ const DispatchContainer = ({ onData }) => {
       return date; // Return the original date if parsing fails
     };
 
-  
+
     const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(10);
-  const [activePageSize, setActivePageSize] = useState(10);
-      const columns = [
-        {
-          title: 'Sl No',
-          dataIndex: 'serialNumber',
-          key: 'serialNumber',
-          render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-          width: 80,
-        },
+    const [currentPageSize, setCurrentPageSize] = useState(10);
+    const [activePageSize, setActivePageSize] = useState(10);
+    const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+        width: 80,
+      },
       {
         title: 'Material Type',
         dataIndex: 'materialType',
@@ -1814,52 +2150,52 @@ const DispatchContainer = ({ onData }) => {
     return (
       <>
 
-<div className='flex items-items justify-end mb-2 my-paginations '>
+        <div className='flex items-items justify-end mb-2 my-paginations '>
           <span className='bg-[#F8F9FD] p-1'>
-          <Button
-            onClick={() => handlePageSizeChange(10)}
-            style={{ 
-              backgroundColor: activePageSize === 10 ? 'grey' : 'white',
-              color: activePageSize === 10 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 10 ? '6px' : '0' ,
-              boxShadow:activePageSize === 10 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            10
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(25)}
-            style={{ 
-              backgroundColor: activePageSize === 25 ? 'grey' : 'white',
-              color: activePageSize === 25 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 25 ? '6px' : '0' ,
-              boxShadow:activePageSize === 25 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            25
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(50)}
-            style={{ 
-              backgroundColor: activePageSize === 50 ? 'grey' : 'white',
-              color: activePageSize === 50 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 50 ? '6px' : '0' ,
-              boxShadow:activePageSize === 50 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            50
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(100)}
-            style={{ 
-              backgroundColor: activePageSize === 100 ? 'grey' : 'white',
-              color: activePageSize === 100 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 100 ? '6px' : '0' ,
-              boxShadow:activePageSize === 100 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            100
-          </Button>
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{
+                backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                color: activePageSize === 10 ? 'white' : 'black',
+                borderRadius: activePageSize === 10 ? '6px' : '0',
+                boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              10
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{
+                backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                color: activePageSize === 25 ? 'white' : 'black',
+                borderRadius: activePageSize === 25 ? '6px' : '0',
+                boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{
+                backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                color: activePageSize === 50 ? 'white' : 'black',
+                borderRadius: activePageSize === 50 ? '6px' : '0',
+                boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              50
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{
+                backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                color: activePageSize === 100 ? 'white' : 'black',
+                borderRadius: activePageSize === 100 ? '6px' : '0',
+                boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              100
+            </Button>
           </span>
         </div>
         <Table
@@ -1889,9 +2225,9 @@ const DispatchContainer = ({ onData }) => {
             },
           }}
           // antd site header height
-      sticky={{
-        offsetHeader:5,
-      }}
+          sticky={{
+            offsetHeader: 5,
+          }}
 
         />
 

@@ -210,7 +210,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
                 <div className='flex gap-2'>
                     <Search
-                        placeholder="Search by Delivery Number"
+                        placeholder="Search by keyword"
                         size='large'
                         value={searchQuery3}
                         onChange={onChangeSearch}

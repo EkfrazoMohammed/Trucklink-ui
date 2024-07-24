@@ -261,7 +261,7 @@ const DispatchContainer = ({ onData }) => {
       <div className='flex gap-2 flex-col justify-between p-2'>
         <div className='flex gap-2 items-center'>
           <Search
-            placeholder="Search by Delivery Number"
+            placeholder="Search by Delivery / Vehicle Number"
             size='large'
             value={searchQuery4}
             onChange={onChangeSearch}

@@ -71,6 +71,7 @@ const MasterData = () => {
 
                         // setErrMsg("Create material type from the follwing list : 'CEMENT','FLYASH','GYPSUM', 'MT', 'C&T BAG', 'OTHERS' ")
                     } else {
+                        alert("error occurred")
                         setErrMsg("")
                     }
                 }
@@ -233,8 +234,9 @@ const MasterData = () => {
                 alert('Material Type is required')
             }
         } catch (error) {
+            console.log(error)
             fetchMaterials();
-            alert('Error updating material');
+            alert(error.response.data.message);
             console.error('Error updating material:', error);
         }
     };
@@ -292,7 +294,8 @@ const MasterData = () => {
             }
         } catch (error) {
             fetchMaterials();
-            alert('Error updating load location');
+            // alert('Error updating load location');
+            alert(error.response.data.message);
             console.error('Error updating load location:', error);
         }
     };
@@ -351,7 +354,8 @@ const MasterData = () => {
 
         } catch (error) {
             fetchDeliveryLocations();
-            alert('Error updating load location');
+            // alert('Error updating load location');
+            alert(error.response.data.message);
             console.error('Error updating load location:', error);
         }
     };

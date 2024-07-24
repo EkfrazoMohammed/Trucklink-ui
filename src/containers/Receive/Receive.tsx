@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
-
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -53,7 +55,7 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const istDate = moment.tz(date, "Asia/Kolkata");
         return istDate.valueOf();
     };
-    
+
     const handleStartDateChange = (date, dateString) => {
         if (date) {
             // Format the date for display
@@ -504,20 +506,220 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
             }
             return sum;
         }, 0);
-       
+
         const allTotalAmount = (totalPercentCommission + totalMarketCommission).toFixed(2);
         const totalBalance = receive.reduce((sum, record) => sum + (record.balance || 0), 0);
-       
+
         const handlePageSizeChange = (newPageSize) => {
             setCurrentPageSize(newPageSize);
             setCurrentPage(1); // Reset to the first page
             setActivePageSize(newPageSize); // Update the active page size
-          };
+        };
+
+        const handleDownload = () => {
+            const challans = receive;
+
+            // Prepare data for owner details
+            const ownerDetails = challans.map((challan) => (
+                {
+                    "_id": challan._id,
+                    "quantityInMetricTons": challan.quantityInMetricTons,
+                    "rate": challan.rate,
+                    "commisionRate": challan.commisionRate,
+                    "commisionTotal": challan.commisionTotal,
+                    "totalExpense": challan.totalExpense,
+                    "shortage": challan.shortage,
+                    "balance": challan.balance,
+                    "diesel": challan.diesel,
+                    "cash": challan.cash,
+                    "bankTransfer": challan.bankTransfer,
+                    "recovery": challan.recovery,
+                    "outstanding": challan.outstanding,
+                    "isAcknowledged": challan.isAcknowledged,
+                    "isReceived": challan.isReceived,
+                    "isMarketRate": challan.isMarketRate,
+                    "marketRate": challan.marketRate,
+                    "billNumber": challan.billNumber,
+                    "excel": challan.excel,
+                    "materialType": challan.materialType,
+                    "grDate": challan.grDate,
+                    "grISODate": challan.grISODate,
+                    "loadLocation": challan.loadLocation,
+                    "deliveryLocation": challan.deliveryLocation,
+                    "vehicleNumber": challan.vehicleNumber,
+                    "ownerId": challan.ownerId,
+                    "ownerName": challan.ownerName,
+                    "vehicleId": challan.vehicleId,
+                    "vehicleBank": challan.vehicleBank,
+                    "ownerPhone": challan.ownerPhone,
+                    "vehicleType": challan.vehicleType,
+                    "deliveryNumber": challan.deliveryNumber,
+                    "vehicleReferenceId": challan.vehicleReferenceId,
+                    "vehicleBankReferenceId": challan.vehicleBankReferenceId,
+                    "ownerReferenceId": challan.ownerReferenceId,
+                    "hubId": challan.hubId,
+                    "createdAt": challan.createdAt,
+                    "modifiedAt": challan.modifiedAt,
+                    "__v": 0
+                    ,
+                }
+            ));
+
+
+
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+
+            // Add the owner details sheet to the workbook
+            const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+            XLSX.utils.book_append_sheet(wb, ownerWS, 'receive Details');
+
+
+            // Export the workbook to an Excel file
+            XLSX.writeFile(wb, 'receive.xlsx');
+        };
+        const handlePrint = () => {
+            const totalPagesExp = "{total_pages_count_string}";
+            try {
+                const doc = new jsPDF("l", "mm", "a4");
+                const items = receive.map((challan, index) => [
+                    index + 1,
+                    challan.materialType || "-",
+                    challan.grNumber || "-",
+                    challan.grDate || "-",
+                    challan.loadLocation || "-",
+                    challan.deliveryLocation || "-",
+                    challan.vehicleNumber || "-",
+                    challan.ownerName || "-",
+                    challan.vehicleType || "-",
+                    challan.deliveryNumber || "-",
+                    challan.quantityInMetricTons || "-",
+                    challan.rate || "-",
+                    challan.commisionRate || "-",
+                    challan.commisionTotal || "-",
+                    challan.diesel || "-",
+                    challan.cash || "-",
+                    challan.bankTransfer || "-",
+                    // challan.totalExpense || "-",
+                    challan.balance || "-",
+                    challan.excel || "-",
+                    challan.hubId || "-",
+
+                ]);
+
+                if (items.length === 0) {
+                    message.error("No data available to download");
+                } else {
+                    doc.setFontSize(10);
+                    const d = new Date();
+                    const m = d.getMonth() + 1;
+                    const day = d.getDate();
+                    const year = d.getFullYear();
+
+                    doc.autoTable({
+                        head: [
+                            [
+                                "Sl No",
+                                "materialType",
+                                "gr No ",
+                                "gr Date    ",
+                                "loadLocation",
+                                "deliveryLocation",
+                                "Vehicle No         ",
+                                "Owner Name             ",
+                                "Vehicle Type           ",
+                                "DO Number        ",
+                                "Qty  ",
+                                "rate                  ",
+                                "commisionRate (%)",
+                                "Total commision ",
+                                "diesel ",
+                                "cash",
+                                "bank Transfer ",
+                                // "totalExpense ",
+                                "balance   ",
+                                "excel   ",
+                                "hubId   ",
+
+                            ],
+                        ],
+                        body: items,
+                        startY: 10,
+                        headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+                        bodyStyles: { fontSize: 8, textAlign: "center" },
+                        columnStyles: {
+                            0: { cellWidth: 7 },
+                            1: { cellWidth: 14 },
+                            2: { cellWidth: 14 },
+                            3: { cellWidth: 14 },
+                            4: { cellWidth: 14 },
+                            5: { cellWidth: 14 },
+                            6: { cellWidth: 14 },
+                            7: { cellWidth: 14 },
+                            8: { cellWidth: 14 },
+                            9: { cellWidth: 14 },
+                            10: { cellWidth: 14 },
+                            11: { cellWidth: 14 },
+                            12: { cellWidth: 14 },
+                            13: { cellWidth: 14 },
+                            14: { cellWidth: 14 },
+                            15: { cellWidth: 14 },
+                            16: { cellWidth: 14 },
+                            17: { cellWidth: 14 },
+                            18: { cellWidth: 14 },
+                            19: { cellWidth: 14 },
+                            20: { cellWidth: 14 },
+                            21: { cellWidth: 14 },
+                            22: { cellWidth: 14 },
+                            23: { cellWidth: 14 },
+                            // 24: { cellWidth: 14 },
+
+                        },
+                        didDrawPage: function (data) {
+                            // Header
+                            doc.setFontSize(10);
+                            doc.text("Challan Details", data.settings.margin.left + 0, 5);
+                            doc.text("Date:-", data.settings.margin.left + 155, 5);
+                            doc.text(
+                                day + "/" + m + "/" + year,
+                                data.settings.margin.left + 170,
+                                5
+                            );
+
+                            // Footer
+                            var str = "Page " + doc.internal.getNumberOfPages();
+                            // Total page number plugin only available in jspdf v1.0+
+                            if (typeof doc.putTotalPages === "function") {
+                                str = str + " of " + totalPagesExp;
+                            }
+                            doc.setFontSize(10);
+
+
+                            // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+                            var pageSize = doc.internal.pageSize;
+                            var pageHeight = pageSize.height
+                                ? pageSize.height
+                                : pageSize.getHeight();
+                            doc.text(str, data.settings.margin.left, pageHeight - 10);
+                        },
+                        margin: { top: 10 },
+                    });
+
+
+                    if (typeof doc.putTotalPages === "function") {
+                        doc.putTotalPages(totalPagesExp);
+                    }
+                    doc.save("challans.pdf");
+                }
+            } catch (err) {
+                message.error("Unable to Print");
+            }
+        };
         return (
             <>
                 <div className='flex gap-2 mb-2 items-center justify-end'>
-                    <Button icon={<DownloadOutlined />}></Button>
-
+                    <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+                    <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
                     <div className='flex   my-paginations '>
                         <span className='bg-[#F8F9FD] p-1'>
                             <Button

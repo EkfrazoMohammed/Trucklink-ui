@@ -539,8 +539,8 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     return (
       <>
       <div className='flex gap-2 mb-2 items-center justify-end'>
-          <Button icon={<DownloadOutlined />}></Button>
-          <Button icon={<PrinterOutlined />}></Button>
+          {/* <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button> */}
 
           <div className='flex   my-paginations '>
             <span className='bg-[#F8F9FD] p-1'>

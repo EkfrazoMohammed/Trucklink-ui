@@ -505,3 +505,17 @@
   background: transparent !important;
   border: 1px solid #d9d9d9;
 }
+
+
+.dashboard-top-container {
+  padding: 16px;
+  height: auto;
+  /* background: #F5FCFF; */
+  background-image: url("/src/assets/wallpaper_widget.png") !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  /* margin: 1rem auto; */
+  border-radius: 8px;
+  /* box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; */
+}

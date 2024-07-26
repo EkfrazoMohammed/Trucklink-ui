@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Col, Row, Select } from 'antd';
+import { Col, Row } from 'antd';
 import Chart from 'react-apexcharts';
-import axios from 'axios';
-import sampleData from "./sampleExpenseData.json";
+import { API } from "../../API/apirequest";
 
 // Mapping month names to indices
 const monthIndexMap = {
@@ -20,96 +19,95 @@ const monthIndexMap = {
     "December": 11
 };
 
-
-const DashboardExpenseContainer = ({year}) => {
-    const selectedHub =localStorage.getItem("selectedHubID");
-    console.log(selectedHub)
+const DashboardExpenseContainer = ({ year }) => {
+    const selectedHub=localStorage.getItem("selectedHubID");
+    const selectedHubName=localStorage.getItem("selectedHubName");
+    const authToken=localStorage.getItem("token");
     const [allSeries, setAllSeries] = useState([]);
     const [selectedSeries, setSelectedSeries] = useState(null);
     const [totalExpenses, setTotalExpenses] = useState(0);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const hubId = selectedHub;
-                let data;
-                if(selectedHub !== "" || selectedHub !== undefined || selectedHub !==null){
+    const headersOb = {
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+        }
+    };
 
-                    data = sampleData.totalTrip.filter(item => item.hubId === hubId);
-                 // data = sampleData.totalTrip.filter(item => item.hubId === hubId);
-                //  try {
-                //     const response = await API.get(`get-expenses-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
-                //     console.log(response.data);
-                //     data =response.data;
-                // } catch (error) {
-                //     console.error('Error fetching data:', error);
-                // }   
-                }else{
-                     // Using the sample data instead of making an actual API call
-                // data = sampleData.totalTrip.filter(item => item.hubId === hubId);
-                try {
-                    const response = await API.get(`get-expenses-visualtion?entryYear=${year}&entryMonth=7`, headersOb);
-                    console.log(response.data);
-                    data =response.data;
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }   
-                }
-                // Initialize arrays for each category with 0 values for each month
-                const defaultData = {
-                    Diesel: Array(12).fill(0),
-                    Cash: Array(12).fill(0),
-                    BankTransfer: Array(12).fill(0),
-                    Shortage: Array(12).fill(0)
-                };
+    const fetchData = async () => {
+        try {
+            const defaultData = {
+                Diesel: Array(12).fill(0),
+                Cash: Array(12).fill(0),
+                BankTransfer: Array(12).fill(0),
+                Shortage: Array(12).fill(0)
+            };
 
-                // Populate data with the filtered response
-                data.forEach(item => {
-                    const monthIndex = monthIndexMap[item.month];
-                    if (monthIndex !== undefined) {
-                        defaultData.Diesel[monthIndex] = item.totalDiesel;
-                        defaultData.Cash[monthIndex] = item.totalCash;
-                        defaultData.BankTransfer[monthIndex] = item.totalBankTransfer;
-                        defaultData.Shortage[monthIndex] = item.totalShortage;
-                    }
-                });
-
-                // Prepare series for the chart
-                const formattedSeries = [
-                    {
-                        name: 'Diesel',
-                        data: defaultData.Diesel,
-                        color: '#FF4560'
-                    },
-                    {
-                        name: 'Cash',
-                        data: defaultData.Cash,
-                        color: '#FEB019'
-                    },
-                    {
-                        name: 'Bank Transfer',
-                        data: defaultData.BankTransfer,
-                        color: '#00E396'
-                    },
-                    {
-                        name: 'Shortage',
-                        data: defaultData.Shortage,
-                        color: '#775DD0'
-                    }
-                ];
-
-                setAllSeries(formattedSeries);
-
-                // Calculate total expenses
-                const total = formattedSeries.reduce((acc, series) => acc + series.data.reduce((a, b) => a + b, 0), 0);
-                setTotalExpenses(total);
-            } catch (error) {
-                console.error("Error fetching data:", error);
+            const url = `get-expenses-visualtion?entryYear=${year}`;
+            let payload;
+            if (selectedHub == "" || selectedHub == undefined || selectedHub == null) {
+                payload = { "hubIds": [] }
+            } else {
+                payload = { "hubIds": [selectedHub] }
             }
-        };
 
+            console.log(payload)
+            const response = await API.post(url, payload, headersOb);
+            const data = response.data;
+
+            data.totalTrip.forEach(item => {
+                const monthIndex = monthIndexMap[item.month];
+                if (monthIndex !== undefined) {
+                    defaultData.Diesel[monthIndex] = item.totalDiesel;
+                    defaultData.Cash[monthIndex] = item.totalCash;
+                    defaultData.BankTransfer[monthIndex] = item.totalBankTransfer;
+                    defaultData.Shortage[monthIndex] = item.totalShortage;
+                }
+            });
+
+            const formattedSeries = [
+                {
+                    name: 'Diesel',
+                    data: defaultData.Diesel,
+                    color: '#FF4560'
+                },
+                {
+                    name: 'Cash',
+                    data: defaultData.Cash,
+                    color: '#FEB019'
+                },
+                {
+                    name: 'Bank Transfer',
+                    data: defaultData.BankTransfer,
+                    color: '#00E396'
+                },
+                {
+                    name: 'Shortage',
+                    data: defaultData.Shortage,
+                    color: '#775DD0'
+                }
+            ];
+
+            setAllSeries(formattedSeries);
+
+            const total = formattedSeries.reduce((acc, series) => acc + series.data.reduce((a, b) => a + b, 0), 0);
+            setTotalExpenses(total);
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    useEffect(() => {
+       
         fetchData();
-    }, [selectedHub]);
+    }, []);
+    useEffect(() => {
+        // Fetch data initially and whenever year or selectedHub changes
+        fetchData();
+
+    }, [year, selectedHub]);
+
 
     const chartOptions = {
         chart: {
@@ -139,7 +137,7 @@ const DashboardExpenseContainer = ({year}) => {
         },
         xaxis: {
             categories: [
-                'January', 'February', 'March', 'April', 'May', 'June', 
+                'January', 'February', 'March', 'April', 'May', 'June',
                 'July', 'August', 'September', 'October', 'November', 'December'
             ],
             labels: {
@@ -178,12 +176,11 @@ const DashboardExpenseContainer = ({year}) => {
                 <Row gutter={24} className='flex items-center'>
                     <Col className="gutter-row" span={6}>
                         <div className="flex justify-between items-center p-2 font-bold text-xl">
-                            <h1>Monthly Expenses</h1>
+                            <h1>Monthly Expenses {selectedHubName}</h1>
                         </div>
                     </Col>
                     <Col className="gutter-row" span={18}>
                         <div className="flex items-center justify-end px-4">
-
                             <div className="flex justify-between flex-col p-2 ml-4">
                                 <div className="category-value text-xl font-bold text-red-500">
                                     ₹ {totalExpenses.toLocaleString()}

@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Col, Row, Radio, Select } from 'antd';
+import { Col, Row } from 'antd';
 import Chart from "react-apexcharts";
-
 import { API } from "../../API/apirequest";
 
-const DashboardMostTripsContainer = () => {
-    const [hubs, setHubs] = useState([]);
-    const fetchHubs = async () => {
-        try {
-            const response = await API.get('get-hubs', headersOb);
-            setHubs(response.data.hubs);
-        } catch (error) {
-            console.error('Error fetching hub data:', error);
-        }
-    };
+const monthIndexMap = {
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December"
+};
 
-    useEffect(() => {
-        fetchHubs();
-    }, []);
-    
-    const [select3HubId, setSelect3HubId] = useState([]);
-    const handleChange = (value) => {
-        if (value.length <= 3) {
-            setSelect3HubId(value);
-        }
-    };
+const DashboardHubSpecificTripsContainer = ({ selectedHub }) => {
     const [chartOptions, setChartOptions] = useState({
         series: [],
         options: {
@@ -43,7 +37,7 @@ const DashboardMostTripsContainer = () => {
                 enabled: false,
             },
             xaxis: {
-                categories: [], // City labels
+                categories: [], // Month labels
             },
             colors: ['#009CD0'], // Bar colors
             stroke: {
@@ -63,6 +57,9 @@ const DashboardMostTripsContainer = () => {
             },
         }
     });
+
+    const [totalTrips, setTotalTrips] = useState(0);
+
     const authToken = localStorage.getItem("token");
 
     const headersOb = {
@@ -75,24 +72,27 @@ const DashboardMostTripsContainer = () => {
     const fetchData = async () => {
         try {
             const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
-
             const data = response.data.totalTrip;
-            const cityData = {};
-            
+
+            const monthData = Array(12).fill(0); // Initialize array for 12 months
+            let total = 0;
+
             // Process data
             data.forEach(item => {
-                item.hubs.forEach(hub => {
-                    if (cityData[hub.hubName]) {
-                        cityData[hub.hubName] += hub.tripCount;
-                    } else {
-                        cityData[hub.hubName] = hub.tripCount;
-                    }
-                });
+                const month = monthIndexMap[item._id];
+                if (month) {
+                    item.hubs.forEach(hub => {
+                        if (hub.hubId === selectedHub) {
+                            monthData[item._id - 1] += hub.tripCount;
+                            total += hub.tripCount;
+                        }
+                    });
+                }
             });
 
             // Prepare chart data
-            const categories = Object.keys(cityData);
-            const seriesData = Object.values(cityData);
+            const categories = Object.values(monthIndexMap);
+            const seriesData = monthData;
 
             setChartOptions({
                 series: [
@@ -109,6 +109,8 @@ const DashboardMostTripsContainer = () => {
                 }
             });
 
+            setTotalTrips(total);
+
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -116,39 +118,28 @@ const DashboardMostTripsContainer = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [selectedHub]); // Fetch data whenever selectedHub changes
 
     return (
-        <div className='dashboard-most-trips-container'>
+        <div className='dashboard-hub-specific-trips-container'>
             <Row gutter={24}>
                 <Col className="gutter-row" span={24}>
                     <div className="flex justify-between flex-col flex-start p-2 border border-y-2 border-x-2 rounded-md px-4">
                         <div className="flex justify-between items-center p-2 font-bold text-xl">
-                            <h1>Most Trips</h1>
-
-                            <Select
-                                        mode="multiple"
-                                        placeholder="Select hubs"
-                                        value={select3HubId}
-                                        maxCount={3}
-                                        onChange={handleChange}
-                                        style={{ width: '200px', maxHeight: '100px' }}
-                                    >
-                                        {hubs.map(hub => (
-                                            <Option key={hub._id} value={hub._id}>
-                                                {hub.location}
-                                            </Option>
-                                        ))}
-                                    </Select>
+                            <h1>Monthly Trips</h1>
+                            
                         </div>
                         <Chart
-                            options={chartOptions.options}
+                              options={chartOptions.options}
                             series={chartOptions.series}
                             type="bar"
                             width="100%"
                             style={{ minWidth: '200px', width: "100%", margin: '0 auto' }}
                             height='300'
                         />
+                        <div className="total-trips mt-4 text-xl font-bold">
+                            Total Trips: {totalTrips}
+                        </div>
                     </div>
                 </Col>
             </Row>
@@ -156,4 +147,4 @@ const DashboardMostTripsContainer = () => {
     );
 };
 
-export default DashboardMostTripsContainer;
+export default DashboardHubSpecificTripsContainer;

@@ -167,8 +167,8 @@ const DashboardContainer = () => {
       <DashboardTopContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} />
       <DashboardEarningContainer year={currentYear} />
       <DashboardExpenseContainer year={currentYear} />
-      <DashboardMaterialContainer />
-      <DashboardBottomContainer />
+      {/* <DashboardMaterialContainer />
+      <DashboardBottomContainer /> */}
     </>
   );
 };

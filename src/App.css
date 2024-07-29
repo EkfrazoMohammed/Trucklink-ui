@@ -567,6 +567,16 @@
   max-height: 100vh !important;
 }
 
+.settings-card-container {
+
+  padding: 16px;
+  height: auto;
+  background: #fff;
+  margin: 0 auto;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 2px;
+}
 .dashboard-top-container {
   padding: 16px;
   height: auto;

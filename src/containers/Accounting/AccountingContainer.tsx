@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { Tabs, Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 
 import type { TabsProps } from 'antd';
 import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { API } from "../../API/apirequest"
-import moment from "moment";
-import dayjs from 'dayjs';
-import 'moment-timezone';
 const dateFormat = "DD/MM/YYYY";
 import VoucherBook from './VoucherBook';
 import DailyCashBook from './DailyCashBook';
@@ -144,19 +147,14 @@ const AccountingContainer = ({ onData }) => {
       });
     };
 
-    const onReset = () => {
-      setOwnerId('');
-      setStartDate(null)
-      setEndDate(null)
-      setFilterRequest(null);
-      setStartDateValue("")
-      setEndDateValue("")
-    };
+
     const getTableData = async () => {
       try {
         setLoading(true);
+        console.log(owners)
+        console.log(filterRequest)
         const searchData = filterRequest ? filterRequest : null;
-
+        console.log(searchData)
         let response;
         if (searchData) {
           response = await API.post(`get-filter-owner-advance-data?page=1&limit=100000&hubId=${selectedHubId}`, searchData, headersOb);
@@ -220,7 +218,7 @@ const AccountingContainer = ({ onData }) => {
 
     const updateFilterAndFetchData = async (filters) => {
       setFilterRequest(filters);
-      await getTableData(filters);
+      await getTableData();
     };
 
     useEffect(() => {
@@ -303,7 +301,22 @@ const AccountingContainer = ({ onData }) => {
 
       setCount(count + 1);
     };
-
+    const onReset = () => {
+      setStartDate(null)
+      setEndDate(null)
+      setFilterRequest(null);
+      setStartDateValue("")
+      setEndDateValue("")
+      getOutstandingData();
+      updateFilterAndFetchData(null);
+      setDataSource([]);
+      setOwnerId('')
+      setOwners([])
+      setTimeout(()=>{
+        window.location.reload();
+      })
+   
+    };
     const saveNewRow = async () => {
       try {
         await form.validateFields().then(values => {
@@ -444,7 +457,8 @@ const AccountingContainer = ({ onData }) => {
 
             const dataSource = ledgerEntries.map((data) => {
               const date = data.entryDate;
-              const eDate = moment(date, "DD/MM/YYYY");
+              // const eDate = moment(date, "DD/MM/YYYY");
+              const eDate = dayjs(date, 'DD/MM/YYYY')
 
               return {
                 ...data,
@@ -470,38 +484,7 @@ const AccountingContainer = ({ onData }) => {
       );
     };
 
-
-    // const handleTableRowExpand = async (expanded, record) => {
-    //   if (expanded) {
-    //     try {
-    //       if (record && record.key !== "") {
-    //         // const response = await API.get(`get-ledger-data/${record.key}&hubId=${selectedHubId}`, headersOb);
-    //         const response = await API.get(`get-ledger-data/${record.key}/${selectedHubId}`, headersOb);
-    //         const ledgerEntries = response.data.ownersAdavance[0].ledgerEntries;
-
-    //         const dataSource = ledgerEntries.map((data) => {
-    //           const date = data.entryDate;
-    //           const eDate = moment(date, "DD/MM/YYYY")
-
-    //           return {
-    //             ...data,
-    //             entDate: eDate,
-    //             IdofOwner: record.key,
-    //             key: data._id // Ensure unique key for each ledger entry
-    //           };
-    //         });
-
-    //         setLedgerEntries((prevEntries) => ({
-    //           ...prevEntries,
-    //           [record.key]: dataSource
-    //         }));
-    //       }
-    //     } catch (err) {
-    //       console.error(err);
-    //     }
-    //   }
-    // };
-    const expandedRowRender = (record) => {
+ const expandedRowRender = (record) => {
       const entries = ledgerEntries[record.key] || [];
       const hideLedgerAction = entries.length - 1;
       return (
@@ -518,10 +501,10 @@ const AccountingContainer = ({ onData }) => {
       const isEditing = (record) => record.key === editingKeyIn;
 
       const edit = (record) => {
-        console.log(dayjs(record.entryDate, "DD/MM/YYYY"))
+        console.log(record.entryDate);
 
         form.setFieldsValue({
-          entDate: dayjs(record.entryDate, "DD/MM/YYYY"),
+          entDate: record.entryDate,
           credit: record.credit,
           debit: record.debit,
           narration: record.narration,
@@ -651,7 +634,14 @@ const AccountingContainer = ({ onData }) => {
           console.log(err);
         }
       };
+      const formatDate = (dateString) => {
 
+        // Split the date string by '-'
+        const parts = dateString.split('-');
+        // Rearrange the parts in the required format
+        const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
+        return formattedDate;
+      };
       const handleAddInsideRow = (record) => {
         const newEntryKey = `new`;
         const newEntry = {
@@ -693,11 +683,13 @@ const AccountingContainer = ({ onData }) => {
           width: 80,
           fixed: 'left',
         },
+
         {
-          title: 'Date change',
+          title: 'Date',
           dataIndex: 'entryDate',
           key: 'entryDate',
           render: (text, record) => {
+            console.log(record)
             const editable = isEditing(record);
             return editable ? (
               <Form.Item
@@ -705,17 +697,44 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
                 rules={[{ required: true, message: 'Please input date!' }]}
               >
+                {/* <DatePicker 
+                /> */}
                 <DatePicker
-                format="DD/MM/YYYY"
-                  style={{ width: '100%' }}            
-                  value={form.getFieldValue('entDate') ? dayjs(form.getFieldValue('entDate'), 'DD/MM/YYYY') : null}
+                  required
+                  size="large"
+                  format="DD-MM-YYYY"
+                  style={{ width: "100%" }}
+                  // onChange={handleDateChange}
+                  value={dayjs(record.entryDate, 'DD/MM/YYYY').format('DD/MM/YYYY')}
                 />
               </Form.Item>
             ) : (
-              dayjs(record.entryDate, 'DD/MM/YYYY').format('DD/MM/YYYY')
+              record.entryDate ? dayjs(record.entryDate, 'DD/MM/YYYY').format('DD/MM/YYYY') : 'N/A'
             );
           },
         },
+        // {
+        //   title: 'Date change',
+        //   dataIndex: 'entryDate',
+        //   key: 'entryDate',
+        //   render: (text, record) => {
+        //     const editable = isEditing(record);
+        //     return editable ? (
+        //       <Form.Item
+        //         name="entDate"
+        //         style={{ margin: 0 }}
+        //         rules={[{ required: true, message: 'Please input date!' }]}
+        //       >
+        //         <DatePicker
+        //           format="DD/MM/YYYY"
+        //           style={{ width: '100%' }}
+        //          />
+        //       </Form.Item>
+        //     ) : (
+        //       dayjs(record.entryDate, 'DD/MM/YYYY').format('DD/MM/YYYY')
+        //     );
+        //   },
+        // },
         {
           title: 'Narration',
           dataIndex: 'narration',

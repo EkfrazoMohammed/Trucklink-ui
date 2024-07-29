@@ -472,7 +472,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           }}
           // antd site header height
           sticky={{
-            offsetHeader: 0,
+            offsetHeader: 5,
           }}
           loading={loading}
 

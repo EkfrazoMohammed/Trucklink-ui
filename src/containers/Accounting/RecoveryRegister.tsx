@@ -1202,9 +1202,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   },
                 }}
                 // antd site header height
-            sticky={{
-              offsetHeader:0,
-            }}
+                sticky={{
+                  offsetHeader: 5,
+                }}
                 loading={loading}
 
               />

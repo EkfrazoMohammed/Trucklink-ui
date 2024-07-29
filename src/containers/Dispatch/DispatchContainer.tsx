@@ -343,7 +343,7 @@ const DispatchContainer = ({ onData }) => {
           challan.balance || "-",
           challan.excel || "-",
           challan.hubId || "-",
-          
+
         ]);
 
         if (items.length === 0) {
@@ -412,7 +412,7 @@ const DispatchContainer = ({ onData }) => {
               22: { cellWidth: 14 },
               23: { cellWidth: 14 },
               // 24: { cellWidth: 14 },
-             
+
             },
             didDrawPage: function (data) {
               // Header
@@ -836,36 +836,74 @@ const DispatchContainer = ({ onData }) => {
         commisionRate = parseFloat(selectedvehicleCommission);
       }
 
+      // const payload = {
+      //   "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (commissionTotal) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+      //   // "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+      //   "bankTransfer": formData.bankTransfer,
+      //   "cash": formData.cash,
+      //   "deliveryLocation": formData.deliveryLocation,
+      //   "deliveryNumber": formData.deliveryNumber,
+      //   "diesel": formData.diesel,
+      //   "grDate": formData.grDate,
+      //   "grNumber": formData.grNumber,
+      //   "invoiceProof": null,
+      //   "loadLocation": formData.loadLocation,
+      //   "materialType": formData.materialType,
+      //   "ownerId": formData.ownerId,
+      //   "ownerName": formData.ownerName,
+      //   "ownerPhone": formData.ownerPhone,
+      //   "quantityInMetricTons": formData.quantityInMetricTons,
+      //   "rate": formData.rate,
+      //   "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
+      //   "vehicleBank": formData.vehicleBank,
+      //   "vehicleId": formData.vehicleId,
+      //   "vehicleNumber": formData.vehicleNumber,
+      //   "vehicleType": formData.vehicleType,
+      //   "commisionRate": commisionRate,
+      //   "commisionTotal": commissionTotal,
+      //   "isMarketRate": formData.isMarketRate,
+      //   "marketRate": formData.marketRate,
+      //   "hubId": selectedHubId,
+      //   "shortage": formData.shortage
+      // }
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (commissionTotal) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-        // "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
-        "bankTransfer": formData.bankTransfer,
-        "cash": formData.cash,
-        "deliveryLocation": formData.deliveryLocation,
-        "deliveryNumber": formData.deliveryNumber,
-        "diesel": formData.diesel,
-        "grDate": formData.grDate,
-        "grNumber": formData.grNumber,
-        "invoiceProof": null,
-        "loadLocation": formData.loadLocation,
-        "materialType": formData.materialType,
-        "ownerId": formData.ownerId,
-        "ownerName": formData.ownerName,
-        "ownerPhone": formData.ownerPhone,
-        "quantityInMetricTons": formData.quantityInMetricTons,
-        "rate": formData.rate,
-        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
-        "vehicleBank": formData.vehicleBank,
-        "vehicleId": formData.vehicleId,
-        "vehicleNumber": formData.vehicleNumber,
-        "vehicleType": formData.vehicleType,
-        "commisionRate": commisionRate,
-        "commisionTotal": commissionTotal,
-        "isMarketRate": formData.isMarketRate,
-        "marketRate": formData.marketRate,
-        "hubId": selectedHubId,
-        "shortage": formData.shortage
-      }
+        balance: (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate))
+          - commissionTotal
+          - (parseFloat(formData.diesel ?? 0)
+            + parseFloat(formData.cash ?? 0)
+            + parseFloat(formData.bankTransfer ?? 0)
+            + parseFloat(formData.shortage ?? 0)),
+        bankTransfer: formData.bankTransfer ?? 0,
+        cash: formData.cash ?? 0,
+        deliveryLocation: formData.deliveryLocation,
+        deliveryNumber: formData.deliveryNumber,
+        diesel: formData.diesel ?? 0,
+        grDate: formData.grDate,
+        grNumber: formData.grNumber,
+        invoiceProof: null,
+        loadLocation: formData.loadLocation,
+        materialType: formData.materialType,
+        ownerId: formData.ownerId,
+        ownerName: formData.ownerName,
+        ownerPhone: formData.ownerPhone,
+        quantityInMetricTons: formData.quantityInMetricTons,
+        rate: formData.rate,
+        totalExpense: parseFloat(formData.diesel ?? 0)
+          + parseFloat(formData.cash ?? 0)
+          + parseFloat(formData.bankTransfer ?? 0)
+          + parseFloat(formData.shortage ?? 0),
+        vehicleBank: formData.vehicleBank,
+        vehicleId: formData.vehicleId,
+        vehicleNumber: formData.vehicleNumber,
+        vehicleType: formData.vehicleType,
+        commisionRate: commisionRate,
+        commisionTotal: commissionTotal,
+        isMarketRate: formData.isMarketRate,
+        marketRate: formData.marketRate,
+        hubId: selectedHubId,
+        shortage: formData.shortage ?? 0
+      };
+
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
@@ -894,7 +932,7 @@ const DispatchContainer = ({ onData }) => {
             console.error('Error adding truck data:', error.response);
           });
       } else {
-        alert("GR Date is required")
+        alert("enter all fields")
       }
     };
 
@@ -1100,7 +1138,7 @@ const DispatchContainer = ({ onData }) => {
                       type='number'
                       placeholder="Market Rate Rs*"
                       size="large"
-                      name="diesel"
+                      name="marketRate"
                       onChange={(e) => handleChange('marketRate', e.target.value)}
                     />
                   </> : <></>}
@@ -1126,7 +1164,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Diesel"
+                    placeholder="Diesel*"
                     size="large"
                     value={formData.diesel}
                     name="diesel"
@@ -1136,7 +1174,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Cash"
+                    placeholder="Cash*"
                     size="large"
                     value={formData.cash}
                     name="cash"
@@ -1146,7 +1184,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Bank Transfer"
+                    placeholder="Bank Transfer*"
                     size="large"
                     value={formData.bankTransfer}
                     name="bankTransfer"
@@ -1770,7 +1808,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Diesel"
+                    placeholder="Diesel*"
                     size="large"
                     name="diesel"
                     value={formData.diesel}
@@ -1780,7 +1818,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Cash"
+                    placeholder="Cash*"
                     size="large"
                     name="cash"
                     value={formData.cash}
@@ -1790,7 +1828,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Bank Transfer"
+                    placeholder="Bank Transfer*"
                     size="large"
                     name="bankTransfer"
                     value={formData.bankTransfer}
@@ -1801,7 +1839,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Shortage"
+                    placeholder="Shortage*"
                     size="large"
                     name="shortage"
                     value={formData.shortage}

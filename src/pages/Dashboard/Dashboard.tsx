@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
     { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
     { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer />, disabled: !currentHub },
+    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub  },
   ];
 
   const handleMenuClick = (menuItemKey: string, menuTitle: string, disabled: boolean) => {

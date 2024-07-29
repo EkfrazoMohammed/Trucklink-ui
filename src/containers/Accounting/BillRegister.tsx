@@ -1394,7 +1394,19 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
                 }}
-                pagination={false}
+                pagination={{
+                  showSizeChanger: false,
+                  position: ['bottomCenter'],
+                  current: currentPage,
+                  pageSize: currentPageSize,
+                  onChange: (page) => {
+                    setCurrentPage(page);
+                  },
+                }}
+                // antd site header height
+                sticky={{
+                  offsetHeader: 5,
+                }}
                 loading={loading}
 
               />

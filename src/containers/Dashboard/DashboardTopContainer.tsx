@@ -7,7 +7,7 @@ import QuantityIcon from "../../assets/Quantity.png"
 import RevenueIcon from "../../assets/Revenue.png"
 import CommissionIcon from "../../assets/Commission.png"
 
-const DashboardTopContainer = ({ year }) => {
+const DashboardTopContainer = ({ year,loadLocation,deliveryLocation }) => {
     const selectedHub = localStorage.getItem("selectedHubID");
     const selectedHubName = localStorage.getItem("selectedHubName");
 
@@ -24,7 +24,7 @@ const DashboardTopContainer = ({ year }) => {
         }
     };
 
-    const getTopData = async (year: number) => {
+    const getTopData = async (year: number,loadLocation:any,deliveryLocation:any) => {
         setLoading(true);
         try {
             let res;
@@ -32,8 +32,11 @@ const DashboardTopContainer = ({ year }) => {
                 res= await API.get(`get-dashboard-revenue?year=${year}`, headersOb);
 
             }else{
-                res= await API.get(`get-dashboard-revenue?year=${year}&hubId=${selectedHub}`, headersOb);
-
+                if(loadLocation !== null && deliveryLocation !== null){
+                    res= await API.get(`get-dashboard-revenue?year=${year}&hubId=${selectedHub}&loadLocation=${loadLocation}&deliveryLocation=${deliveryLocation}`, headersOb);                    
+                }else{
+                    res= await API.get(`get-dashboard-revenue?year=${year}&hubId=${selectedHub}`, headersOb);
+                }
             }
             if (res.status === 201) {
                 setTopContainerData(res.data.dispatchData);
@@ -41,6 +44,9 @@ const DashboardTopContainer = ({ year }) => {
                 setTopContainerData([]);
             }
         } catch (error) {
+            if(error.response.data.message == "Unable to find total count"){
+                setTopContainerData([]);  
+            }
             setError("Failed to fetch data");
         } finally {
             setLoading(false);
@@ -49,8 +55,8 @@ const DashboardTopContainer = ({ year }) => {
 
 
     useEffect(() => {
-        getTopData(year);
-    }, [year, selectedHub,]); 
+        getTopData(year,loadLocation,deliveryLocation);
+    }, [year,,loadLocation,deliveryLocation, selectedHub,]); 
     useEffect(() => {
         getTopData(year);
     }, []); 

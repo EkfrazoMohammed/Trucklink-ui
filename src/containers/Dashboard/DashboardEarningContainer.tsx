@@ -116,38 +116,6 @@ const DashboardEarningContainer = ({ year }) => {
 
     const earningsArray = Object.values(aggregatedEarnings);
 
-
-    // useEffect(() => {
-    //     const hubsData = {};
-    //     const monthlyTotals = Array(12).fill(0);
-    //     let totalEarnings = 0;
-
-    //     earningData.forEach(earning => {
-    //         if (!hubsData[earning.hubId]) {
-    //             hubsData[earning.hubId] = Array(12).fill(0);
-    //         }
-    //         const monthIndex = monthIndexMap[earning.month] ?? 0;
-    //         hubsData[earning.hubId][monthIndex] = earning.totalEarning;
-    //         monthlyTotals[monthIndex] += earning.totalEarning;
-    //         totalEarnings += earning.totalEarning;
-    //     });
-
-    //     setTotalEarningsAllHubs(totalEarnings);
-
-    //     const percentageHubs = {};
-    //     Object.keys(hubsData).forEach(hubId => {
-    //         percentageHubs[hubId] = hubsData[hubId].map((earning) =>
-    //             totalEarnings > 0 ? (earning / totalEarnings * 100).toFixed(2) : '0'
-    //         );
-    //     });
-
-    //     const updatedSeries = Object.keys(hubsData).map(hubId => ({
-    //         name: hubs.find(hub => hub._id === hubId)?.location || hubId,
-    //         data: viewMode === "amount" ? hubsData[hubId] : percentageHubs[hubId].map(value => parseFloat(value))
-    //     }));
-    //     setSeries(updatedSeries);
-    // }, [earningData, viewMode, year, hubs]);
-
     const chartOptions = {
         chart: {
             id: "basic-bar",
@@ -254,10 +222,6 @@ const DashboardEarningContainer = ({ year }) => {
                     <Col className="gutter-row" span={18}>
                         <div className="flex items-center justify-end px-4">
                             <div className="flex gap-4">
-                                <Radio.Group onChange={(e) => setViewMode(e.target.value)} value={viewMode}>
-                                    <Radio.Button value="amount">Amount</Radio.Button>
-                                    <Radio.Button value="percentage">%</Radio.Button>
-                                </Radio.Group>
                                 {(!selectedHub || selectedHub === "") &&
                                     <Select
                                         mode="multiple"
@@ -274,6 +238,11 @@ const DashboardEarningContainer = ({ year }) => {
                                         ))}
                                     </Select>
                                 }
+                                <Radio.Group onChange={(e) => setViewMode(e.target.value)} value={viewMode}>
+                                    <Radio.Button value="amount">Amount</Radio.Button>
+                                    <Radio.Button value="percentage">%</Radio.Button>
+                                </Radio.Group>
+
                             </div>
                         </div>
                     </Col>
@@ -296,18 +265,18 @@ const DashboardEarningContainer = ({ year }) => {
                             })
                         ) : (
                             <div key={selectedHub} className="flex justify-between flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md px-4 bg-white">
-                            <div className={`category-value text-xl font-bold text-red-500`}>
-                                {selectedHubName}
+                                <div className={`category-value text-xl font-bold text-red-500`}>
+                                    {selectedHubName}
+                                </div>
+                                <div className="category-title">
+                                    {earningsArray && earningsArray.length > 0 ? (
+                                        <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
+                                    ) : (
+                                        <p>0</p>
+                                    )}
+                                </div>
                             </div>
-                            <div className="category-title">
-                                {earningsArray && earningsArray.length > 0 ? (
-                                    <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
-                                ) : (
-                                    <p>0</p>
-                                )}
-                            </div>
-                        </div>
-                        
+
                         )}
                     </Col>
                     {/* <Col className="gutter-row flex flex-col gap-2" span={6}>

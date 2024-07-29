@@ -1126,7 +1126,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Diesel*"
+                    placeholder="Diesel"
                     size="large"
                     value={formData.diesel}
                     name="diesel"
@@ -1136,7 +1136,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Cash*"
+                    placeholder="Cash"
                     size="large"
                     value={formData.cash}
                     name="cash"
@@ -1146,7 +1146,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Bank Transfer*"
+                    placeholder="Bank Transfer"
                     size="large"
                     value={formData.bankTransfer}
                     name="bankTransfer"
@@ -1770,7 +1770,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Diesel*"
+                    placeholder="Diesel"
                     size="large"
                     name="diesel"
                     value={formData.diesel}
@@ -1780,7 +1780,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Cash*"
+                    placeholder="Cash"
                     size="large"
                     name="cash"
                     value={formData.cash}
@@ -1790,7 +1790,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Bank Transfer*"
+                    placeholder="Bank Transfer"
                     size="large"
                     name="bankTransfer"
                     value={formData.bankTransfer}
@@ -1801,7 +1801,7 @@ const DispatchContainer = ({ onData }) => {
                 <Col className="gutter-row mt-2" span={6}>
                   <Input
                     type='number'
-                    placeholder="Shortage*"
+                    placeholder="Shortage"
                     size="large"
                     name="shortage"
                     value={formData.shortage}

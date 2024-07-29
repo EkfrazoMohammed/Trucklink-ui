@@ -351,6 +351,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                   value={formData.vehicleNumber ? formData.vehicleNumber : null}
                   placeholder="Truck Number*"
                   size="large"
+                  showSearch
                   style={{ width: "100%" }}
                   onChange={handleVoucherOwnerChange}
                   filterOption={filterOption}
@@ -447,22 +448,14 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(10);
     const [activePageSize, setActivePageSize] = useState(10);
-        const columns = [
-          {
-            title: 'Sl No',
-            dataIndex: 'serialNumber',
-            key: 'serialNumber',
-            render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-            width: 80,
-          },
-      // {
-      //   title: 'Sl No',
-      //   dataIndex: 'serialNumber',
-      //   key: 'serialNumber',
-      //   render: (text, record, index) => index + 1,
-      //   width: 80,
-      //   fixed: 'left',
-      // },
+       const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+        width: 80,
+      },
       {
         title: 'Voucher Number',
         dataIndex: 'voucherNumber',
@@ -607,9 +600,9 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
             },
           }}
           // antd site header height
-      sticky={{
-        offsetHeader:0,
-      }}
+          sticky={{
+            offsetHeader: 0,
+          }}
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
@@ -694,9 +687,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         console.error('Error fetching materials:', error);
       }
     };
-    useEffect(() => {
-      fetchMaterials();
-    }, [])
+
 
     const [materialType, setMaterialType] = useState('')
 
@@ -739,9 +730,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     };
 
     useEffect(() => {
+      fetchMaterials();
       fetchVoucherOwners();
     }, []);
 
+    const handleDateChange = (date, dateString) => {
+      handleChange('voucherDate', dateString)
+    };
     const handleChange = (name, value) => {
       setFormData(prevFormData => ({
         ...prevFormData,
@@ -827,13 +822,24 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                  <DatePicker
+                  {/* <DatePicker
                     style={{ width: "100%" }}
                     placeholder="Voucher Date*"
                     size="large"
                     format="DD/MM/YYYY"
                     value={formData.voucherDate ? moment(formData.voucherDate, 'DD/MM/YYYY') : null}
                     onChange={(date, dateString) => handleChange('voucherDate', dateString)}
+                  /> */}
+
+                  <DatePicker
+                    required
+                    style={{ width: "100%" }}
+                    placeholder="Voucher Date*"
+                    size="large"
+                    format="DD/MM/YYYY"
+                    onChange={handleDateChange}
+                    // onChange={(date, dateString) => handleChange('voucherDate', dateString)}
+                    value={dayjs(formData.voucherDate, 'DD/MM/YYYY')}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -841,6 +847,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                     name="vehicleNumber"
                     value={formData.vehicleNumber ? formData.vehicleNumber : null}
                     placeholder="Truck Number*"
+                    showSearch
                     size="large"
                     style={{ width: "100%" }}
                     onChange={handleVoucherOwnerChange}

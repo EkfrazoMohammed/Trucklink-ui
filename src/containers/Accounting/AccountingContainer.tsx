@@ -331,14 +331,14 @@ const AccountingContainer = ({ onData }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(10);
     const [activePageSize, setActivePageSize] = useState(10);
-        const columns = [
-          {
-            title: 'Sl No',
-            dataIndex: 'serialNumber',
-            key: 'serialNumber',
-            render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-            width: 80,
-          },
+    const columns = [
+      {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+        width: 80,
+      },
       {
         title: 'Date',
         dataIndex: 'intDate',
@@ -694,11 +694,10 @@ const AccountingContainer = ({ onData }) => {
           fixed: 'left',
         },
         {
-          title: 'Date',
+          title: 'Date change',
           dataIndex: 'entryDate',
           key: 'entryDate',
           render: (text, record) => {
-            console.log(record)
             const editable = isEditing(record);
             return editable ? (
               <Form.Item
@@ -706,14 +705,14 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
                 rules={[{ required: true, message: 'Please input date!' }]}
               >
-
-                <DatePicker />
-                {/* <DatePicker format={dateFormat} /> */}
+                <DatePicker
+                format="DD/MM/YYYY"
+                  style={{ width: '100%' }}            
+                  value={form.getFieldValue('entDate') ? dayjs(form.getFieldValue('entDate'), 'DD/MM/YYYY') : null}
+                />
               </Form.Item>
             ) : (
-              // dayjs(text).format('DD/MM/YYYY')
-              text
-
+              dayjs(record.entryDate, 'DD/MM/YYYY').format('DD/MM/YYYY')
             );
           },
         },
@@ -995,7 +994,7 @@ const AccountingContainer = ({ onData }) => {
                 expandedRowRender: (record) => expandedRowRender(record),
                 onExpand: handleTableRowExpand,
               }}
-            
+
               pagination={{
                 showSizeChanger: false,
                 position: ['bottomCenter'],
@@ -1006,9 +1005,9 @@ const AccountingContainer = ({ onData }) => {
                 },
               }}
               // antd site header height
-          sticky={{
-            offsetHeader:0,
-          }}
+              sticky={{
+                offsetHeader: 0,
+              }}
               loading={loading}
               expandedRowKeys={expandedRowKeys} // Pass the expandedRowKeys state here
             />

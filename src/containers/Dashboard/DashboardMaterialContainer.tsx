@@ -45,8 +45,9 @@ const DashboardMaterialContainer = () => {
         yaxis: {
             labels: {
                 formatter: function (value) {
+                    return value + " Tons";
                     // return value >= 100000 ? (value / 100000).toFixed(1) + 'L' : value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
-                    return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
+                    // return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
                 }
             }
         },
@@ -63,8 +64,8 @@ const DashboardMaterialContainer = () => {
             intersect: false,
             y: {
                 formatter: function (value) {
-                    // return value + " Tons";
-                   return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
+                    return value + " Tons";
+                //    return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
                 }
             }
         }
@@ -100,7 +101,8 @@ const DashboardMaterialContainer = () => {
                 if (!materials[monthName][amountItem.materialType]) {
                     materials[monthName][amountItem.materialType] = 0;
                 }
-                materials[monthName][amountItem.materialType] += amountItem.amount;
+                // materials[monthName][amountItem.materialType] += amountItem.amount;
+                materials[monthName][amountItem.materialType] += amountItem.quantity;
             });
         });
 

@@ -1522,17 +1522,36 @@ const DispatchContainer = ({ onData }) => {
       e.preventDefault();
       let commissionTotal = 0;
       let commisionRate = 0;
+
+      // const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
+      // if (formData.isMarketRate) {
+      //   console.log("isMarketRate", formData.isMarketRate);
+      //   const t = totalIncome;
+      //   const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+      //   commissionTotal = m;
+      //   commisionRate = 0;
+      // } else {
+        //   const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
+        //   commissionTotal = commissionTotalInPercentage / 100;
+        //   commisionRate = parseFloat(selectedvehicleCommission);
+        // }
+        // const totalExpenses = parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage);
+        // const balance = totalIncome - commissionTotal - totalExpenses;
+
+
       const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
+
       if (formData.isMarketRate) {
-        console.log("isMarketRate", formData.isMarketRate);
-        const t = totalIncome;
-        const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commissionTotal = m;
-        commisionRate = 0;
+          console.log("isMarketRate", formData.isMarketRate);
+          const t = totalIncome;
+          const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+          commissionTotal = totalIncome - m;
+          commisionRate = 0;
       } else {
-        const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
-        commissionTotal = commissionTotalInPercentage / 100;
-        commisionRate = parseFloat(selectedvehicleCommission);
+          console.log("isMarketRate", formData.isMarketRate);
+          const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
+          commissionTotal = commissionTotalInPercentage / 100;
+          commisionRate = parseFloat(selectedvehicleCommission);
       }
 
 

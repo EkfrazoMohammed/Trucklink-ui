@@ -291,41 +291,41 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
         return text;
       }
     },
-    // {
-    //   title: 'Action',
-    //   key: 'operation',
-    //   width: '190',
-    //   render: (_, record) => {
-    //     if (newRow && newRow.key === record.key) {
-    //       return (
-    //         <Space size="middle">
-    //           <Button onClick={saveNewRow} type="link">Save</Button>
-    //           <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
-    //         </Space>
-    //       );
-    //     }
-    //     if (editingRowKey && editingRowKey === record.key) {
-    //       return (
-    //         <Space size="middle">
-    //           <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
-    //           <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
-    //         </Space>
-    //       );
-    //     }
-    //     return (
-    //       <Space size="middle">
-    //         <Tooltip placement="top" title="Edit">
-    //           <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
-    //         </Tooltip>
-    //         {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
-    //           <Tooltip placement="top" title="Delete">
-    //             <a><DeleteOutlined /></a>
-    //           </Tooltip>
-    //         </Popconfirm> */}
-    //       </Space>
-    //     );
-    //   }
-    // }
+    {
+      title: 'Action',
+      key: 'operation',
+      width: '190',
+      render: (_, record) => {
+        if (newRow && newRow.key === record.key) {
+          return (
+            <Space size="middle">
+              <Button onClick={saveNewRow} type="link">Save</Button>
+              <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
+            </Space>
+          );
+        }
+        if (editingRowKey && editingRowKey === record.key) {
+          return (
+            <Space size="middle">
+              <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
+              <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
+            </Space>
+          );
+        }
+        return (
+          <Space size="middle">
+            <Tooltip placement="top" title="Edit">
+              <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
+            </Tooltip>
+            {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
+              <Tooltip placement="top" title="Delete">
+                <a><DeleteOutlined /></a>
+              </Tooltip>
+            </Popconfirm> */}
+          </Space>
+        );
+      }
+    }
      {
       title: 'Actions',
       key: 'actions',
@@ -357,7 +357,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
                 });
               }}><FormOutlined /></a>
             </Tooltip>
-            {/* <Popconfirm
+            <Popconfirm
               title="Are you sure to delete?"
               onConfirm={() => handleDelete(record.key)}
               okText="Yes"
@@ -366,7 +366,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
               <Tooltip placement="top" title="Delete">
                 <a><DeleteOutlined /></a>
               </Tooltip>
-            </Popconfirm> */}
+            </Popconfirm>
           </Space>
         );
       }

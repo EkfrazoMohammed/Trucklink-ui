@@ -1518,6 +1518,8 @@ const DispatchContainer = ({ onData }) => {
     }, [selectedHubId]);
 
 
+    // const [temp,setTemp]=useState(null)
+
     const handleSubmit = (e) => {
       e.preventDefault();
       let commissionTotal = 0;
@@ -1558,6 +1560,7 @@ const DispatchContainer = ({ onData }) => {
       const totalExpenses = parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage);
       const balance = totalIncome - commissionTotal - totalExpenses;
 
+
       const payload = {
         balance: balance,
         bankTransfer: formData.bankTransfer,
@@ -1587,6 +1590,8 @@ const DispatchContainer = ({ onData }) => {
         hubId: selectedHubId,
         shortage: formData.shortage,
       };
+      // setTemp(payload)
+
 
       const headersOb = {
         headers: {
@@ -1871,6 +1876,7 @@ const DispatchContainer = ({ onData }) => {
 
             </div>
           </div>
+          {/* {JSON.stringify(temp, null, 2)} */}
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={handleResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>

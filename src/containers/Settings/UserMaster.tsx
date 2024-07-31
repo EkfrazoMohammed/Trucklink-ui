@@ -194,7 +194,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const [formData, setFormData] = useState(
       {
-        name: '',
+        name: "",
         countryCode: "+91",
         firstName: "",
         email: "",
@@ -231,36 +231,41 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-  
+
       // Prepare the payload
       const payload = {
-          countryCode: formData.countryCode,
-          firstName: formData.firstName,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          name: formData.name,
-          roleName: formData.userRole, // Assuming userRole is the correct field for role
-          hubId: select3HubId // Assuming select3HubId is the selected hubs
+        countryCode: formData.countryCode,
+        // firstName: formData.firstName,
+        firstName: formData.name.charAt(0).toUpperCase() + formData.name.slice(1),
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        name: formData.name,
+        roleName: formData.userRole,
+        role: formData.userRole,
+        password: formData.password,
+        hubId: select3HubId
       };
-  
+
       console.log('Payload:', payload);
-  
-      // Prepare the API request
+
+      // // Prepare the API request
       try {
-          const response = await API.post('create-user', payload, headersOb);
-          console.log('Response:', response);
-          if (response.status === 201) {
-              alert("User created successfully");
-              // Redirect or perform additional actions if needed
-          } else {
-              alert('Error occurred');
-          }
+        const response = await API.post('create-user', payload, headersOb);
+        console.log('Response:', response);
+        if (response.status === 201) {
+          alert("User created successfully");
+          getTableData("", selectedHubId);
+          goBack()
+          // Redirect or perform additional actions if needed
+        } else {
+          alert('Error occurred');
+        }
       } catch (error) {
-          console.error('Error creating user:', error);
-          alert("An error occurred while creating the user");
+        console.error('Error creating user:', error);
+        alert("An error occurred while creating the user");
       }
-  };
-  
+    };
+
 
 
 
@@ -299,7 +304,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
-                  type='number'
+                    type='number'
                     placeholder="Phone Number*"
                     size="large"
                     value={formData.phoneNumber}
@@ -340,6 +345,15 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                       </Option>
                     ))}
                   </Select>
+                </Col>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Input
+                    placeholder="Password*"
+                    size="large"
+                    value={formData.password}
+                    name="password"
+                    onChange={(e) => handleChange('password', e.target.value)}
+                  />
                 </Col>
               </Row>
             </div>
@@ -541,22 +555,49 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
   };
 
 
-
   const EditTruckDataRow = ({ filterTruckTableData }) => {
+   
+    const [formData, setFormData] = useState({
+      countryCode: "+91",
+      firstName: filterTruckTableData.name || '',
+      email: filterTruckTableData.email || '',
+      phoneNumber: filterTruckTableData.phoneNumber || '',
+      name: filterTruckTableData.name || '',
+      userRole: filterTruckTableData.roleName || '',
+      hubId: filterTruckTableData.hubId || [],
+    });
 
+    const handleChange = (name, value) => {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      // Handle form submission logic here
+      console.log('Form data:', formData);
+    };
 
     const goBack = () => {
       setShowTruckTable(true)
       onData('flex')
-      setShowTabs(true); // Set showTabs to false when adding owner
-    }
+      setShowTabs(true);
+    };
 
     return (
       <>
         <div className="flex flex-col gap-2">
-
           <div className="flex items-center gap-4">
-            <div className="flex"><img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} /> </div>
+            <div className="flex">
+              <img
+                src={backbutton_logo}
+                alt="backbutton_logo"
+                className='w-5 h-5 object-cover cursor-pointer'
+                onClick={goBack}
+              />
+            </div>
             <div className="flex flex-col">
               <h1 className='font-bold' style={{ fontSize: "16px" }}>Edit User Details</h1>
               <Breadcrumb
@@ -574,11 +615,8 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
               />
             </div>
           </div>
-          {JSON.stringify(filterTruckTableData, null, 2)}
-
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
-
               <div className="text-md font-normal">Enter User Details</div>
             </div>
             <div className="flex flex-col gap-1">
@@ -588,20 +626,26 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                     placeholder="Name*"
                     size="large"
                     name="name"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
                     placeholder="Email*"
                     size="large"
-                    name="name"
+                    name="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
                     placeholder="Phone Number*"
                     size="large"
-                    name="name"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={(e) => handleChange('phoneNumber', e.target.value)}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -610,34 +654,37 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                     placeholder="User Role*"
                     size="large"
                     style={{ width: '100%' }}
-                    options={[
-                      { value: 'Admin', label: 'Admin' },
-                      { value: 'Accountant', label: 'Accountant' },
-                    ]}
-                  />
-
+                    value={formData.userRole}
+                    onChange={(value) => handleChange('userRole', value)}
+                  >
+                    <Option value="Admin">Admin</Option>
+                    <Option value="Accountant">Accountant</Option>
+                  </Select>
                 </Col>
-
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
-                    name="userRole"
-                    placeholder="User Role*"
+                    mode="multiple"
+                    placeholder="Select hubs"
                     size="large"
                     style={{ width: '100%' }}
-                    options={[
-                      { value: 'Admin', label: 'Admin' },
-                      { value: 'Accountant', label: 'Accountant' },
-                    ]}
-                  />
+                    value={formData.hubId}
+                    onChange={(value) => handleChange('hubId', value)}
+                  >
+                    {filterTruckTableData.hubId.map(hub => (
+                      <Option key={hub} value={hub}>
+                        {hub}
+                      </Option>
+                    ))}
+                  </Select>
                 </Col>
               </Row>
             </div>
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button >Reset</Button>
-            <Button type="primary" className="bg-primary" >
+            <Button onClick={() => setFormData({ name: '', email: '', phoneNumber: '', userRole: '', hubId: [] })}>Reset</Button>
+            <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>
           </div>

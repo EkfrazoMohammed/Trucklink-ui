@@ -183,7 +183,7 @@ const Login = () => {
                 <div className="flex gap-2 flex-col">
 
                   <Button type="primary" onClick={handleClick}>Sign in</Button>
-                  <Button type="link" className='text-black'>Reset password here</Button>
+                  {/* <Button type="link" className='text-black'>Reset password</Button> */}
                 </div>
               </div>
             </div>

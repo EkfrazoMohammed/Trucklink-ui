@@ -88,152 +88,7 @@ const SettingsContainer = ({ onData }) => {
     );
   };
 
-  const AddTruckOwnerForm = () => {
-    const [formData, setFormData] = useState({
-      name: '',
-      email: '',
-      phoneNumber: '',
-      countryCode: '',
-      panNumber: '',
-      district: '',
-      state: '',
-      address: selectedHubName,
-      vehicleIds: [],
-      hubId: selectedHubId,
-      bankAccounts: Array.from({ length: 1 }, () => ({
-        accountNumber: '',
-        accountHolderName: '',
-        ifscCode: '',
-        bankName: '',
-        branchName: ''
-      }))
-    });
-
-
-    const handleOwnerFormChange = (e) => {
-      const { name, value } = e.target;
-      const updatedValue = name === 'panNumber' ? value.toUpperCase() : value; // Convert to uppercase only if name is 'panNumber'
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: updatedValue,
-      }));
-    };
-
-    const handleBankAccountChange = (index, e) => {
-      const { name, value } = e.target;
-      const updatedBankAccounts = [...formData.bankAccounts];
-      updatedBankAccounts[index][name] = value;
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: updatedBankAccounts
-      }));
-    };
-
-    const handleAddBankAccount = () => {
-      if (formData.bankAccounts.length < 2) {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          bankAccounts: [
-            ...prevFormData.bankAccounts,
-            {
-              accountNumber: '',
-              accountHolderName: '',
-              ifscCode: '',
-              bankName: '',
-              branchName: ''
-            }
-          ]
-        }));
-      } else {
-        alert("Only two bank accounts are allowed")
-      }
-    };
-
-    const handleRemoveBankAccount = (index) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
-      }));
-    };
-
-    const handleChangeBank = (index, e) => {
-      const { value } = e.target;
-      const updatedBankAccounts = [...formData.bankAccounts];
-      updatedBankAccounts[index].ifscCode = value; // Update the IFSC code value for the specific bank form
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        bankAccounts: updatedBankAccounts
-      }));
-    };
-
-    const fetchBankDetails = (index) => {
-      const bankAccount = formData.bankAccounts[index];
-      const { ifscCode } = bankAccount;
-      if (!ifscCode) {
-
-        message.warning('Please fill IFSC code');
-        return;
-      }
-
-      fetch(`https://ifsc.razorpay.com/${ifscCode}`)
-        .then(response => response.json())
-        .then(data => {
-          setFormData(prevFormData => ({
-            ...prevFormData,
-            bankAccounts: prevFormData.bankAccounts.map((account, i) => {
-              if (i === index) {
-                return {
-                  ...account,
-                  bankName: data.BANK,
-                  branchName: data.BRANCH
-                };
-              }
-              return account;
-            })
-          }));
-        })
-        .catch(error => {
-          message.error('Invalid IFSC code');
-        });
-    };
-
-
-    const [selectedState, setSelectedState] = useState('');
-    const [districts, setDistricts] = useState([]);
-
-    const handleStateChange = (value) => {
-      setSelectedState(value);
-      const selectedStateData = states.find((state) => state.state === value);
-      if (selectedStateData) {
-        setDistricts(selectedStateData.districts);
-      } else {
-        setDistricts([]);
-      }
-    };
-
-    const handleResetButtonClick = () => {
-
-      setFormData({
-        name: '',
-        email: '',
-        phoneNumber: '',
-        countryCode: '',
-        panNumber: '',
-        district: '',
-        state: '',
-        address: selectedHubName,
-        vehicleIds: [],
-        hubId: selectedHubId,
-        bankAccounts: Array.from({ length: 1 }, () => ({
-          accountNumber: '',
-          accountHolderName: '',
-          ifscCode: '',
-          bankName: '',
-          branchName: ''
-        }))
-      });
-    }
-
+  const AddTruckOwnerForm = () => { 
     const goBack = () => {
       setShowOwnerTable(true)
       setShowTabs(true);
@@ -244,17 +99,17 @@ const SettingsContainer = ({ onData }) => {
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <h1 className='text-xl font-bold'>Create Truck Owner</h1>
+            <h1 className='text-xl font-bold'>Reset Password</h1>
             <Breadcrumb
               items={[
                 {
-                  title: 'OnBoarding',
+                  title: 'Settings',
                 },
                 {
-                  title: 'Owner Master',
+                  title: 'Profile',
                 },
                 {
-                  title: 'Create',
+                  title: 'Reset Password',
                 },
               ]}
             />
@@ -262,34 +117,22 @@ const SettingsContainer = ({ onData }) => {
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1">
-              <div className='text-md font-semibold'>Vehicle Owner Information</div>
-              <div className='text-md font-normal'>Enter Truck Registration and Owner Details</div>
-
-            </div>
-            <div className="flex flex-col gap-1">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="Owner Name*" size="large" name="name" onChange={handleOwnerFormChange} value={formData.name} /></div>
-                </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='number' placeholder="Mobile Number*" size="large" name="phoneNumber" value={formData.phoneNumber} onChange={handleOwnerFormChange} /></div>
-                </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input type='email' placeholder="Email ID" size="large" name="email" value={formData.email} onChange={handleOwnerFormChange} /></div>
-                </Col>
-                <Col className="gutter-row mt-6" span={12}>
-                  <div ><Input placeholder="PAN Card No" size="large" name="panNumber" value={formData.panNumber} onChange={handleOwnerFormChange} /></div>
-                </Col>
-
-
-              </Row>
+              <div className='text-md font-semibold'>User </div>
+              <div className='text-md font-normal'>Reset Password</div>
             </div>
 
           </div>
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
+                <Input
+                    placeholder="New Password*"
+                    size="large"
+                    name="newPassword"
+                   />
+                </Col>
+              </Row>
 
-
-          <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button onClick={handleResetButtonClick}>Reset</Button>
+          <div className="flex gap-4 items-center justify-center reset-button-container">           
             <Button type="primary" className='bg-primary'>Save</Button>
           </div>
 

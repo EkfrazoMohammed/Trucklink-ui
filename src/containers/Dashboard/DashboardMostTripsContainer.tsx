@@ -101,8 +101,14 @@ const DashboardMostTripsContainer = ({year,currentUserRole}) => {
             });
 
             // Prepare chart data
-            const categories = Object.keys(cityData);
-            const seriesData = Object.values(cityData);
+            // const categories = Object.keys(cityData);
+            // const seriesData = Object.values(cityData);
+            const sortedCityData = Object.entries(cityData).sort((a, b) => b[1] - a[1]);
+            const top3CityData = sortedCityData.slice(0, 3);
+
+            const categories = top3CityData.map(item => item[0]);
+            const seriesData = top3CityData.map(item => item[1]);
+
 
             setChartOptions({
                 series: [

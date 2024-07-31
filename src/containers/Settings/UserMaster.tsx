@@ -315,6 +315,18 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
           "Authorization": `Bearer ${authToken}`
         }
       }
+//       curl --location 'https://trucklinkuatnew.thestorywallcafe.com/prod/v1/create-user' \
+// --header 'Content-Type: application/json' \
+// --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MjIyMjk5NjEsImV4cCI6MTcyNDgyMTk2MSwiaXNzIjoiaHV0ZWNoc29sdXRpb25zLmNvbSIsInN1YiI6ImVtYWlsPWRocnV2YUB0cnVja2xpbmsuY29tcm9sZT1BZG1pbiIsInJvbGUiOiJBZG1pbiIsImVtYWlsIjoiZGhydXZhQHRydWNrbGluay5jb20ifQ.D1ZIkF4EUF2n2oByi9nHBqKzfrldJTvM7qVOm0ImHq0' \
+// --data-raw '{
+//   "countryCode": "+91",
+//   "firstName": "Tayib",
+//   "email": "tayibulla@aivolved.in",
+//   "phoneNumber": "8550895486",
+//   "name": "tayib",
+//   "roleName": "Accountant",
+//   "hubId": ["669e3a71ac963160781c1123"]
+// }'
       console.log('save clicked')
     };
 

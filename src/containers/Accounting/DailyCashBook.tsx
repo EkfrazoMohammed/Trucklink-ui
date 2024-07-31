@@ -135,13 +135,17 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log(err);
     }
   };
-
+  const [selectedMonth,setSelectedMonth]=useState(null)
   const handleMonthChange = (date, dateString) => {
     if (date) {
       const month = date.month() + 1;
       const year = date.year();
       setSelectedDate({ month, year });
+      const formattedDate = dayjs(date).format('YYYY-MM');
+      console.log(formattedDate)
+      setSelectedMonth(formattedDate)
       getTableData(month, year);
+      
     }
   };
 
@@ -405,6 +409,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             placeholder='By Month'
             picker="month"
             onChange={handleMonthChange}
+            value={dayjs().month(selectedDate.month - 1).year(selectedDate.year)}
+        
           />
         </div>
         <Button

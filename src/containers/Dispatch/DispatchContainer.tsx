@@ -1357,6 +1357,7 @@ const DispatchContainer = ({ onData }) => {
 
     const handleDateChange = (date, dateString) => {
       const formattedGrDate = formatDate(dateString);
+      console.log(formattedGrDate)
       handleChange('grDate', formattedGrDate);
     };
 

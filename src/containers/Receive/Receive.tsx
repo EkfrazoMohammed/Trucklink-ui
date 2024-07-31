@@ -935,17 +935,32 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                 }));
             }
         };
+        // const formatDate = (dateString) => {
+        //     // Split the date string by '-'
+        //     const parts = dateString.split('-');
+        //     // Rearrange the parts in the required format
+        //     const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        //     return formattedDate;
+        // };
+        // // Function to handle date change
+        // const handleDateChange = (date, dateString) => {
+        //     const formattedGrDate = formatDate(dateString);
+        //     // dateString will be in the format 'YYYY-MM-DD'
+        //     handleChange('grDate', formattedGrDate);
+        // };
         const formatDate = (dateString) => {
+
             // Split the date string by '-'
             const parts = dateString.split('-');
             // Rearrange the parts in the required format
-            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
             return formattedDate;
         };
         // Function to handle date change
+
         const handleDateChange = (date, dateString) => {
             const formattedGrDate = formatDate(dateString);
-            // dateString will be in the format 'YYYY-MM-DD'
+            console.log(formattedGrDate)
             handleChange('grDate', formattedGrDate);
         };
         const [materials, setMaterials] = useState([]);
@@ -1257,13 +1272,24 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
                                         onChange={(e) => handleChange('grNumber', e.target.value)}
                                     />
                                 </Col>
-                                <Col className="gutter-row mt-6" span={6}>
+                                {/* <Col className="gutter-row mt-6" span={6}>
 
                                     <DatePicker
                                         placeholder="GR Date"
                                         size="large"
                                         style={{ width: "100%" }}
                                         onChange={handleDateChange} // Call handleDateChange function on date change
+                                    />
+                                </Col> */}
+                                <Col className="gutter-row mt-6" span={6}>
+                                    <DatePicker
+                                        required
+                                        placeholder="GR Date"
+                                        size="large"
+                                        format="DD-MM-YYYY"
+                                        style={{ width: "100%" }}
+                                        onChange={handleDateChange}
+                                        value={dayjs(formData.grDate, 'DD/MM/YYYY')}
                                     />
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>

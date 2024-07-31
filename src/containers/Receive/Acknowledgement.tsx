@@ -238,9 +238,9 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
                     {searchQuery3 !== null && searchQuery3 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
-            
-            
-           
+
+
+
             </div>
 
         );
@@ -282,8 +282,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
         const [currentPage, setCurrentPage] = useState(1);
         const [currentPageSize, setCurrentPageSize] = useState(10);
         const [activePageSize, setActivePageSize] = useState(10);
-            const columns = [
-                
+        const columns = [
+
             {
                 title: 'Ageing',
                 dataIndex: 'ageing',
@@ -331,13 +331,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 },
             },
 
-              {
+            {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
                 render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
                 width: 80,
-              },
+            },
             {
                 title: 'GR No',
                 dataIndex: 'grNumber',
@@ -523,7 +523,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                 <Tooltip placement="top" title="post"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Post</Button></Tooltip>
                             </> : <>
                                 <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
-                                <Tooltip placement="top" title="save"><Button  onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
+                                <Tooltip placement="top" title="save"><Button onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
                             </>}
                         </Space>
                     )
@@ -536,261 +536,261 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             setCurrentPageSize(newPageSize);
             setCurrentPage(1); // Reset to the first page
             setActivePageSize(newPageSize); // Update the active page size
-          };
-          const handleDownload = () => {
+        };
+        const handleDownload = () => {
             const challans = acknowledgement;
-      
+
             // Prepare data for owner details
             const ownerDetails = challans.map((challan) => (
-              {
-                "_id": challan._id,
-                "quantityInMetricTons": challan.quantityInMetricTons,
-                "rate": challan.rate,
-                "commisionRate": challan.commisionRate,
-                "commisionTotal": challan.commisionTotal,
-                "totalExpense": challan.totalExpense,
-                "shortage": challan.shortage,
-                "balance": challan.balance,
-                "diesel": challan.diesel,
-                "cash": challan.cash,
-                "bankTransfer": challan.bankTransfer,
-                "recovery": challan.recovery,
-                "outstanding": challan.outstanding,
-                "isAcknowledged": challan.isAcknowledged,
-                "isReceived": challan.isReceived,
-                "isMarketRate": challan.isMarketRate,
-                "marketRate": challan.marketRate,
-                "billNumber": challan.billNumber,
-                "excel": challan.excel,
-                "materialType": challan.materialType,
-                "grDate": challan.grDate,
-                "grISODate": challan.grISODate,
-                "loadLocation": challan.loadLocation,
-                "deliveryLocation": challan.deliveryLocation,
-                "vehicleNumber": challan.vehicleNumber,
-                "ownerId": challan.ownerId,
-                "ownerName": challan.ownerName,
-                "vehicleId": challan.vehicleId,
-                "vehicleBank": challan.vehicleBank,
-                "ownerPhone": challan.ownerPhone,
-                "vehicleType": challan.vehicleType,
-                "deliveryNumber": challan.deliveryNumber,
-                "vehicleReferenceId": challan.vehicleReferenceId,
-                "vehicleBankReferenceId": challan.vehicleBankReferenceId,
-                "ownerReferenceId": challan.ownerReferenceId,
-                "hubId": challan.hubId,
-                "createdAt": challan.createdAt,
-                "modifiedAt": challan.modifiedAt,
-                "__v": 0
-                ,
-              }
+                {
+                    "_id": challan._id,
+                    "quantityInMetricTons": challan.quantityInMetricTons,
+                    "rate": challan.rate,
+                    "commisionRate": challan.commisionRate,
+                    "commisionTotal": challan.commisionTotal,
+                    "totalExpense": challan.totalExpense,
+                    "shortage": challan.shortage,
+                    "balance": challan.balance,
+                    "diesel": challan.diesel,
+                    "cash": challan.cash,
+                    "bankTransfer": challan.bankTransfer,
+                    "recovery": challan.recovery,
+                    "outstanding": challan.outstanding,
+                    "isAcknowledged": challan.isAcknowledged,
+                    "isReceived": challan.isReceived,
+                    "isMarketRate": challan.isMarketRate,
+                    "marketRate": challan.marketRate,
+                    "billNumber": challan.billNumber,
+                    "excel": challan.excel,
+                    "materialType": challan.materialType,
+                    "grDate": challan.grDate,
+                    "grISODate": challan.grISODate,
+                    "loadLocation": challan.loadLocation,
+                    "deliveryLocation": challan.deliveryLocation,
+                    "vehicleNumber": challan.vehicleNumber,
+                    "ownerId": challan.ownerId,
+                    "ownerName": challan.ownerName,
+                    "vehicleId": challan.vehicleId,
+                    "vehicleBank": challan.vehicleBank,
+                    "ownerPhone": challan.ownerPhone,
+                    "vehicleType": challan.vehicleType,
+                    "deliveryNumber": challan.deliveryNumber,
+                    "vehicleReferenceId": challan.vehicleReferenceId,
+                    "vehicleBankReferenceId": challan.vehicleBankReferenceId,
+                    "ownerReferenceId": challan.ownerReferenceId,
+                    "hubId": challan.hubId,
+                    "createdAt": challan.createdAt,
+                    "modifiedAt": challan.modifiedAt,
+                    "__v": 0
+                    ,
+                }
             ));
-      
-      
-      
+
+
+
             // Create a new workbook
             const wb = XLSX.utils.book_new();
-      
+
             // Add the owner details sheet to the workbook
             const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
             XLSX.utils.book_append_sheet(wb, ownerWS, 'Acknowledgement Details');
-      
-      
+
+
             // Export the workbook to an Excel file
             XLSX.writeFile(wb, 'Acknowledgement.xlsx');
-          };
-          const handlePrint = () => {
+        };
+        const handlePrint = () => {
             const totalPagesExp = "{total_pages_count_string}";
             try {
-              const doc = new jsPDF("l", "mm", "a4");
-              const items = acknowledgement.map((challan, index) => [
-                index + 1,
-                challan.materialType || "-",
-                challan.grNumber || "-",
-                challan.grDate || "-",
-                challan.loadLocation || "-",
-                challan.deliveryLocation || "-",
-                challan.vehicleNumber || "-",
-                challan.ownerName || "-",
-                challan.vehicleType || "-",
-                challan.deliveryNumber || "-",
-                challan.quantityInMetricTons || "-",
-                challan.rate || "-",
-                challan.commisionRate || "-",
-                challan.commisionTotal || "-",
-                challan.diesel || "-",
-                challan.cash || "-",
-                challan.bankTransfer || "-",
-                // challan.totalExpense || "-",
-                challan.balance || "-",
-                challan.excel || "-",
-                challan.hubId || "-",
-                
-              ]);
-      
-              if (items.length === 0) {
-                message.error("No data available to download");
-              } else {
-                doc.setFontSize(10);
-                const d = new Date();
-                const m = d.getMonth() + 1;
-                const day = d.getDate();
-                const year = d.getFullYear();
-      
-                doc.autoTable({
-                  head: [
-                    [
-                        "Sl No",
-                        
-                      "materialType",
-                      "gr No ",
-                      "gr Date    ",
-                      "loadLocation",
-                      "deliveryLocation",
-                      "Vehicle No         ",
-                      "Owner Name             ",
-                      "Vehicle Type           ",
-                      "DO Number        ",
-                      "Qty  ",
-                      "rate                  ",
-                      "commisionRate (%)",
-                      "Total commision ",
-                      "diesel ",
-                      "cash",
-                      "bank Transfer ",
-                      // "totalExpense ",
-                      "balance   ",
-                      "excel   ",
-                      "hubId   ",
-      
-                    ],
-                  ],
-                  body: items,
-                  startY: 10,
-                  headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
-                  bodyStyles: { fontSize: 8, textAlign: "center" },
-                  columnStyles: {
-                    0: { cellWidth: 7 },
-                    1: { cellWidth: 14 },
-                    2: { cellWidth: 14 },
-                    3: { cellWidth: 14 },
-                    4: { cellWidth: 14 },
-                    5: { cellWidth: 14 },
-                    6: { cellWidth: 14 },
-                    7: { cellWidth: 14 },
-                    8: { cellWidth: 14 },
-                    9: { cellWidth: 14 },
-                    10: { cellWidth: 14 },
-                    11: { cellWidth: 14 },
-                    12: { cellWidth: 14 },
-                    13: { cellWidth: 14 },
-                    14: { cellWidth: 14 },
-                    15: { cellWidth: 14 },
-                    16: { cellWidth: 14 },
-                    17: { cellWidth: 14 },
-                    18: { cellWidth: 14 },
-                    19: { cellWidth: 14 },
-                    20: { cellWidth: 14 },
-                    21: { cellWidth: 14 },
-                    22: { cellWidth: 14 },
-                    23: { cellWidth: 14 },
-                    // 24: { cellWidth: 14 },
-                   
-                  },
-                  didDrawPage: function (data) {
-                    // Header
+                const doc = new jsPDF("l", "mm", "a4");
+                const items = acknowledgement.map((challan, index) => [
+                    index + 1,
+                    challan.materialType || "-",
+                    challan.grNumber || "-",
+                    challan.grDate || "-",
+                    challan.loadLocation || "-",
+                    challan.deliveryLocation || "-",
+                    challan.vehicleNumber || "-",
+                    challan.ownerName || "-",
+                    challan.vehicleType || "-",
+                    challan.deliveryNumber || "-",
+                    challan.quantityInMetricTons || "-",
+                    challan.rate || "-",
+                    challan.commisionRate || "-",
+                    challan.commisionTotal || "-",
+                    challan.diesel || "-",
+                    challan.cash || "-",
+                    challan.bankTransfer || "-",
+                    // challan.totalExpense || "-",
+                    challan.balance || "-",
+                    challan.excel || "-",
+                    challan.hubId || "-",
+
+                ]);
+
+                if (items.length === 0) {
+                    message.error("No data available to download");
+                } else {
                     doc.setFontSize(10);
-                    doc.text("Challan Details", data.settings.margin.left + 0, 5);
-                    doc.text("Date:-", data.settings.margin.left + 155, 5);
-                    doc.text(
-                      day + "/" + m + "/" + year,
-                      data.settings.margin.left + 170,
-                      5
-                    );
-      
-                    // Footer
-                    var str = "Page " + doc.internal.getNumberOfPages();
-                    // Total page number plugin only available in jspdf v1.0+
+                    const d = new Date();
+                    const m = d.getMonth() + 1;
+                    const day = d.getDate();
+                    const year = d.getFullYear();
+
+                    doc.autoTable({
+                        head: [
+                            [
+                                "Sl No",
+
+                                "materialType",
+                                "gr No ",
+                                "gr Date    ",
+                                "loadLocation",
+                                "deliveryLocation",
+                                "Vehicle No         ",
+                                "Owner Name             ",
+                                "Vehicle Type           ",
+                                "DO Number        ",
+                                "Qty  ",
+                                "rate                  ",
+                                "commisionRate (%)",
+                                "Total commision ",
+                                "diesel ",
+                                "cash",
+                                "bank Transfer ",
+                                // "totalExpense ",
+                                "balance   ",
+                                "excel   ",
+                                "hubId   ",
+
+                            ],
+                        ],
+                        body: items,
+                        startY: 10,
+                        headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+                        bodyStyles: { fontSize: 8, textAlign: "center" },
+                        columnStyles: {
+                            0: { cellWidth: 7 },
+                            1: { cellWidth: 14 },
+                            2: { cellWidth: 14 },
+                            3: { cellWidth: 14 },
+                            4: { cellWidth: 14 },
+                            5: { cellWidth: 14 },
+                            6: { cellWidth: 14 },
+                            7: { cellWidth: 14 },
+                            8: { cellWidth: 14 },
+                            9: { cellWidth: 14 },
+                            10: { cellWidth: 14 },
+                            11: { cellWidth: 14 },
+                            12: { cellWidth: 14 },
+                            13: { cellWidth: 14 },
+                            14: { cellWidth: 14 },
+                            15: { cellWidth: 14 },
+                            16: { cellWidth: 14 },
+                            17: { cellWidth: 14 },
+                            18: { cellWidth: 14 },
+                            19: { cellWidth: 14 },
+                            20: { cellWidth: 14 },
+                            21: { cellWidth: 14 },
+                            22: { cellWidth: 14 },
+                            23: { cellWidth: 14 },
+                            // 24: { cellWidth: 14 },
+
+                        },
+                        didDrawPage: function (data) {
+                            // Header
+                            doc.setFontSize(10);
+                            doc.text("Challan Details", data.settings.margin.left + 0, 5);
+                            doc.text("Date:-", data.settings.margin.left + 155, 5);
+                            doc.text(
+                                day + "/" + m + "/" + year,
+                                data.settings.margin.left + 170,
+                                5
+                            );
+
+                            // Footer
+                            var str = "Page " + doc.internal.getNumberOfPages();
+                            // Total page number plugin only available in jspdf v1.0+
+                            if (typeof doc.putTotalPages === "function") {
+                                str = str + " of " + totalPagesExp;
+                            }
+                            doc.setFontSize(10);
+
+
+                            // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+                            var pageSize = doc.internal.pageSize;
+                            var pageHeight = pageSize.height
+                                ? pageSize.height
+                                : pageSize.getHeight();
+                            doc.text(str, data.settings.margin.left, pageHeight - 10);
+                        },
+                        margin: { top: 10 },
+                    });
+
+
                     if (typeof doc.putTotalPages === "function") {
-                      str = str + " of " + totalPagesExp;
+                        doc.putTotalPages(totalPagesExp);
                     }
-                    doc.setFontSize(10);
-      
-      
-                    // jsPDF 1.4+ uses getWidth, <1.4 uses .width
-                    var pageSize = doc.internal.pageSize;
-                    var pageHeight = pageSize.height
-                      ? pageSize.height
-                      : pageSize.getHeight();
-                    doc.text(str, data.settings.margin.left, pageHeight - 10);
-                  },
-                  margin: { top: 10 },
-                });
-      
-      
-                if (typeof doc.putTotalPages === "function") {
-                  doc.putTotalPages(totalPagesExp);
+                    doc.save("challans.pdf");
                 }
-                doc.save("challans.pdf");
-              }
             } catch (err) {
-              message.error("Unable to Print");
+                message.error("Unable to Print");
             }
-          };
+        };
         return (
             <>
-            <div className='flex gap-2 mb-2 items-center justify-end'>
-            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
-            <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+                <div className='flex gap-2 mb-2 items-center justify-end'>
+                    <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+                    <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
 
-                <div className='flex   my-paginations '>
-          <span className='bg-[#F8F9FD] p-1'>
-          <Button
-            onClick={() => handlePageSizeChange(10)}
-            style={{ 
-              backgroundColor: activePageSize === 10 ? 'grey' : 'white',
-              color: activePageSize === 10 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 10 ? '6px' : '0' ,
-              boxShadow:activePageSize === 10 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            10
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(25)}
-            style={{ 
-              backgroundColor: activePageSize === 25 ? 'grey' : 'white',
-              color: activePageSize === 25 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 25 ? '6px' : '0' ,
-              boxShadow:activePageSize === 25 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            25
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(50)}
-            style={{ 
-              backgroundColor: activePageSize === 50 ? 'grey' : 'white',
-              color: activePageSize === 50 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 50 ? '6px' : '0' ,
-              boxShadow:activePageSize === 50 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            50
-          </Button>
-          <Button
-            onClick={() => handlePageSizeChange(100)}
-            style={{ 
-              backgroundColor: activePageSize === 100 ? 'grey' : 'white',
-              color: activePageSize === 100 ? 'white' : 'black' ,
-              borderRadius:activePageSize === 100 ? '6px' : '0' ,
-              boxShadow:activePageSize === 100 ?  '0px 0px 4px 0px #00000040' :'none',
-            }}
-          >
-            100
-          </Button>
-          </span>
-        </div>
+                    <div className='flex   my-paginations '>
+                        <span className='bg-[#F8F9FD] p-1'>
+                            <Button
+                                onClick={() => handlePageSizeChange(10)}
+                                style={{
+                                    backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                                    color: activePageSize === 10 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 10 ? '6px' : '0',
+                                    boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                10
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(25)}
+                                style={{
+                                    backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                                    color: activePageSize === 25 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 25 ? '6px' : '0',
+                                    boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                25
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(50)}
+                                style={{
+                                    backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                                    color: activePageSize === 50 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 50 ? '6px' : '0',
+                                    boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                50
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(100)}
+                                style={{
+                                    backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                                    color: activePageSize === 100 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 100 ? '6px' : '0',
+                                    boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                100
+                            </Button>
+                        </span>
+                    </div>
                 </div>
                 <Table
                     rowSelection={rowSelection}
@@ -799,7 +799,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
-                  
+
                     // pagination={{
                     //     showSizeChanger: true,
                     //     position: ['bottomCenter'],
@@ -817,13 +817,13 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                         current: currentPage,
                         pageSize: currentPageSize,
                         onChange: (page) => {
-                          setCurrentPage(page);
+                            setCurrentPage(page);
                         },
-                      }}
-                      // antd site header height
-                  sticky={{
-                    offsetHeader:0,
-                  }}
+                    }}
+                    // antd site header height
+                    sticky={{
+                        offsetHeader: 0,
+                    }}
                 />
             </>
         );
@@ -985,18 +985,21 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             }
         };
         const formatDate = (dateString) => {
+
             // Split the date string by '-'
             const parts = dateString.split('-');
             // Rearrange the parts in the required format
-            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
             return formattedDate;
         };
         // Function to handle date change
+
         const handleDateChange = (date, dateString) => {
             const formattedGrDate = formatDate(dateString);
-            // dateString will be in the format 'YYYY-MM-DD'
+            console.log(formattedGrDate)
             handleChange('grDate', formattedGrDate);
         };
+
         const [materials, setMaterials] = useState([]);
         const [loadLocation, setloadLocations] = useState([]);
 
@@ -1308,13 +1311,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                         onChange={(e) => handleChange('grNumber', e.target.value)}
                                     />
                                 </Col>
-                                <Col className="gutter-row mt-6" span={6}>
+                                {/* <Col className="gutter-row mt-6" span={6}>
 
                                     <DatePicker
                                         placeholder="GR Date"
                                         size="large"
                                         style={{ width: "100%" }}
                                         onChange={handleDateChange} // Call handleDateChange function on date change
+                                    />
+                                    
+                                </Col> */}
+                                <Col className="gutter-row mt-6" span={6}>
+                                    <DatePicker
+                                        required
+                                        placeholder="GR Date"
+                                        size="large"
+                                        format="DD-MM-YYYY"
+                                        style={{ width: "100%" }}
+                                        onChange={handleDateChange}
+                                        value={dayjs(formData.grDate, 'DD/MM/YYYY')}
                                     />
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>

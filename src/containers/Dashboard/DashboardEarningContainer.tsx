@@ -72,7 +72,6 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
         fetchData();
     }, [year, selectedHub, select3HubId]);
 
-
     useEffect(() => {
         const hubsData = {};
         const monthlyTotals = Array(12).fill(0);
@@ -97,7 +96,14 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
             );
         });
 
-        const updatedSeries = Object.keys(hubsData).map(hubId => ({
+        const sortedHubs = Object.keys(hubsData)
+            .map(hubId => ({ hubId, total: hubsData[hubId].reduce((sum, val) => sum + val, 0) }))
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 3);
+
+        const topHubs = sortedHubs.map(item => item.hubId);
+
+        const updatedSeries = topHubs.map(hubId => ({
             name: hubs.find(hub => hub._id === hubId)?.location || hubId,
             data: viewMode === "amount" ? hubsData[hubId] : percentageHubs[hubId].map(value => parseFloat(value))
         }));
@@ -105,7 +111,6 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
         setSeries(updatedSeries);
     }, [earningData, viewMode, year, hubs]);
 
-    // Aggregated earnings for display
     const aggregatedEarnings = earningData.reduce((acc, earning) => {
         if (!acc[earning.hubId]) {
             acc[earning.hubId] = { ...earning, totalEarning: 0 };
@@ -114,7 +119,7 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
         return acc;
     }, {});
 
-    const earningsArray = Object.values(aggregatedEarnings);
+    const earningsArray = Object.values(aggregatedEarnings).slice(0, 3);
 
     const chartOptions = {
         chart: {
@@ -242,7 +247,6 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
                                     <Radio.Button value="amount">Amount</Radio.Button>
                                     <Radio.Button value="percentage">%</Radio.Button>
                                 </Radio.Group>
-
                             </div>
                         </div>
                     </Col>

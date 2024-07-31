@@ -41,16 +41,18 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
 
   const getHubColor = localStorage.getItem("selectedHubColor") || '0,0,0'
 
-
   // const hubData = useSelector((state: RootState) => state.hub.hubData);
   const [hubData, setHubData] = useState([])
 
   // Define a custom typed useDispatch hook
   const useAppDispatch = () => useDispatch<AppDispatch>();
-
+  
   // Use the custom typed useDispatch hook
   const dispatch = useAppDispatch();
-
+  
+  const userData = localStorage.getItem("userDetails");
+  const [userHub,setUserHub]=useState([])
+ 
   useEffect(() => {
     const fetchHubData = async () => {
       const headersOb = {
@@ -62,6 +64,15 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       const response = await API.get("get-hubs", headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      const userHubId = parsedUserData.hubId[0]; // Assuming `hubId` is an array and you want the first one
+      // console.log(response.data.hubs.find(h=> h._id == userHubId))
+      setUserHub(response.data.hubs.find(h=> h._id == userHubId))
+      const filterHub=response.data.hubs.find(h=> h._id == userHubId)
+      console.log(filterHub.location)
+      localStorage.setItem("selectedHubName", filterHub.location);
+    }
 
       } else {
         console.log("error fetching hubs")
@@ -70,7 +81,6 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       return response.data;
     };
     fetchHubData();
-    // dispatch(fetchHubData());
   }, []);
 
   const showModal = () => {
@@ -197,23 +207,33 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
     setEditFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-
-
   return (
     <>
       <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
+        {userHub && userHub.location ? <>
+        <div className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(201,205,11)`, backgroundColor: `rgba(201,205,11, 0.2)`, padding: "5px 10px", borderRadius: "4px",cursor:"pointer" }}>
+            <div className="flex flex-col">
+              <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}>&nbsp;</span>
+              <span style={{ fontWeight: "700" }}> {userHub && userHub.location}</span>
+            </div>
+            <div className="flex">
+              <DownOutlined />
+            </div>
+          </div>
+          </>:<>
           <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px",cursor:"pointer" }}>
             <div className="flex flex-col">
-
               <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}> Select Hub</span>
               <span style={{ fontWeight: "700" }}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
             </div>
             <div className="flex">
               <DownOutlined />
             </div>
+            {userHub && userHub.location}
           </div>
+          </>}
           {/* Select Hub Modal */}
           <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
             <div className="flex flex-col">
@@ -263,7 +283,9 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
           <Modal title="Hub Updated successfully" visible={confirmEditModalVisible} onOk={handleEditCloseAll} onCancel={handleEditCloseAll} />
 
           {/* Hiding on PRODUCTION */}
-          {/* <Badge size="small" count={1}>
+          {localStorage.getItem("selectedHubName") ? <>
+          
+          <Badge size="small" count={1}>
             <Dropdown overlay={
               <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal" dataSource={[{ title: "Pending Acknowledgement", description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement" }]} renderItem={(item) => (
                 <List.Item>
@@ -279,7 +301,8 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
                 </svg>
               </a>
             </Dropdown>
-          </Badge> */}
+          </Badge>
+          </>:<></>}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />
             Dhruva

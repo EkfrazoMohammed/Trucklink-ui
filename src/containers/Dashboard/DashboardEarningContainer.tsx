@@ -5,7 +5,7 @@ import { API } from "../../API/apirequest";
 
 const { Option } = Select;
 
-const DashboardEarningContainer = ({ year }) => {
+const DashboardEarningContainer = ({ year, currentUserRole }) => {
     const monthIndexMap = {
         "January": 0,
         "February": 1,
@@ -58,7 +58,7 @@ const DashboardEarningContainer = ({ year }) => {
             setLoading(true);
             try {
                 const payload = {
-                    "hubIds": select3HubId.length > 0 ? select3HubId : (selectedHub ? [selectedHub] : [])
+                    "hubIds": select3HubId.length > 0 ? select3HubId : (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
                 };
                 const response = await API.post(`get-earning-visualtion?entryYear=${year}`, payload, headersOb);
                 setEarningData(response.data.currentEarningData);
@@ -270,41 +270,18 @@ const DashboardEarningContainer = ({ year }) => {
                                 </div>
                                 <div className="category-title">
                                     {earningsArray && earningsArray.length > 0 ? (
-                                        <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
+                                        viewMode === "amount" ? (
+                                            <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
+                                        ) : (
+                                            <p>{((earningsArray[0].totalEarning / totalEarningsAllHubs) * 100).toFixed(2)}%</p>
+                                        )
                                     ) : (
                                         <p>0</p>
                                     )}
                                 </div>
                             </div>
-
                         )}
                     </Col>
-                    {/* <Col className="gutter-row flex flex-col gap-2" span={6}>
-                        {(!selectedHub || selectedHub === "") ? (
-                            earningData.map((earning, index) => {
-                                const value = viewMode === "amount" ? earning.totalEarning.toFixed(2) : ((earning.totalEarning / totalEarningsAllHubs) * 100).toFixed(2) + ' %';
-                                return (
-                                    <div key={index} className="flex justify-between flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md px-4 bg-white">
-                                        <div className={`category-value text-xl font-bold text-${index === 0 ? 'red' : index === 1 ? 'yellow' : 'green'}-500`}>
-                                            {value}
-                                        </div>
-                                        <div className="category-title">
-                                            {hubs.find(hub => hub._id === earning.hubId)?.location || earning.hubId}
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            <div key={selectedHub} className="flex justify-between flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md px-4 bg-white">
-                                <div className={`category-value text-xl font-bold text-red-500`}>
-                                    {selectedHubName}
-                                </div>
-                                <div className="category-title">
-                                    0
-                                </div>
-                            </div>
-                        )}
-                    </Col> */}
                     <Col className="gutter-row" span={18}>
                         <div className="flex justify-between items-center p-2 border border-y-2 border-x-2 rounded-md px-4">
                             <Chart

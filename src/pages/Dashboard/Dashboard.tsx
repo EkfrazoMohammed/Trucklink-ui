@@ -32,7 +32,9 @@ const Dashboard: React.FC = () => {
     setDataFromChild(childData);
   };
   const currentHub = localStorage.getItem("selectedHubName")
+  const currentUserRole = localStorage.getItem("userRole")
 
+  // console.log(currentHub)
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
   const [selectedMenuTitle, setSelectedMenuTitle] = useState(localStorage.getItem("selectedMenuItemTitle") || 'Dashboard')
@@ -41,19 +43,40 @@ const Dashboard: React.FC = () => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
+  let items = [];
+  if (currentUserRole === "Accountant") {
+    items = [
+      { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+      { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: false },
+    ];
+  } else {
+    items = [
+      { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+      { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+    ];
 
-  const items = [
-    { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub  },
-  ];
+  }
+  // const items = [
+  //   { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+  //   { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub  },
+  // ];
 
   const handleMenuClick = (menuItemKey: string, menuTitle: string, disabled: boolean) => {
-    if (!currentHub) {
+    if (!currentHub && currentUserRole !== "Accountant") {
       alert("select hub location first")
     }
     else {
@@ -63,9 +86,11 @@ const Dashboard: React.FC = () => {
         setTitle('Dashboard');
         setSelectedMenuTitle('Dashboard')
         setDataFromChild("flex")
+      if (currentUserRole !== "Accountant") {
         localStorage.removeItem("selectedHubID");
         localStorage.removeItem("selectedHubName");
         localStorage.removeItem("selectedHubColor");
+      }
         // localStorage.setItem("selectedHubName", "All Locations")
       } else {
 
@@ -105,6 +130,10 @@ const Dashboard: React.FC = () => {
           localStorage.removeItem('selectedMenuItemTitle');
           localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
           localStorage.removeItem('loginID')
+          localStorage.removeItem('userRole')
+          localStorage.removeItem('selectedHubId')
+          localStorage.removeItem('selectedHubName')
+
           localStorage.clear();
           window.location.replace("/");
         })

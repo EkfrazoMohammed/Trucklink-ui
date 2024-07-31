@@ -22,6 +22,8 @@ const onSearch = (value: string) => {
 
 const DashboardContainer = () => {
   const selectedHubId = localStorage.getItem("selectedHubID");
+  
+  const currentUserRole = localStorage.getItem("userRole")
   const authToken = localStorage.getItem("token");
   // const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentYear, setCurrentYear] = useState<number>(dayjs().year());
@@ -164,11 +166,11 @@ const DashboardContainer = () => {
 
         <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button>
       </div>
-      <DashboardTopContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} />
-      <DashboardEarningContainer year={currentYear} />
-      <DashboardExpenseContainer year={currentYear} />
-      <DashboardMaterialContainer />
-      <DashboardBottomContainer />
+      <DashboardTopContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole}/>
+      <DashboardEarningContainer year={currentYear} currentUserRole={currentUserRole}/>
+      <DashboardExpenseContainer year={currentYear} currentUserRole={currentUserRole}/>
+      <DashboardMaterialContainer year={currentYear} currentUserRole={currentUserRole}/>
+      <DashboardBottomContainer year={currentYear} currentUserRole={currentUserRole} />
     </>
   );
 };

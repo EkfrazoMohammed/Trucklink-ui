@@ -4,8 +4,14 @@ import Chart from "react-apexcharts";
 
 import { API } from "../../API/apirequest";
 
-const DashboardMostTripsContainer = () => {
+const DashboardMostTripsContainer = ({year,currentUserRole}) => {
     const [hubs, setHubs] = useState([]);
+    const [select3HubId, setSelect3HubId] = useState([]);
+    const handleChange = (value) => {
+        if (value.length <= 3) {
+            setSelect3HubId(value);
+        }
+    };
     const fetchHubs = async () => {
         try {
             const response = await API.get('get-hubs', headersOb);
@@ -19,12 +25,7 @@ const DashboardMostTripsContainer = () => {
         fetchHubs();
     }, []);
     
-    const [select3HubId, setSelect3HubId] = useState([]);
-    const handleChange = (value) => {
-        if (value.length <= 3) {
-            setSelect3HubId(value);
-        }
-    };
+   
     const [chartOptions, setChartOptions] = useState({
         series: [],
         options: {
@@ -65,6 +66,7 @@ const DashboardMostTripsContainer = () => {
     });
     const authToken = localStorage.getItem("token");
 
+  
     const headersOb = {
         headers: {
             "Content-Type": "application/json",
@@ -74,8 +76,16 @@ const DashboardMostTripsContainer = () => {
 
     const fetchData = async () => {
         try {
-            const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
+            // const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
 
+            // const data = response.data.totalTrip;
+           
+            const payload = {
+                "hubIds": (select3HubId.length > 0 ? select3HubId : [])
+            };
+            const response = await API.post(`get-total-trips?entryYear=${year}`, payload, headersOb);
+            //             setEarningData(response.data.currentEarningData);
+            // const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
             const data = response.data.totalTrip;
             const cityData = {};
             
@@ -118,6 +128,10 @@ const DashboardMostTripsContainer = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        fetchData();
+    }, [year, select3HubId]);
+
     return (
         <div className='dashboard-most-trips-container'>
             <Row gutter={24}>
@@ -126,7 +140,8 @@ const DashboardMostTripsContainer = () => {
                         <div className="flex justify-between items-center p-2 font-bold text-xl">
                             <h1>Most Trips</h1>
 
-                            <Select
+                            {/* {(!selectedHub || selectedHub === "") && */}
+                                    <Select
                                         mode="multiple"
                                         placeholder="Select hubs"
                                         value={select3HubId}
@@ -140,6 +155,7 @@ const DashboardMostTripsContainer = () => {
                                             </Option>
                                         ))}
                                     </Select>
+                                {/* } */}
                         </div>
                         <Chart
                             options={chartOptions.options}

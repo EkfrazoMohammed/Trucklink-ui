@@ -324,7 +324,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
       <>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Create Truck</h1>
+            <h1 className="text-xl font-bold">Create User</h1>
             <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
 
           </div>

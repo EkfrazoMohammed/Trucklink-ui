@@ -311,10 +311,10 @@ const SettingsContainer = ({ onData }) => {
   ];
   return (
     <>
-  <h1> Settings Container</h1>
-      {/* <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
+  {/* <h1> Settings Container</h1> */}
+      <div className={showTabs ? '' : 'onboarding-tabs-hidden'}>
         <Tabs activeKey={activeTabKey} items={items} onChange={handleTabChange} />
-      </div> */}
+      </div>
     </>
   );
 };

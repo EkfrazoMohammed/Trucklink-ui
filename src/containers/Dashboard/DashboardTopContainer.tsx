@@ -7,7 +7,7 @@ import QuantityIcon from "../../assets/Quantity.png"
 import RevenueIcon from "../../assets/Revenue.png"
 import CommissionIcon from "../../assets/Commission.png"
 
-const DashboardTopContainer = ({ year,loadLocation,deliveryLocation }) => {
+const DashboardTopContainer = ({ year,loadLocation,deliveryLocation,currentUserRole }) => {
     const selectedHub = localStorage.getItem("selectedHubID");
     const selectedHubName = localStorage.getItem("selectedHubName");
 

@@ -4,10 +4,10 @@ import Chart from "react-apexcharts";
 
 import { API } from "../../API/apirequest";
 
-const DashboardMaterialContainer = () => {
+const DashboardMaterialContainer = ({year,currentUserRole}) => {
     const selectedHubId = localStorage.getItem("selectedHubID");
     const authToken = localStorage.getItem("token");
-   
+
     const [chartOptions, setChartOptions] = useState({
         series: [],
         chart: {
@@ -65,82 +65,95 @@ const DashboardMaterialContainer = () => {
             y: {
                 formatter: function (value) {
                     return value + " Tons";
-                //    return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
+                    //    return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
                 }
             }
         }
     });
     const fetchMaterialTypesData = async () => {
         try {
-          const headersOb = {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${authToken}`
-            }
-          }
-          const response = await API.get(`get-material-type-chart?entryYear=2024`, headersOb).then((res=>{
-
-          if (res.status == 201 || res.status == 200) {
-            console.log(res)
-            const { materialType } = res.data;
-
-        // Initialize data structure
-        const materials = {};
-
-        // Initialize each month for all material types
-        const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-        months.forEach((month, index) => {
-            materials[month] = {};
-        });
-
-        // Process API data
-        materialType.forEach(item => {
-            const monthIndex = item._id.month - 1;
-            const monthName = months[monthIndex];
-            item.amounts.forEach(amountItem => {
-                if (!materials[monthName][amountItem.materialType]) {
-                    materials[monthName][amountItem.materialType] = 0;
+            const headersOb = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
                 }
-                // materials[monthName][amountItem.materialType] += amountItem.amount;
-                materials[monthName][amountItem.materialType] += amountItem.quantity;
-            });
-        });
+            }
 
-        // Prepare series data
-        const seriesData = [];
-        const materialTypes = new Set();
-        months.forEach(month => {
-            Object.keys(materials[month]).forEach(materialType => {
-                materialTypes.add(materialType);
-            });
-        });
+            let url;
+            if(selectedHubId || currentUserRole =="Accountant"){
+              url=`get-material-type-chart?entryYear=${year}&hubId=${selectedHubId}`
+            }else{
+              url=`get-material-type-chart?entryYear=${year}`
+            }
+            const response = await API.get(url, headersOb).then((res => {
+                if (res.status == 201 || res.status == 200) {
+                    console.log(res)
+                    const { materialType } = res.data;
 
-        materialTypes.forEach(materialType => {
-            const data = months.map(month => materials[month][materialType] || 0);
-            seriesData.push({
-                name: materialType,
-                data: data
-            });
-        });
+                    // Initialize data structure
+                    const materials = {};
 
-        // Update chart options
-        setChartOptions(prevOptions => ({
-            ...prevOptions,
-            series: seriesData
-        }));
-            // setloadLocations(response.data.materials);
-          }
-        }))
+                    // Initialize each month for all material types
+                    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+                    months.forEach((month, index) => {
+                        materials[month] = {};
+                    });
+
+                    // Process API data
+                    materialType.forEach(item => {
+                        const monthIndex = item._id.month - 1;
+                        const monthName = months[monthIndex];
+                        item.amounts.forEach(amountItem => {
+                            if (!materials[monthName][amountItem.materialType]) {
+                                materials[monthName][amountItem.materialType] = 0;
+                            }
+                            // materials[monthName][amountItem.materialType] += amountItem.amount;
+                            materials[monthName][amountItem.materialType] += amountItem.quantity;
+                        });
+                    });
+
+                    // Prepare series data
+                    const seriesData = [];
+                    const materialTypes = new Set();
+                    months.forEach(month => {
+                        Object.keys(materials[month]).forEach(materialType => {
+                            materialTypes.add(materialType);
+                        });
+                    });
+
+                    materialTypes.forEach(materialType => {
+                        const data = months.map(month => materials[month][materialType] || 0);
+                        seriesData.push({
+                            name: materialType,
+                            data: data
+                        });
+                    });
+
+                    // Update chart options
+                    setChartOptions(prevOptions => ({
+                        ...prevOptions,
+                        series: seriesData
+                    }));
+                    // setloadLocations(response.data.materials);
+                }
+            }))
         } catch (error) {
-          console.error('Error fetching materials:', error);
+            console.error('Error fetching materials:', error);
         }
-      };
+    };
     useEffect(() => {
-      
 
-          fetchMaterialTypesData()
-     
+
+        fetchMaterialTypesData()
+
     }, []);
+
+    useEffect(() => {
+
+
+        fetchMaterialTypesData()
+
+    }, [selectedHubId,currentUserRole]);
 
     return (
         <div className='dashboard-material-container'>

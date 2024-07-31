@@ -114,31 +114,40 @@ const Login = () => {
     }));
   }
 
+ 
   const handleClick = async () => {
-    await API.post("/login", user)
-      .then((res: { status: number; data: { userDetails: []; token: string; }; }) => {
-        // console.log(res)
-        console.log(res.data.logData._id)
-        if (res.status == 201) {
-          localStorage.setItem("userDetails", JSON.stringify(res.data.userDetails))
-          localStorage.setItem("token", res.data.token)
-          localStorage.setItem("loginID", JSON.stringify(res.data.logData._id))
-          localStorage.setItem("loginData", JSON.stringify(res.data.userDetails))
-          localStorage.setItem('selectedMenuItem', '1')
-          navigate("/dashboard");
+    try {
+      const res = await API.post("/login", user);
+      
+      if (res.status === 201) {
+        // Check if hubId exists and is not empty
+        if (res.data.userDetails.hubId && res.data.userDetails.hubId.length > 0) {
+          console.log(res.data.userDetails.hubId[0]);
+          localStorage.setItem("selectedHubID", res.data.userDetails.hubId[0]);
         }
-        else {
-          if (res.status == 401) {
-            setError("Invalid credentials");
-          }
+  
+        // Always set userDetails and token
+        localStorage.setItem("userDetails", JSON.stringify(res.data.userDetails));
+        localStorage.setItem("userRole", res.data.userDetails.roleName);
+        localStorage.setItem("token", res.data.token);
+  
+        // Check if logData and _id exist before setting loginID
+        if (res.data.logData && res.data.logData._id) {
+          localStorage.setItem("loginID", JSON.stringify(res.data.logData._id));
         }
-      }).catch((err) => {
-        console.log(err)
+  
+        localStorage.setItem("loginData", JSON.stringify(res.data.userDetails));
+        localStorage.setItem('selectedMenuItem', '1');
+        navigate("/dashboard");
+      } else if (res.status === 401) {
         setError("Invalid credentials");
-      })
-
-  }
-
+      }
+    } catch (err) {
+      console.log(err);
+      setError("Invalid credentials");
+    }
+  };
+  
   return (
     <div className=' bg-[#D7F1FF]  text-black max-h-[100vh]'>
       <div className='relative  w-full h-[95vh]'>

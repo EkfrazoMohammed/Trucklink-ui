@@ -19,7 +19,7 @@ const monthIndexMap = {
     "December": 11
 };
 
-const DashboardExpenseContainer = ({ year }) => {
+const DashboardExpenseContainer = ({ year, currentUserRole }) => {
     const selectedHub=localStorage.getItem("selectedHubID");
     const selectedHubName=localStorage.getItem("selectedHubName");
     const authToken=localStorage.getItem("token");

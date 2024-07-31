@@ -5,7 +5,7 @@ import DashboardRecoveryContainer from './DashboardRecoveryContainer'
 import DashboardMostTripsContainer from './DashboardMostTripsContainer'
 import DashboardHubSpecificTripsContainer from './DashboardHubSpecificTripsContainer';
 
-const DashboardBottomContainer = () => {
+const DashboardBottomContainer = ({year,currentUserRole}) => {
     
 
     const selectedHub = localStorage.getItem("selectedHubID");
@@ -16,17 +16,17 @@ const DashboardBottomContainer = () => {
 
                     <Col className="gutter-row" span={24}>
                     {(selectedHub ) &&                
-                        <DashboardHubSpecificTripsContainer selectedHub={selectedHub}/>
+                        <DashboardHubSpecificTripsContainer year={year} selectedHub={selectedHub} currentUserRole={currentUserRole}/>
                     }
                     </Col>
                 </Row>
                 <Row gutter={24}>
                     <Col className="gutter-row" span={12}>
-                        <DashboardRecoveryContainer />
+                        <DashboardRecoveryContainer year={year} currentUserRole={currentUserRole} />
                     </Col>
                     <Col className="gutter-row" span={12}>
                     {(!selectedHub || selectedHub === "") &&                
-                        <DashboardMostTripsContainer />
+                        <DashboardMostTripsContainer year={year} currentUserRole={currentUserRole} />
                     }
                     </Col>
                 </Row>

@@ -18,7 +18,12 @@ const monthIndexMap = {
     12: "December"
 };
 
-const DashboardHubSpecificTripsContainer = ({ selectedHub }) => {
+const DashboardHubSpecificTripsContainer = ({ year,selectedHub,currentUserRole }) => {
+
+    const [totalTrips, setTotalTrips] = useState(0);
+    // const selectedHub = localStorage.getItem("selectedHubID");
+    // const selectedHubName = localStorage.getItem("selectedHubName");
+    const authToken = localStorage.getItem("token");
     const [chartOptions, setChartOptions] = useState({
         series: [],
         options: {
@@ -58,20 +63,20 @@ const DashboardHubSpecificTripsContainer = ({ selectedHub }) => {
         }
     });
 
-    const [totalTrips, setTotalTrips] = useState(0);
-
-    const authToken = localStorage.getItem("token");
-
     const headersOb = {
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${authToken}`
         }
     };
-
     const fetchData = async () => {
         try {
-            const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
+            const payload = {
+                "hubIds": (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
+            };
+            const response = await API.post(`get-total-trips?entryYear=${year}`, payload, headersOb);
+            //             setEarningData(response.data.currentEarningData);
+            // const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
             const data = response.data.totalTrip;
 
             const monthData = Array(12).fill(0); // Initialize array for 12 months
@@ -121,25 +126,26 @@ const DashboardHubSpecificTripsContainer = ({ selectedHub }) => {
     }, [selectedHub]); // Fetch data whenever selectedHub changes
 
     return (
-        <div className='dashboard-hub-specific-trips-container'>
+        <div className='dashboard-hub-specific-trips-container my-2'>
             <Row gutter={24}>
                 <Col className="gutter-row" span={24}>
                     <div className="flex justify-between flex-col flex-start p-2 border border-y-2 border-x-2 rounded-md px-4">
                         <div className="flex justify-between items-center p-2 font-bold text-xl">
                             <h1>Monthly Trips</h1>
-                            
+                            <div className="total-trips mt-4 text-xl font-bold">
+                                Total Trips: {totalTrips}
+                            </div>
+
                         </div>
                         <Chart
-                              options={chartOptions.options}
+                            options={chartOptions.options}
                             series={chartOptions.series}
                             type="bar"
                             width="100%"
                             style={{ minWidth: '200px', width: "100%", margin: '0 auto' }}
                             height='300'
                         />
-                        <div className="total-trips mt-4 text-xl font-bold">
-                            Total Trips: {totalTrips}
-                        </div>
+
                     </div>
                 </Col>
             </Row>

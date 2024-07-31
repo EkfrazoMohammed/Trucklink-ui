@@ -157,7 +157,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
         {loading}
         <div className='flex items-center gap-2'>
           <Search
-            placeholder="Search by Vehicle Number"
+            placeholder="Search"
             size='large'
             value={searchQuery9}
             onChange={onChangeSearch}
@@ -596,14 +596,14 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
         dataIndex: 'serialNumber',
         key: 'serialNumber',
         render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-        width: 80,
+        width: 30,
       },
 
       {
         title: 'Owner Name',
         dataIndex: 'name',
         key: 'name',
-        width: 60,
+        width: 110,
         // render: (_, record) => {
         //   return  record?.firstName 
         //   ? record.firstName.charAt(0).toUpperCase() + record.firstName.slice(1) 
@@ -620,7 +620,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
         title: 'Email',
         dataIndex: 'email',
         key: 'email',
-        width: 60,
+        width: 110,
         render: (_, record) => {
           return record?.email
             ? record.email
@@ -657,7 +657,11 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
         width: 80,
         render: (record: unknown) => (
           <Space size="middle">
-            <Tooltip placement="top" title="Preview"><a onClick={() => onViewTruckClick(record)}><EyeOutlined /></a></Tooltip>
+              <Switch
+                      // defaultChecked={formData.isCommission}
+                      name="isCommission"
+                      // onChange={(checked) => handleChange('isCommission', checked)}
+                    />
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditTruckClick(record)}><FormOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Delete"><a onClick={() => onDeleteTruckClick(record)}><DeleteOutlined /></a></Tooltip>
           </Space>

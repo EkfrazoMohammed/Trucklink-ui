@@ -1154,216 +1154,216 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
-  const EditTruckDataRow = ({ filterTruckTableData }) => {
-    const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
-    const initialOwnerId = { "value": filterTruckTableData.ownerId[0]._id, "ownerName": filterTruckTableData.ownerId[0].name }
-
-    const [formData, setFormData] = useState({
-      registrationNumber: filterTruckTableData.registrationNumber,
-      commission: filterTruckTableData.commission,
-      ownerId: initialOwnerId.value,
-      ownerName: initialOwnerId.ownerName,
-      accountId: null,
-      vehicleType: filterTruckTableData.truckType,
-      rcBookProof: filterTruckTableData.rcBookProof || null,
-      isCommission: filterTruckTableData.isCommission,
-      marketRate: filterTruckTableData.marketRate,
-      isMarketRate: filterTruckTableData.isMarketRate,
-    });
-
-    const handleResetClick = () => {
-      console.log('reset clicked')
-      setFormData({
+    const EditTruckDataRow = ({ filterTruckTableData }) => {
+      const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
+      const initialOwnerId = { "value": filterTruckTableData.ownerId[0]._id, "ownerName": filterTruckTableData.ownerId[0].name };
+      const [bankData, setBankdata] = useState([]);
+      const [formData, setFormData] = useState({
         registrationNumber: filterTruckTableData.registrationNumber,
         commission: filterTruckTableData.commission,
-        // ownerId: '',
         ownerId: initialOwnerId.value,
         ownerName: initialOwnerId.ownerName,
         accountId: null,
         vehicleType: filterTruckTableData.truckType,
-        rcBookProof: null,
+        rcBookProof: filterTruckTableData.rcBookProof || null,
         isCommission: filterTruckTableData.isCommission,
         marketRate: filterTruckTableData.marketRate,
         isMarketRate: filterTruckTableData.isMarketRate,
       });
-    }
-    const [bankData, setBankdata] = useState([])
-
-    const initialBankData = () => {
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-      const request = API.get(`get-owner-bank-details/${initialOwnerId.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
-        .then((res) => {
-          console.log(res)
-          console.log(res.data.ownerDetails[0]['accountIds'])
-          setBankdata(res.data.ownerDetails[0]['accountIds'])
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-    }
-    useEffect(() => {
-      initialBankData()
-    }, [])
-    const axiosFileUploadRequest = async (file) => {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const config = {
+    
+      const handleResetClick = () => {
+        console.log('reset clicked');
+        setFormData({
+          registrationNumber: filterTruckTableData.registrationNumber,
+          commission: filterTruckTableData.commission,
+          ownerId: initialOwnerId.value,
+          ownerName: initialOwnerId.ownerName,
+          accountId: bankData.length > 0 ? bankData[0]._id : null,
+          vehicleType: filterTruckTableData.truckType,
+          rcBookProof: null,
+          isCommission: filterTruckTableData.isCommission,
+          marketRate: filterTruckTableData.marketRate,
+          isMarketRate: filterTruckTableData.isMarketRate,
+        });
+      };
+    
+      const initialBankData = () => {
+        const headersOb = {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
             "Authorization": `Bearer ${authToken}`
           }
         };
-
-        const response = await API.post(
-          `rc-upload`,
-          formData,
-          config
-        );
-        const { rcBookProof } = response.data;
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          rcBookProof: rcBookProof,
-        }));
-        alert("File uploaded successfully");
-      } catch (err) {
-        console.log(err);
-        alert("Failed to upload, retry again!");
-      }
-    };
-    const handleFileChange = (file) => {
-      console.log(file)
-      axiosFileUploadRequest(file.file);
-
-    };
-    const handleChange = (name, value) => {
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-      if (name === 'isCommission' && value === true) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: true,
-          isMarketRate: false,
-          marketRate: "",
-        }));
-      }
-      else if (name === 'isCommission' && value === false) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: false,
-          isMarketRate: true,
-          commission: 0,
-
-        }));
-      }
-      else if (name === "ownerId") {
-        console.log(value)
-        const request = API.get(`get-owner-bank-details/${value.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+        API.get(`get-owner-bank-details/${initialOwnerId.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
-            setBankdata(res.data.ownerDetails[0]['accountIds'])
+            console.log(res);
+            console.log(res.data.ownerDetails[0]['accountIds']);
+            const accounts = res.data.ownerDetails[0]['accountIds'];
+            setBankdata(accounts);
+            if (accounts && accounts.length > 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                accountId: accounts[0]._id
+              }));
+            }
           })
           .catch((err) => {
-            console.log(err)
-          })
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-          accountId: null,
-        }));
-      }
-
-      else if (name === "registrationNumber") {
-        const updatedValue = value.toUpperCase(); // Convert to uppercase 
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: updatedValue,
-        }));
-      }
-      else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-        }));
-      }
-    };
-
+            console.log(err);
+          });
+      };
+    
+      useEffect(() => {
+        initialBankData();
+      }, []);
+    
+      const axiosFileUploadRequest = async (file) => {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const config = {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${authToken}`
+            }
+          };
+    
+          const response = await API.post(`rc-upload`, formData, config);
+          const { rcBookProof } = response.data;
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            rcBookProof: rcBookProof,
+          }));
+          alert("File uploaded successfully");
+        } catch (err) {
+          console.log(err);
+          alert("Failed to upload, retry again!");
+        }
+      };
+    
+      const handleFileChange = (file) => {
+        console.log(file);
+        axiosFileUploadRequest(file.file);
+      };
+    
+      const handleChange = (name, value) => {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        };
+    
+        if (name === 'isCommission' && value === true) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            isCommission: true,
+            isMarketRate: false,
+            marketRate: "",
+          }));
+        } else if (name === 'isCommission' && value === false) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            isCommission: false,
+            isMarketRate: true,
+            commission: 0,
+          }));
+        } else if (name === "ownerId") {
+          console.log(value);
+          API.get(`get-owner-bank-details/${value.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+            .then((res) => {
+              const ownerDetails = res.data.ownerDetails;
+              const abc = (ownerDetails && ownerDetails[0] && ownerDetails[0].accountIds) ? ownerDetails[0].accountIds : null;
+              setBankdata(abc);
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: value,
+                accountId: (abc && abc.length > 0) ? abc[0]._id : null,
+              }));
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else if (name === "registrationNumber") {
+          const updatedValue = value.toUpperCase(); // Convert to uppercase 
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: updatedValue,
+          }));
+        } else {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+          }));
+        }
+      };
+    
     const payload = {
       hubId: selectedHubId,
       accountId: formData.accountId,
       commission: formData.commission,
-      ownerId: formData.ownerId.value,
-      ownerName: formData.ownerId.ownerName,
+      ownerId: typeof formData.ownerId === 'object' ? formData.ownerId.value : formData.ownerId, // Handle object or value
+      ownerName: formData.ownerName,
       rcBookProof: formData.rcBookProof,
       registrationNumber: formData.registrationNumber,
       truckType: formData.vehicleType,
       marketRate: formData.marketRate,
       isMarketRate: formData.isMarketRate,
+  };
 
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const vehicleId = filterTruckTableData._id;
-      const oldOwnerId = filterTruckTableData.ownerId[0]._id;
-      const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-
-      localStorage.setItem("update-vehicle-details-payload", JSON.stringify(payload))
-
-      const res = await API.put(url, payload, headersOb)
-        .then((response) => {
-          console.log(response)
-          if (response.status == 201) {
-            alert("Truck data updated successfully");
-            goBack()
-            getTableData("", 1, 100000, selectedHubId);
-          } else if (response.status == 400) {
-            alert("Truck data updated successfully");
-            goBack()
-            getTableData("", 1, 100000, selectedHubId);
-          } else {
-            alert('error occured')
+    
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        const vehicleId = filterTruckTableData._id;
+        const oldOwnerId = filterTruckTableData.ownerId[0]._id;
+        const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
           }
-        }).catch(error => {
-          console.error('Error updating truck data:', error);
-          if (error.response.data.message == "Unable to Find Challan Information") {
-            alert("Truck data updated successfully");
-            goBack()
-            getTableData("", 1, 100000, selectedHubId);
-          } else {
-            alert("An error occurred while updating truck data");
-          }
-
-        })
-
-    };
-
-    const goBack = () => {
-      setShowTruckTable(true)
-      onData('flex')
-      setShowTabs(true); // Set showTabs to false when adding owner
-    }
-
-    const handleOwnerChange = (value) => {
-      const selectedOwner = filteredOwnerData.find(owner => owner._id === value);
-      const ownerName = selectedOwner ? selectedOwner.name : '';
-      console.log(ownerName)
-      let ob = { value, ownerName }
-      handleChange('ownerId', ob);
-    };
+        };
+    
+        localStorage.setItem("update-vehicle-details-payload", JSON.stringify(payload));
+    
+        const res = await API.put(url, payload, headersOb)
+          .then((response) => {
+            console.log(response);
+            if (response.status === 201) {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else if (response.status === 400) {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else {
+              alert('Error occurred');
+            }
+          }).catch((error) => {
+            console.error('Error updating truck data:', error);
+            if (error.response.data.message === "Unable to Find Challan Information") {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else {
+              alert("An error occurred while updating truck data");
+            }
+          });
+      };
+    
+      const goBack = () => {
+        setShowTruckTable(true);
+        onData('flex');
+        setShowTabs(true); // Set showTabs to false when adding owner
+      };
+    
+      const handleOwnerChange = (value) => {
+        const selectedOwner = filteredOwnerData.find(owner => owner._id === value);
+        const ownerName = selectedOwner ? selectedOwner.name : '';
+        console.log(ownerName);
+        let ob = { value, ownerName };
+        handleChange('ownerId', ob);
+      };
 
     return (
       <>
@@ -1393,7 +1393,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               <div className="text-md font-semibold">Vehicle Information</div>
               <div className="text-md font-normal">Enter Truck Details</div>
             </div>
-            {/* {JSON.stringify(formData, null, 2)}  */}
+            
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
@@ -1503,15 +1503,16 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
-                    {formData.isCommission ? <>Commission %</> : <>Market Rate (Rs)</>}
+                    {formData.isCommission ? <>Commission %</> : <>Commission %</>}
                     <Switch
-                      defaultChecked={formData.isCommission}
+                      // defaultChecked={formData.isCommission}
+                      defaultChecked={formData.commission}
                       name="isCommission"
                       onChange={(checked) => handleChange('isCommission', checked)}
                     />
                   </div>
 
-                  {formData.isCommission ? (
+                  {formData.isCommission || formData.commission>0 ? (
                     <>
                       <Input
                         placeholder="Enter Commission %*"
@@ -1532,7 +1533,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               </Row>
             </div>
           </div>
-
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
 

@@ -32,7 +32,8 @@ const DashboardTopContainer = ({ year,loadLocation,deliveryLocation,currentUserR
                 res= await API.get(`get-dashboard-revenue?year=${year}`, headersOb);
 
             }else{
-                if(loadLocation !== null && deliveryLocation !== null){
+                // if(loadLocation !== null && deliveryLocation !== null){
+                    if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) { 
                     res= await API.get(`get-dashboard-revenue?year=${year}&hubId=${selectedHub}&loadLocation=${loadLocation}&deliveryLocation=${deliveryLocation}`, headersOb);                    
                 }else{
                     res= await API.get(`get-dashboard-revenue?year=${year}&hubId=${selectedHub}`, headersOb);

@@ -151,10 +151,7 @@ const AccountingContainer = ({ onData }) => {
     const getTableData = async () => {
       try {
         setLoading(true);
-        console.log(owners)
-        console.log(filterRequest)
         const searchData = filterRequest ? filterRequest : null;
-        console.log(searchData)
         let response;
         if (searchData) {
           response = await API.post(`get-filter-owner-advance-data?page=1&limit=100000&hubId=${selectedHubId}`, searchData, headersOb);
@@ -164,6 +161,9 @@ const AccountingContainer = ({ onData }) => {
 
         if (response.data) {
 
+          if (Array.isArray(response.data.disptachData) && response.data.disptachData.length === 0) {
+            setTotalOutstanding("0.00");
+          }
           // Handle the structure for get-filterOwnerAdvanceData response
           if (searchData && response.data.disptachData.length > 0) {
             const dataSource = response.data.disptachData.map(dispatchItem => {
@@ -312,10 +312,10 @@ const AccountingContainer = ({ onData }) => {
       setDataSource([]);
       setOwnerId('')
       setOwners([])
-      setTimeout(()=>{
+      setTimeout(() => {
         window.location.reload();
       })
-   
+
     };
     const saveNewRow = async () => {
       try {
@@ -484,7 +484,7 @@ const AccountingContainer = ({ onData }) => {
       );
     };
 
- const expandedRowRender = (record) => {
+    const expandedRowRender = (record) => {
       const entries = ledgerEntries[record.key] || [];
       const hideLedgerAction = entries.length - 1;
       return (

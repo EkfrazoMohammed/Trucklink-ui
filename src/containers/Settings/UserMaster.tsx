@@ -222,12 +222,29 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
       );
     }
 
-    const handleChange = (name, value) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value,
-      }));
-    };
+    // const handleChange = (name, value) => {
+    //   if(formData.userRole == "Admin"){
+    //     setFormData((prevFormData) => ({
+    //       ...prevFormData,
+    //       [name]: "",
+    //     }));  
+    //     setSelect3HubId([]) 
+    //   }
+    //   setFormData((prevFormData) => ({
+    //     ...prevFormData,
+    //     [name]: value,
+    //   }));
+    // };
+
+  const handleChange = (name, value) => {
+    if (name === 'userRole' && value === 'Admin') {
+      setSelect3HubId([]);
+    }
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -329,6 +346,28 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
 
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+
+                {formData.userRole == "Admin" ? <>
+                <Col className="gutter-row mt-6" span={6}>
+                  <Select
+                    mode="multiple"
+                    placeholder="Select hubs"
+                    value={select3HubId}
+                    maxCount={1}
+                    onChange={handleChangeHub}
+                    size="large"
+                    style={{ width: '100%' }}
+                    disabled
+                  >
+                    {hubs.map(hub => (
+                      <Option key={hub._id} value={hub._id}>
+                        {hub.location}
+                      </Option>
+                    ))}
+                  </Select>
+                </Col>
+                </>:<>
+                
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     mode="multiple"
@@ -346,6 +385,8 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                     ))}
                   </Select>
                 </Col>
+                </>}
+                
                 <Col className="gutter-row mt-6" span={6}>
                   <Input
                     placeholder="Password*"
@@ -567,17 +608,109 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
       hubId: filterTruckTableData.hubId || [],
     });
 
+  const [hubs, setHubs] = useState([]);
+    const [hubNames, setHubNames] = useState([]);
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
+    const fetchHubs = async () => {
+      try {
+        const response = await API.get('get-hubs', headersOb); // Replace with your actual API call
+        setHubs(response.data.hubs);
+      } catch (error) {
+        console.error('Error fetching hub data:', error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchHubs();
+    }, []);
+  
+    useEffect(() => {
+      const selectedHubNames = formData.hubId.map(id => {
+        const hub = hubs.find(hub => hub._id === id);
+        return hub ? hub.location : id;
+      });
+      setHubNames(selectedHubNames);
+    }, [formData.hubId, hubs]);
+
+    const [select3HubId, setSelect3HubId] = useState(filterTruckTableData.hubId || []);
+   
+    const handleChangeHub = (value) => {
+      if (value.length <= 1) {
+        setSelect3HubId(value);
+      }
+    };
+    
+
+  
+    const onResetClick = () => {
+      console.log('reset clicked')
+      setFormData(
+        {
+          countryCode: "+91",
+          firstName: filterTruckTableData.name || '',
+          email: filterTruckTableData.email || '',
+          phoneNumber: filterTruckTableData.phoneNumber || '',
+          name: filterTruckTableData.name || '',
+          userRole: filterTruckTableData.roleName || '',
+          hubId: filterTruckTableData.hubId || [],
+        }
+      );
+    }
+
     const handleChange = (name, value) => {
+      if(formData.userRole == "Admin"){
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: "",
+        }));  
+        setSelect3HubId([]) 
+      }
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value,
       }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      // Handle form submission logic here
-      console.log('Form data:', formData);
+
+      // Prepare the payload
+      const payload = {
+        countryCode: formData.countryCode,
+        // firstName: formData.firstName,
+        firstName: formData.name.charAt(0).toUpperCase() + formData.name.slice(1),
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        name: formData.name,
+        roleName: formData.userRole,
+        role: formData.userRole,
+        // password: formData.password,
+        hubId: select3HubId
+      };
+
+      console.log('Payload:', payload);
+
+      // // // Prepare the API request
+      // try {
+      //   const response = await API.post('create-user', payload, headersOb);
+      //   console.log('Response:', response);
+      //   if (response.status === 201) {
+      //     alert("User created successfully");
+      //     getTableData("", selectedHubId);
+      //     goBack()
+      //     // Redirect or perform additional actions if needed
+      //   } else {
+      //     alert('Error occurred');
+      //   }
+      // } catch (error) {
+      //   console.error('Error creating user:', error);
+      //   alert("An error occurred while creating the user");
+      // }
     };
 
     const goBack = () => {
@@ -663,7 +796,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                 </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row mt-6" span={6}>
+                {/* <Col className="gutter-row mt-6" span={6}>
                   <Select
                     mode="multiple"
                     placeholder="Select hubs"
@@ -678,12 +811,28 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                       </Option>
                     ))}
                   </Select>
-                </Col>
+                </Col> */}
+                <Col className="gutter-row mt-6" span={6}>
+                <Select
+                  mode="multiple"
+                  placeholder="Select hubs"
+                  size="large"
+                  style={{ width: '100%' }}
+                  value={select3HubId}
+                  onChange={handleChangeHub}
+                >
+                  {hubs.map(hub => (
+                    <Option key={hub._id} value={hub._id}>
+                      {hub.location}
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
               </Row>
             </div>
           </div>
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button onClick={() => setFormData({ name: '', email: '', phoneNumber: '', userRole: '', hubId: [] })}>Reset</Button>
+            <Button onClick={onResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
               Save
             </Button>

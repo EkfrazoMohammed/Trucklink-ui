@@ -206,7 +206,22 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
     const { name, value } = e.target;
     setEditFormData(prevState => ({ ...prevState, [name]: value }));
   };
+  const [user, setUser] = useState({});
 
+  useEffect(() => {
+    const userData = localStorage.getItem("userDetails");
+    if (userData) {
+      try {
+        const parsedUserData = JSON.parse(userData);
+        setUser(parsedUserData);
+      } catch (error) {
+        console.error("Failed to parse user data:", error);
+      }
+    }
+  }, []);
+
+  const { name } = user;
+  
   return (
     <>
       <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
@@ -305,7 +320,8 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
           </>:<></>}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />
-            Dhruva
+            
+            {name ? <>{name}</>: <p>-</p>}
           </div>
         </div>
       </div>

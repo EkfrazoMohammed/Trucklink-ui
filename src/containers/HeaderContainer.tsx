@@ -222,6 +222,78 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
 
   const { name } = user;
   
+
+const  notificationData =[
+  { title: "Pending Acknowledgement", 
+  description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement" 
+}
+]
+
+
+const selectedHubId = localStorage.getItem("selectedHubID");
+
+const [acknowledgement, setAcknowledgement] = useState([]);
+
+const getTableData = async () => {
+    const headersOb = {
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+        }
+    }
+
+    try {
+      // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
+      // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
+      //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
+
+      const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
+
+      let allAcknowledgement;
+      if (response.data.dispatchData.length == 0) {
+          allAcknowledgement = response.data.disptachData
+          console.log(allAcknowledgement)
+          setAcknowledgement(allAcknowledgement);
+      } else {
+          allAcknowledgement = response.data.dispatchData[0].data || "";
+     
+          if (allAcknowledgement && allAcknowledgement.length > 0) {
+              const arrRes = allAcknowledgement.sort(function (a, b) {
+                  a = a.vehicleNumber.toLowerCase();
+                  b = b.vehicleNumber.toLowerCase();
+                  return a < b ? -1 : a > b ? 1 : 0;
+              });
+              // setAcknowledgement(arrRes);
+              // console.log(arrRes)
+              // return arrRes;
+                // Create ageing objects
+                const ageingData = arrRes.map(record => {
+                  const givenDate = new Date(record.grDate);
+                  const today = new Date();
+                  const differenceInMs = today - givenDate;
+                  const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+
+                  return {
+                      title: "Pending Acknowledgement",
+                      description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`
+                  };
+              });
+
+              console.log(ageingData);
+              setAcknowledgement(ageingData);
+              return ageingData;
+          }
+
+      }
+  } catch (err) {
+      console.log(err)
+  }
+};
+//    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+useEffect(() => {
+    getTableData();
+}, []);
+
   return (
     <>
       <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
@@ -300,12 +372,15 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
           {/* Hiding on PRODUCTION */}
           {localStorage.getItem("selectedHubName") ? <>
           
-          <Badge size="small" count={1}>
+          <Badge size="small" count={acknowledgement.length}>
             <Dropdown overlay={
-              <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal" dataSource={[{ title: "Pending Acknowledgement", description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement" }]} renderItem={(item) => (
+              <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal" 
+              // dataSource={notificationData}
+              dataSource={acknowledgement}
+              renderItem={(item) => (
                 <List.Item>
-                  Notifications
-                  <List.Item.Meta title={item.title} description={item.description} />
+                  {/* Notifications */}
+                  <List.Item.Meta  description={item.description} />
                 </List.Item>
               )} />
             } trigger={["click"]}>
@@ -317,6 +392,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
               </a>
             </Dropdown>
           </Badge>
+          
           </>:<></>}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />

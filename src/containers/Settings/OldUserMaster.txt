@@ -6,12 +6,20 @@ const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
 
+
+
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+
 const UserMaster = ({ onData, showTabs, setShowTabs }) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredOwnerData, setFilteredOwnerData] = useState([]);
+
   const [filteredTruckData, setFilteredTruckData] = useState([]);
+
   const [showTruckTable, setShowTruckTable] = useState(true);
   const [showTruckView, setShowTruckView] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -579,17 +587,29 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
             </Button>
           </span>
         </div>
-     
         <Table
+          rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredTruckData}
+          scroll={{ x: 800 }}
           rowKey="_id"
+          // pagination={{
+          //   showSizeChanger: true,
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   pageSize: pageSize,
+          //   onChange: (page, pageSize) => {
+          //     setCurrentPage(page);
+          //     setPageSize(pageSize);
+          //   },
+          // }}
           pagination={{
+            showSizeChanger: false,
+            position: ['bottomCenter'],
             current: currentPage,
-            pageSize: activePageSize,
-            onChange: (page, pageSize) => {
+            pageSize: currentPageSize,
+            onChange: (page) => {
               setCurrentPage(page);
-              setCurrentPageSize(pageSize);
             },
           }}
           // antd site header height
@@ -797,7 +817,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
                 </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-
+               
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     mode="multiple"

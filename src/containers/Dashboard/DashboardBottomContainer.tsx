@@ -16,7 +16,7 @@ const DashboardBottomContainer = ({year,loadLocation,deliveryLocation,currentUse
 
                     <Col className="gutter-row" span={24}>
                     {(selectedHub ) &&                
-                        <DashboardHubSpecificTripsContainer year={year} selectedHub={selectedHub} currentUserRole={currentUserRole}/>
+                        <DashboardHubSpecificTripsContainer year={year} selectedHub={selectedHub} currentUserRole={currentUserRole} loadLocation={loadLocation} deliveryLocation={deliveryLocation} />
                     }
                     </Col>
                 </Row>

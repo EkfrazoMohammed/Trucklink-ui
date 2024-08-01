@@ -18,7 +18,7 @@ const monthIndexMap = {
     12: "December"
 };
 
-const DashboardHubSpecificTripsContainer = ({ year,selectedHub,currentUserRole }) => {
+const DashboardHubSpecificTripsContainer = ({ year,selectedHub,currentUserRole,loadLocation,deliveryLocation }) => {
 
     const [totalTrips, setTotalTrips] = useState(0);
     // const selectedHub = localStorage.getItem("selectedHubID");
@@ -71,9 +71,21 @@ const DashboardHubSpecificTripsContainer = ({ year,selectedHub,currentUserRole }
     };
     const fetchData = async () => {
         try {
-            const payload = {
-                "hubIds": (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
-            };
+            // const payload = {
+            //     "hubIds": (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
+            // };
+            let payload;
+            if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) { 
+               payload = {
+                    "hubIds":(selectedHub || currentUserRole == "Accountant" ? [selectedHub] : []),
+                    loadLocation:loadLocation,
+                    deliveryLocation:deliveryLocation,
+                };
+            }else{
+                payload = {
+                        "hubIds": (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
+                    };
+            }
             const response = await API.post(`get-total-trips?entryYear=${year}`, payload, headersOb);
             //             setEarningData(response.data.currentEarningData);
             // const response = await API.get(`get-total-trips?entryYear=2024`, headersOb);
@@ -123,7 +135,7 @@ const DashboardHubSpecificTripsContainer = ({ year,selectedHub,currentUserRole }
 
     useEffect(() => {
         fetchData();
-    }, [selectedHub]); // Fetch data whenever selectedHub changes
+    }, [selectedHub,loadLocation,deliveryLocation]); // Fetch data whenever selectedHub changes
 
     return (
         <div className='dashboard-hub-specific-trips-container my-2'>

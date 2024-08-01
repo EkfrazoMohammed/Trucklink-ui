@@ -4,7 +4,7 @@ import Chart from "react-apexcharts";
 
 import { API } from "../../API/apirequest";
 
-const DashboardMaterialContainer = ({year,currentUserRole}) => {
+const DashboardMaterialContainer = ({ year, loadLocation, deliveryLocation, currentUserRole }) => {
     const selectedHubId = localStorage.getItem("selectedHubID");
     const authToken = localStorage.getItem("token");
 
@@ -80,10 +80,21 @@ const DashboardMaterialContainer = ({year,currentUserRole}) => {
             }
 
             let url;
-            if(selectedHubId || currentUserRole =="Accountant"){
-              url=`get-material-type-chart?entryYear=${year}&hubId=${selectedHubId}`
-            }else{
-              url=`get-material-type-chart?entryYear=${year}`
+            if (selectedHubId || currentUserRole == "Accountant") {
+                if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) {
+
+                    url = `get-material-type-chart?entryYear=${year}&loadLocation=${loadLocation}&deliveryLocation=${deliveryLocation}`
+                } else {
+                    url = `get-material-type-chart?entryYear=${year}&hubId=${selectedHubId}`
+                }
+            } else {
+                // if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) {
+
+                //     url = `get-material-type-chart?entryYear=${year}&loadLocation=${loadLocation}&deliveryLocation=${deliveryLocation}`
+                // } else {
+                url = `get-material-type-chart?entryYear=${year}`
+                // }
+                //   url=`get-material-type-chart?entryYear=${year}`
             }
             const response = await API.get(url, headersOb).then((res => {
                 if (res.status == 201 || res.status == 200) {
@@ -153,7 +164,7 @@ const DashboardMaterialContainer = ({year,currentUserRole}) => {
 
         fetchMaterialTypesData()
 
-    }, [selectedHubId,currentUserRole]);
+    }, [year, loadLocation, deliveryLocation, selectedHubId, currentUserRole]);
 
     return (
         <div className='dashboard-material-container'>

@@ -57,7 +57,7 @@ const DashboardTopContainer = ({ year,loadLocation,deliveryLocation,currentUserR
 
     useEffect(() => {
         getTopData(year,loadLocation,deliveryLocation);
-    }, [year,,loadLocation,deliveryLocation, selectedHub,]); 
+    }, [year,loadLocation,deliveryLocation, selectedHub,]); 
     useEffect(() => {
         getTopData(year);
     }, []); 

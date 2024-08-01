@@ -5,7 +5,7 @@ import DashboardRecoveryContainer from './DashboardRecoveryContainer'
 import DashboardMostTripsContainer from './DashboardMostTripsContainer'
 import DashboardHubSpecificTripsContainer from './DashboardHubSpecificTripsContainer';
 
-const DashboardBottomContainer = ({year,currentUserRole}) => {
+const DashboardBottomContainer = ({year,loadLocation,deliveryLocation,currentUserRole }) => {
     
 
     const selectedHub = localStorage.getItem("selectedHubID");

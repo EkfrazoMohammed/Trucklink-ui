@@ -19,10 +19,10 @@ const monthIndexMap = {
     "December": 11
 };
 
-const DashboardExpenseContainer = ({ year, currentUserRole }) => {
-    const selectedHub=localStorage.getItem("selectedHubID");
-    const selectedHubName=localStorage.getItem("selectedHubName");
-    const authToken=localStorage.getItem("token");
+const DashboardExpenseContainer = ({ year, loadLocation, deliveryLocation, currentUserRole }) => {
+    const selectedHub = localStorage.getItem("selectedHubID");
+    const selectedHubName = localStorage.getItem("selectedHubName");
+    const authToken = localStorage.getItem("token");
     const [allSeries, setAllSeries] = useState([]);
     const [selectedSeries, setSelectedSeries] = useState(null);
     const [totalExpenses, setTotalExpenses] = useState(0);
@@ -48,7 +48,18 @@ const DashboardExpenseContainer = ({ year, currentUserRole }) => {
             if (selectedHub == "" || selectedHub == undefined || selectedHub == null) {
                 payload = { "hubIds": [] }
             } else {
-                payload = { "hubIds": [selectedHub] }
+              
+                if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) {
+                    payload = {
+                        "hubIds": [selectedHub],
+
+                        loadLocation: loadLocation,
+                        deliveryLocation: deliveryLocation,
+                    };
+                } else {
+                    payload = { "hubIds": [selectedHub] }
+                }
+
             }
 
             console.log(payload)
@@ -99,14 +110,15 @@ const DashboardExpenseContainer = ({ year, currentUserRole }) => {
     };
 
     useEffect(() => {
-       
+
         fetchData();
     }, []);
     useEffect(() => {
         // Fetch data initially and whenever year or selectedHub changes
         fetchData();
 
-    }, [year, selectedHub]);
+    }, [year,loadLocation,deliveryLocation, selectedHub,]);
+    
 
 
     const chartOptions = {

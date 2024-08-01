@@ -5,7 +5,7 @@ import { API } from "../../API/apirequest";
 
 const { Option } = Select;
 
-const DashboardEarningContainer = ({ year, currentUserRole }) => {
+const DashboardEarningContainer = ({ year,loadLocation,deliveryLocation,currentUserRole  }) => {
     const monthIndexMap = {
         "January": 0,
         "February": 1,
@@ -53,25 +53,32 @@ const DashboardEarningContainer = ({ year, currentUserRole }) => {
         fetchHubs();
     }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const payload = {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            let payload;
+            if (loadLocation !== null && loadLocation !== undefined && deliveryLocation !== null && deliveryLocation !== undefined) { 
+               payload = {
+                    "hubIds": select3HubId.length > 0 ? select3HubId : (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : []),
+                    loadLocation:loadLocation,
+                    deliveryLocation:deliveryLocation,
+                };
+            }else{
+                payload = {
                     "hubIds": select3HubId.length > 0 ? select3HubId : (selectedHub || currentUserRole == "Accountant" ? [selectedHub] : [])
                 };
-                const response = await API.post(`get-earning-visualtion?entryYear=${year}`, payload, headersOb);
-                setEarningData(response.data.currentEarningData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
             }
-        };
-
+            const response = await API.post(`get-earning-visualtion?entryYear=${year}`, payload, headersOb);
+            setEarningData(response.data.currentEarningData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
         fetchData();
-    }, [year, selectedHub, select3HubId]);
-
+    }, [year,loadLocation,deliveryLocation, selectedHub,select3HubId]);
     useEffect(() => {
         const hubsData = {};
         const monthlyTotals = Array(12).fill(0);

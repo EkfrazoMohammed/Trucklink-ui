@@ -167,10 +167,10 @@ const DashboardContainer = () => {
         <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button>
       </div>
       <DashboardTopContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole}/>
-      <DashboardEarningContainer year={currentYear} currentUserRole={currentUserRole}/>
-      <DashboardExpenseContainer year={currentYear} currentUserRole={currentUserRole}/>
-      <DashboardMaterialContainer year={currentYear} currentUserRole={currentUserRole}/>
-      <DashboardBottomContainer year={currentYear} currentUserRole={currentUserRole} />
+      <DashboardEarningContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole}/>
+      <DashboardExpenseContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole}/>
+      <DashboardMaterialContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole}/>
+      <DashboardBottomContainer year={currentYear} loadLocation={formData.loadLocation} deliveryLocation={formData.deliveryLocation} currentUserRole={currentUserRole} />
     </>
   );
 };

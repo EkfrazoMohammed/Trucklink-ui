@@ -519,3 +519,13 @@
   border-radius: 8px;
   /* box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; */
 }
+
+.header-notifications-dropdown{
+  font-weight: 600;
+}
+.header-notifications-dropdown:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-description ,
+:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-description {
+  color: rgb(0 0 0);
+  font-size: 14px;
+  line-height: 1.4;
+}

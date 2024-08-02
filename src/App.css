@@ -577,6 +577,7 @@
   border: 1px solid #eee;
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 2px;
 }
+
 .dashboard-top-container {
   padding: 16px;
   height: auto;
@@ -641,6 +642,7 @@
   border-radius: 6px;
 
 }
+
 .my-paginations Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
   color: #4096ff;
   border-color: #4096ff;
@@ -654,4 +656,8 @@
   color: #000000 !important;
   border-left: 0 !important;
   padding: 0 !important;
+}
+
+.header-notifications-dropdown {
+  font-weight: 600;
 }

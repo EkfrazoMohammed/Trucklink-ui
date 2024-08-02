@@ -342,7 +342,8 @@ const DispatchContainer = ({ onData }) => {
           // challan.totalExpense || "-",
           challan.balance || "-",
           challan.excel || "-",
-          challan.hubId || "-",
+          // challan.hubId || "-",
+          localStorage.getItem("selectedHubName") || "-",
 
         ]);
 
@@ -378,7 +379,7 @@ const DispatchContainer = ({ onData }) => {
                 // "totalExpense ",
                 "balance   ",
                 "excel   ",
-                "hubId   ",
+                "hub   ",
 
               ],
             ],

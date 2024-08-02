@@ -116,20 +116,9 @@ const ReportsContainer = ({ onData }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-
-    // setLoading(false)
     setLoading(true)
-
     try {
       const searchData = searchQuery ? searchQuery : null;
-      // const paylod=
-      //   {
-      //     "startDate":"",
-      //     "vehicle":"Bulk",
-      //     "material":"CEMENT",
-      //     "endDate":""
-      // }
-
       const response = searchData ? await API.post(`report-table-data?page=1&limit=5000&hubId=${selectedHubId}`, payload, headersOb)
         : await API.post(`report-table-data?page=1&limit=5000&hubId=${selectedHubId}`, payload, headersOb);
       setLoading(false)
@@ -1354,6 +1343,13 @@ const ReportsContainer = ({ onData }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(10);
     const [activePageSize, setActivePageSize] = useState(10);
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
+
+
     const columns = [
       {
         title: 'Sl No',
@@ -1454,17 +1450,145 @@ const ReportsContainer = ({ onData }) => {
       },
     ];
 
+    const handleDownload = () => {
+      const challans = tripData;
+      const ownerDetails = challans.map((challan) => ({
+        "_id": challan._id,
+        "ownerName": challan.ownerDetails[0].ownerName,
+        "quantityInMetricTons": challan.totalQuantity.toFixed(2),
+        "rate": challan.companyRate,
+        "marketRate": challan.marketRate,
+        "totalAmount": challan.totalAmount.toFixed(2),
+        "commisionTotal": challan.totalCommisionTotal.toFixed(2),
+        "diesel": challan.totalDiesel,
+        "cash": challan.totalCash,
+        "bankTransfer": challan.totalBankTransfer,
+        "shortage": challan.totalShortage,
+        "balance": (challan.totalAmount - (challan.totalCommisionTotal + challan.totalDiesel + challan.totalCash + challan.totalBankTransfer + challan.totalShortage)).toFixed(2)
+      }));
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
 
-    const handlePageSizeChange = (newPageSize) => {
-      setCurrentPageSize(newPageSize);
-      setCurrentPage(1); // Reset to the first page
-      setActivePageSize(newPageSize); // Update the active page size
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Reports');
+
+
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'Reports.xlsx');
+    };
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+        const items = tripData.map((challan, index) => [
+          index + 1,
+          challan.ownerDetails[0].ownerName,
+          challan.totalQuantity.toFixed(2),
+          challan.companyRate,
+          challan.marketRate,
+          challan.totalAmount.toFixed(2),
+          challan.totalCommisionTotal.toFixed(2),
+          challan.totalDiesel,
+          challan.totalCash,
+          challan.totalBankTransfer,
+          challan.totalShortage,
+          (challan.totalAmount - (challan.totalCommisionTotal + challan.totalDiesel + challan.totalCash + challan.totalBankTransfer + challan.totalShortage)).toFixed(2)
+
+        ]);
+
+        if (items.length === 0) {
+          message.error("No data available to download");
+        } else {
+          doc.setFontSize(10);
+          const d = new Date();
+          const m = d.getMonth() + 1;
+          const day = d.getDate();
+          const year = d.getFullYear();
+
+          doc.autoTable({
+            head: [
+              [
+                "Sl No",
+                "ownerName",
+                "quantityInMetricTons",
+                "rate",
+                "marketRate",
+                "totalAmount",
+                "commisionTotal",
+                "diesel",
+                "cash",
+                "bankTransfer",
+                "shortage",
+                "balance"
+              ],
+            ],
+            body: items,
+            startY: 10,
+            headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+            bodyStyles: { fontSize: 8, textAlign: "center" },
+            columnStyles: {
+              0: { cellWidth: 8 },
+              1: { cellWidth: 20 },
+              2: { cellWidth: 20 },
+              3: { cellWidth: 20 },
+              4: { cellWidth: 20 },
+              5: { cellWidth: 20 },
+              6: { cellWidth: 20 },
+              7: { cellWidth: 20 },
+              8: { cellWidth: 20 },
+              9: { cellWidth: 20 },
+              10: { cellWidth: 20 },
+              11: { cellWidth: 20 },
+
+
+            },
+            didDrawPage: function (data) {
+              // Header
+              doc.setFontSize(10);
+              doc.text("Report Details", data.settings.margin.left + 0, 5);
+              doc.text("Date:-", data.settings.margin.left + 155, 5);
+              doc.text(
+                day + "/" + m + "/" + year,
+                data.settings.margin.left + 170,
+                5
+              );
+
+              // Footer
+              var str = "Page " + doc.internal.getNumberOfPages();
+              // Total page number plugin only available in jspdf v1.0+
+              if (typeof doc.putTotalPages === "function") {
+                str = str + " of " + totalPagesExp;
+              }
+              doc.setFontSize(10);
+
+
+              // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+              var pageSize = doc.internal.pageSize;
+              var pageHeight = pageSize.height
+                ? pageSize.height
+                : pageSize.getHeight();
+              doc.text(str, data.settings.margin.left, pageHeight - 10);
+            },
+            margin: { top: 10 },
+          });
+
+
+          if (typeof doc.putTotalPages === "function") {
+            doc.putTotalPages(totalPagesExp);
+          }
+          doc.save("user-reports.pdf");
+        }
+      } catch (err) {
+        message.error("Unable to Print");
+      }
     };
     return (
       <>
         <div className='flex gap-2 mb-2 items-center justify-end'>
-          <Button icon={<DownloadOutlined />}></Button>
-          <Button icon={<PrinterOutlined />}></Button>
+
+          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
 
           <div className='flex   my-paginations '>
             <span className='bg-[#F8F9FD] p-1'>

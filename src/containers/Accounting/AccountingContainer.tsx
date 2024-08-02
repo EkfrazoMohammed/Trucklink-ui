@@ -147,7 +147,6 @@ const AccountingContainer = ({ onData }) => {
       });
     };
 
-
     const getTableData = async () => {
       try {
         setLoading(true);
@@ -158,32 +157,38 @@ const AccountingContainer = ({ onData }) => {
         } else {
           response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
         }
-
+    
         if (response.data) {
-
           if (Array.isArray(response.data.disptachData) && response.data.disptachData.length === 0) {
             setTotalOutstanding("0.00");
           }
-          // Handle the structure for get-filterOwnerAdvanceData response
+    
           if (searchData && response.data.disptachData.length > 0) {
             const dataSource = response.data.disptachData.map(dispatchItem => {
               const data = dispatchItem.data;
-
               const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
               console.log(data);
-
+    
               const intDate = dayjs(initialDate, "DD-MM-YYYY");
+              // Calculate the total outstanding amount from the credit
+              const totalCredit = ledgerEntries.flat().reduce((sum, entry) => sum + entry.credit, 0);
+              
               return {
                 key: data._id,
                 ownerName: ownerName[0], // Assuming ownerName is always an array with at least one item
                 initialDate,
                 intDate,
                 IntAmount: initialAmount,
-                entries: ledgerEntries[0] // Initialize with the actual ledgerEntries
+                entries: ledgerEntries[0], // Initialize with the actual ledgerEntries
+                totalCredit
               };
             });
+    
+            const totalOutstanding = dataSource.reduce((sum, item) => sum + item.totalCredit, 0);
+            setTotalOutstanding(totalOutstanding.toFixed(2));
             setDataSource(dataSource);
             setCount(dataSource.length);
+    
           } else {
             const dataSource = response.data.ownersAdavance.map((data) => {
               const { ownerDetails, outStandingAmount } = data;
@@ -198,12 +203,10 @@ const AccountingContainer = ({ onData }) => {
                 entries: [] // Initialize empty, will fetch on expand
               };
             });
+    
             setDataSource(dataSource);
             setCount(dataSource.length);
           }
-
-
-
         } else {
           setDataSource([]);
         }
@@ -214,6 +217,73 @@ const AccountingContainer = ({ onData }) => {
         // message.error("Error fetching data. Please try again later", 2);
       }
     };
+    
+    // const getTableData = async () => {
+    //   try {
+    //     setLoading(true);
+    //     const searchData = filterRequest ? filterRequest : null;
+    //     let response;
+    //     if (searchData) {
+    //       response = await API.post(`get-filter-owner-advance-data?page=1&limit=100000&hubId=${selectedHubId}`, searchData, headersOb);
+    //     } else {
+    //       response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
+    //     }
+
+    //     if (response.data) {
+
+    //       if (Array.isArray(response.data.disptachData) && response.data.disptachData.length === 0) {
+    //         setTotalOutstanding("0.00");
+    //       }
+    //       // Handle the structure for get-filterOwnerAdvanceData response
+    //       if (searchData && response.data.disptachData.length > 0) {
+    //         const dataSource = response.data.disptachData.map(dispatchItem => {
+    //           const data = dispatchItem.data;
+
+    //           const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
+    //           console.log(data);
+
+    //           const intDate = dayjs(initialDate, "DD-MM-YYYY");
+    //           return {
+    //             key: data._id,
+    //             ownerName: ownerName[0], // Assuming ownerName is always an array with at least one item
+    //             initialDate,
+    //             intDate,
+    //             IntAmount: initialAmount,
+    //             entries: ledgerEntries[0] // Initialize with the actual ledgerEntries
+    //           };
+    //         });
+    //         setDataSource(dataSource);
+    //         setCount(dataSource.length);
+    //       } else {
+    //         const dataSource = response.data.ownersAdavance.map((data) => {
+    //           const { ownerDetails, outStandingAmount } = data;
+    //           const { initialDate, ownerName } = ownerDetails[0];
+    //           const intDate = dayjs(initialDate, "DD-MM-YYYY");
+    //           return {
+    //             key: data._id,
+    //             ownerName, // Assuming ownerName is not an array here
+    //             initialDate,
+    //             intDate,
+    //             IntAmount: outStandingAmount,
+    //             entries: [] // Initialize empty, will fetch on expand
+    //           };
+    //         });
+    //         setDataSource(dataSource);
+    //         setCount(dataSource.length);
+    //       }
+
+
+
+    //     } else {
+    //       setDataSource([]);
+    //     }
+    //     setLoading(false);
+    //   } catch (err) {
+    //     setLoading(false);
+    //     setDataSource([]);
+    //     // message.error("Error fetching data. Please try again later", 2);
+    //   }
+    // };
 
 
     const updateFilterAndFetchData = async (filters) => {

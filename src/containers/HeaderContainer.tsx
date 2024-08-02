@@ -46,13 +46,13 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
 
   // Define a custom typed useDispatch hook
   const useAppDispatch = () => useDispatch<AppDispatch>();
-  
+
   // Use the custom typed useDispatch hook
   const dispatch = useAppDispatch();
-  
+
   const userData = localStorage.getItem("userDetails");
-  const [userHub,setUserHub]=useState([])
- 
+  const [userHub, setUserHub] = useState([])
+
   useEffect(() => {
     const fetchHubData = async () => {
       const headersOb = {
@@ -64,15 +64,15 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
       const response = await API.get("get-hubs", headersOb);
       if (response.status === 201) {
         setHubData(response.data.hubs)
-    if (userData) {
-      const parsedUserData = JSON.parse(userData);
-      const userHubId = parsedUserData.hubId[0]; // Assuming `hubId` is an array and you want the first one
-      // console.log(response.data.hubs.find(h=> h._id == userHubId))
-      setUserHub(response.data.hubs.find(h=> h._id == userHubId))
-      const filterHub=response.data.hubs.find(h=> h._id == userHubId)
-      console.log(filterHub.location)
-      localStorage.setItem("selectedHubName", filterHub.location);
-    }
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          const userHubId = parsedUserData.hubId[0]; // Assuming `hubId` is an array and you want the first one
+          // console.log(response.data.hubs.find(h=> h._id == userHubId))
+          setUserHub(response.data.hubs.find(h => h._id == userHubId))
+          const filterHub = response.data.hubs.find(h => h._id == userHubId)
+          console.log(filterHub.location)
+          localStorage.setItem("selectedHubName", filterHub.location);
+        }
 
       } else {
         console.log("error fetching hubs")
@@ -221,105 +221,203 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
   }, []);
 
   const { name } = user;
-  
-
-const  notificationData =[
-  { title: "Pending Acknowledgement", 
-  description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement" 
-}
-]
 
 
-const selectedHubId = localStorage.getItem("selectedHubID");
+  const notificationData = [
+    {
+      title: "Pending Acknowledgement",
+      description: "Truck No KA03 B2567 has aged 23 days and still pending for acknowledgement"
+    }
+  ]
 
-const [acknowledgement, setAcknowledgement] = useState([]);
 
-const getTableData = async () => {
+  const selectedHubId = localStorage.getItem("selectedHubID");
+
+  const [acknowledgement, setAcknowledgement] = useState([]);
+
+  // const getTableData = async () => {
+  //   const headersOb = {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${authToken}`
+  //     }
+  //   }
+
+  //   try {
+  //     // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
+  //     // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
+  //     //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
+
+  //     const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
+
+  //     let allAcknowledgement;
+  //     if (response.data.dispatchData.length == 0) {
+  //       allAcknowledgement = response.data.disptachData
+  //       console.log(allAcknowledgement)
+  //       setAcknowledgement(allAcknowledgement);
+  //     } else {
+  //       allAcknowledgement = response.data.dispatchData[0].data || "";
+
+  //       if (allAcknowledgement && allAcknowledgement.length > 0) {
+  //         const arrRes = allAcknowledgement.sort(function (a, b) {
+  //           a = a.vehicleNumber.toLowerCase();
+  //           b = b.vehicleNumber.toLowerCase();
+  //           return a < b ? -1 : a > b ? 1 : 0;
+  //         });
+
+  //         // Create ageing objects for records aged more than 20 days
+  //         const ageingData = arrRes.map(record => {
+
+  //           const givenDate = new Date(record.grISODate);
+  //           // const givenDate = new Date(record.grDate);
+  //           const today = new Date();
+  //           const differenceInMs = today.getTime() - givenDate.getTime();
+  //           const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+  //           return {
+  //             title: "Pending Acknowledgement",
+  //             description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
+  //             differenceInDays
+  //           };
+  //         }).filter(record => record.differenceInDays > 20);
+  //         setAcknowledgement(ageingData);
+  //         return ageingData;
+  //       }
+
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // };
+
+  const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
+  const goToReceive = () => {
+    console.log('Navigating to full data view');
+    // localStorage.setItem('selectedMenuItem', 4);
+    setSelectedMenuItem('4')
+    localStorage.setItem("selectedMenuItemTitle", "Receive");
+    localStorage.setItem("activeTabKey", "1");
+
+    // setDataFromChild("flex")
+  }
+  useEffect(() => {
+        localStorage.setItem('selectedMenuItem', '4');
+   }, [selectedMenuItem]);
+
+  const getTableData = async () => {
     const headersOb = {
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${authToken}`
-        }
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
     }
 
     try {
-      // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
-      // const response = searchData ? await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, data, headersOb)
-      //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
-
       const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
       let allAcknowledgement;
-      if (response.data.dispatchData.length == 0) {
-          allAcknowledgement = response.data.disptachData
-          console.log(allAcknowledgement)
-          setAcknowledgement(allAcknowledgement);
+      if (response.data.dispatchData.length === 0) {
+        allAcknowledgement = response.data.disptachData;
+        console.log(allAcknowledgement);
+        setAcknowledgement(allAcknowledgement);
       } else {
-          allAcknowledgement = response.data.dispatchData[0].data || "";
-     
-          if (allAcknowledgement && allAcknowledgement.length > 0) {
-              const arrRes = allAcknowledgement.sort(function (a, b) {
-                  a = a.vehicleNumber.toLowerCase();
-                  b = b.vehicleNumber.toLowerCase();
-                  return a < b ? -1 : a > b ? 1 : 0;
-              });
-              // setAcknowledgement(arrRes);
-              // console.log(arrRes)
-              // return arrRes;
-                // Create ageing objects
-                const ageingData = arrRes.map(record => {
-                  const givenDate = new Date(record.grDate);
-                  const today = new Date();
-                  const differenceInMs = today - givenDate;
-                  const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+        allAcknowledgement = response.data.dispatchData[0].data || "";
 
-                  return {
-                      title: "Pending Acknowledgement",
-                      description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`
-                  };
-              });
+        if (allAcknowledgement && allAcknowledgement.length > 0) {
+          const arrRes = allAcknowledgement.sort((a, b) => {
+            a = a.vehicleNumber.toLowerCase();
+            b = b.vehicleNumber.toLowerCase();
+            return a < b ? -1 : a > b ? 1 : 0;
+          });
 
-              console.log(ageingData);
-              setAcknowledgement(ageingData);
-              return ageingData;
+          // Create ageing objects for records aged more than 20 days
+          const ageingData = arrRes.map(record => {
+            const givenDate = new Date(record.grISODate);
+            const today = new Date();
+            const differenceInMs = today.getTime() - givenDate.getTime();
+            const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+            return {
+              title: "Pending Acknowledgement",
+              description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
+              differenceInDays
+            };
+          }).filter(record => record.differenceInDays > 20);
+
+          // Split the data into two parts
+          const firstFourRecords = ageingData.slice(0, 4);
+          const remainingRecords = ageingData.slice(4);
+
+          setAcknowledgement(firstFourRecords);
+
+          // // If there are remaining records, add the link
+          // if (remainingRecords.length > 0) {
+          //   setAcknowledgement(prev => [
+          //     ...prev,
+          //     {
+          //       title: "Show All",
+          //       // description: `There are ${remainingRecords.length} more records. Click here to view all.`,
+          //       description: `Show All`,
+          //       link: "/path-to-full-data"
+          //     }
+          //   ]);
+          // }
+          // If there are remaining records, add the "Show All" item with an onClick handler
+          if (remainingRecords.length > 0) {
+            setAcknowledgement(prev => [
+              ...prev,
+              {
+                title: "Show All",
+                description: `Show All`,
+                onClick: () => { 
+                  setSelectedMenuItem('4')
+                  localStorage.setItem("selectedMenuItemTitle", "Receive");
+                  localStorage.setItem("activeTabKey", "1");
+                  window.location.reload();
+                }
+              }
+            ]);
           }
-
+          return ageingData;
+        }
       }
-  } catch (err) {
-      console.log(err)
-  }
-};
-//    // Update the useEffect hook to include currentPage and currentPageSize as dependencies
-useEffect(() => {
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+  useEffect(() => {
     getTableData();
-}, []);
+  }, []);
+  useEffect(() => {
+    getTableData();
+  }, [selectedHubId]);
 
   return (
     <>
       <div className="flex h-12 pb-4 justify-between items-center " style={{ display: `${dataFromChild}` }}>
         <div className='flex gap-2 justify-center items-center font-extrabold text-lg'>{title}</div>
         <div className='flex gap-4 justify-center items-center'>
-        {userHub && userHub.location ? <>
-        <div className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(201,205,11)`, backgroundColor: `rgba(201,205,11, 0.2)`, padding: "5px 10px", borderRadius: "4px",cursor:"pointer" }}>
-            <div className="flex flex-col">
-              <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}>&nbsp;</span>
-              <span style={{ fontWeight: "700" }}> {userHub && userHub.location}</span>
+          {userHub && userHub.location ? <>
+            <div className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(201,205,11)`, backgroundColor: `rgba(201,205,11, 0.2)`, padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
+              <div className="flex flex-col">
+                <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}>&nbsp;</span>
+                <span style={{ fontWeight: "700" }}> {userHub && userHub.location}</span>
+              </div>
+              <div className="flex">
+                <DownOutlined />
+              </div>
             </div>
-            <div className="flex">
-              <DownOutlined />
+          </> : <>
+            <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
+              <div className="flex flex-col">
+                <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}> Select Hub</span>
+                <span style={{ fontWeight: "700" }}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
+              </div>
+              <div className="flex">
+                <DownOutlined />
+              </div>
+              {userHub && userHub.location}
             </div>
-          </div>
-          </>:<>
-          <div onClick={showModal} className="flex justify-between w-['100%'] gap-6 mb-2" style={{ border: `2px solid rgb(${getHubColor})`, backgroundColor: `rgba(${getHubColor}, 0.2)`, padding: "5px 10px", borderRadius: "4px",cursor:"pointer" }}>
-            <div className="flex flex-col">
-              <span className="flex justify-between" style={{ color: "grey", fontSize: ".6rem", fontWeight: "600" }}> Select Hub</span>
-              <span style={{ fontWeight: "700" }}>{localStorage.getItem("selectedHubName") || "All Locations"}</span>
-            </div>
-            <div className="flex">
-              <DownOutlined />
-            </div>
-            {userHub && userHub.location}
-          </div>
           </>}
           {/* Select Hub Modal */}
           <Modal title="Hub Location" visible={modalVisible} onCancel={handleCancel} footer={null} centered>
@@ -371,33 +469,65 @@ useEffect(() => {
 
           {/* Hiding on PRODUCTION */}
           {localStorage.getItem("selectedHubName") ? <>
-          
-          <Badge size="small" count={acknowledgement.length}>
-            <Dropdown overlay={
-              <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal" 
-              // dataSource={notificationData}
-              dataSource={acknowledgement}
-              renderItem={(item) => (
-                <List.Item>
-                  {/* Notifications */}
-                  <List.Item.Meta  description={item.description} />
-                </List.Item>
-              )} />
-            } trigger={["click"]}>
-              <a href="#pablo" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
-                  <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
-                </svg>
-              </a>
-            </Dropdown>
-          </Badge>
-          
-          </>:<></>}
+            {/*
+            <Badge size="small" count={acknowledgement.length}>
+              <Dropdown overlay={
+                <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal"
+                  // dataSource={notificationData}
+                  dataSource={acknowledgement}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <List.Item.Meta description={item.description} />
+                    </List.Item>
+                  )} />
+              } trigger={["click"]}>
+                <a href="#pablo" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
+                    <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
+                  </svg>
+                </a>
+              </Dropdown>
+            </Badge>
+            */}
+
+            <Badge size="small" count={acknowledgement.length}>
+              <Dropdown
+                overlay={
+                  <List
+                    min-width="100%"
+                    className="header-notifications-dropdown"
+                    itemLayout="horizontal"
+                    dataSource={acknowledgement}
+                    renderItem={(item) => (
+                      <List.Item>
+                        {item.onClick ? (
+
+                          <List.Item.Meta description={item.description} onClick={item.onClick} />
+
+                        ) : (
+                          <List.Item.Meta description={item.description} />
+                        )}
+                      </List.Item>
+                    )}
+                  />
+                }
+                trigger={["click"]}
+              >
+                <a href="#pablo" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
+                    <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
+                  </svg>
+                </a>
+              </Dropdown>
+            </Badge>
+
+          </> : <></>}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />
-            
-            {name ? <>{name}</>: <p>-</p>}
+
+            {name ? <>{name}</> : <p>-</p>}
           </div>
         </div>
       </div>

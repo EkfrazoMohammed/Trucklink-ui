@@ -502,7 +502,8 @@ const Receive = ({ onData, showTabs, setShowTabs }) => {
         const totalPercentCommission = receive.reduce((sum, record) => sum + ((record.commisionRate || 0) * (record.quantityInMetricTons * record.rate) / 100), 0);
         const totalMarketCommission = receive.reduce((sum, record) => {
             if (record.marketRate !== 0) {
-                return sum + ((record.quantityInMetricTons * record.rate) - (record.marketRate || 0) * (record.quantityInMetricTons));
+                return sum + (record.commisionTotal);
+                // return sum + ((record.quantityInMetricTons * record.rate) - ((record.marketRate || 0) * (record.quantityInMetricTons)));
             }
             return sum;
         }, 0);

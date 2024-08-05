@@ -303,94 +303,94 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
         localStorage.setItem('selectedMenuItem', '4');
    }, [selectedMenuItem]);
 
-  const getTableData = async () => {
-    const headersOb = {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }
-    }
+  // const getTableData = async () => {
+  //   const headersOb = {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${authToken}`
+  //     }
+  //   }
 
-    try {
-      const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
+  //   try {
+  //     const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
-      let allAcknowledgement;
-      if (response.data.dispatchData.length === 0) {
-        allAcknowledgement = response.data.disptachData;
-        console.log(allAcknowledgement);
-        setAcknowledgement(allAcknowledgement);
-      } else {
-        allAcknowledgement = response.data.dispatchData[0].data || "";
+  //     let allAcknowledgement;
+  //     if (response.data.dispatchData.length === 0) {
+  //       allAcknowledgement = response.data.disptachData;
+  //       console.log(allAcknowledgement);
+  //       setAcknowledgement(allAcknowledgement);
+  //     } else {
+  //       allAcknowledgement = response.data.dispatchData[0].data || "";
 
-        if (allAcknowledgement && allAcknowledgement.length > 0) {
-          const arrRes = allAcknowledgement.sort((a, b) => {
-            a = a.vehicleNumber.toLowerCase();
-            b = b.vehicleNumber.toLowerCase();
-            return a < b ? -1 : a > b ? 1 : 0;
-          });
+  //       if (allAcknowledgement && allAcknowledgement.length > 0) {
+  //         const arrRes = allAcknowledgement.sort((a, b) => {
+  //           a = a.vehicleNumber.toLowerCase();
+  //           b = b.vehicleNumber.toLowerCase();
+  //           return a < b ? -1 : a > b ? 1 : 0;
+  //         });
 
-          // Create ageing objects for records aged more than 20 days
-          const ageingData = arrRes.map(record => {
-            const givenDate = new Date(record.grISODate);
-            const today = new Date();
-            const differenceInMs = today.getTime() - givenDate.getTime();
-            const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-            return {
-              title: "Pending Acknowledgement",
-              description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
-              differenceInDays
-            };
-          }).filter(record => record.differenceInDays > 20);
+  //         // Create ageing objects for records aged more than 20 days
+  //         const ageingData = arrRes.map(record => {
+  //           const givenDate = new Date(record.grISODate);
+  //           const today = new Date();
+  //           const differenceInMs = today.getTime() - givenDate.getTime();
+  //           const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+  //           return {
+  //             title: "Pending Acknowledgement",
+  //             description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
+  //             differenceInDays
+  //           };
+  //         }).filter(record => record.differenceInDays > 20);
 
-          // Split the data into two parts
-          const firstFourRecords = ageingData.slice(0, 4);
-          const remainingRecords = ageingData.slice(4);
+  //         // Split the data into two parts
+  //         const firstFourRecords = ageingData.slice(0, 4);
+  //         const remainingRecords = ageingData.slice(4);
 
-          setAcknowledgement(firstFourRecords);
+  //         setAcknowledgement(firstFourRecords);
 
-          // // If there are remaining records, add the link
-          // if (remainingRecords.length > 0) {
-          //   setAcknowledgement(prev => [
-          //     ...prev,
-          //     {
-          //       title: "Show All",
-          //       // description: `There are ${remainingRecords.length} more records. Click here to view all.`,
-          //       description: `Show All`,
-          //       link: "/path-to-full-data"
-          //     }
-          //   ]);
-          // }
-          // If there are remaining records, add the "Show All" item with an onClick handler
-          if (remainingRecords.length > 0) {
-            setAcknowledgement(prev => [
-              ...prev,
-              {
-                title: "Show All",
-                description: `Show All`,
-                onClick: () => { 
-                  setSelectedMenuItem('4')
-                  localStorage.setItem("selectedMenuItemTitle", "Receive");
-                  localStorage.setItem("activeTabKey", "1");
-                  window.location.reload();
-                }
-              }
-            ]);
-          }
-          return ageingData;
-        }
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  //         // // If there are remaining records, add the link
+  //         // if (remainingRecords.length > 0) {
+  //         //   setAcknowledgement(prev => [
+  //         //     ...prev,
+  //         //     {
+  //         //       title: "Show All",
+  //         //       // description: `There are ${remainingRecords.length} more records. Click here to view all.`,
+  //         //       description: `Show All`,
+  //         //       link: "/path-to-full-data"
+  //         //     }
+  //         //   ]);
+  //         // }
+  //         // If there are remaining records, add the "Show All" item with an onClick handler
+  //         if (remainingRecords.length > 0) {
+  //           setAcknowledgement(prev => [
+  //             ...prev,
+  //             {
+  //               title: "Show All",
+  //               description: `Show All`,
+  //               onClick: () => { 
+  //                 setSelectedMenuItem('4')
+  //                 localStorage.setItem("selectedMenuItemTitle", "Receive");
+  //                 localStorage.setItem("activeTabKey", "1");
+  //                 window.location.reload();
+  //               }
+  //             }
+  //           ]);
+  //         }
+  //         return ageingData;
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
-  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
-  useEffect(() => {
-    getTableData();
-  }, []);
-  useEffect(() => {
-    getTableData();
-  }, [selectedHubId]);
+  // // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+  // useEffect(() => {
+  //   getTableData();
+  // }, []);
+  // useEffect(() => {
+  //   getTableData();
+  // }, [selectedHubId]);
 
   return (
     <>
@@ -491,7 +491,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
             </Badge>
             */}
 
-            <Badge size="small" count={acknowledgement.length}>
+            {/* <Badge size="small" count={acknowledgement.length}>
               <Dropdown
                 overlay={
                   <List
@@ -521,7 +521,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
                   </svg>
                 </a>
               </Dropdown>
-            </Badge>
+            </Badge> */}
 
           </> : <></>}
           <div className="flex gap-2 items-center">

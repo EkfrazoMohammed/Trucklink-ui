@@ -37,10 +37,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
     setShowTruckTable(false);
   };
 
-
-
   const handleDeleteTruckClick = async (rowData) => {
-    console.log(rowData._id)
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
@@ -59,40 +56,62 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
     }
   }
 
+  // const getTableData = async (searchQuery, selectedHubID) => {
+  //   const headersOb = {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${authToken}`
+  //     }
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const response = await API.get(`users`, headersOb);
+  //     let allUserDetails;
+  //     if (response.data.user == 0) {
+  //       allUserDetails = response.data.user
+  //       setFilteredTruckData(allUserDetails);
+  //     } else {
+  //       allUserDetails = response.data.user || "";
+  //       setFilteredTruckData(allUserDetails)
+  //     }
+  //     setLoading(false);
+  //   } catch (err) {
+  //     console.log(err)
+  //     setLoading(false);
+  //   }
+  //   setLoading(false);
+
+  // };
+
   const getTableData = async (searchQuery, selectedHubID) => {
-    console.log(searchQuery)
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${authToken}`
       }
-    }
+    };
     setLoading(true);
-
+    
     try {
-      const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.get(`users`, headersOb)
-        : await API.get(`users`, headersOb);
-
-      let allUserDetails;
-      if (response.data.user == 0) {
-        allUserDetails = response.data.user
-        setFilteredTruckData(allUserDetails);
-      } else {
-
-        allUserDetails = response.data.user || "";
-        setFilteredTruckData(allUserDetails)
-
+      const response = await API.get(`users`, headersOb);
+      let allUserDetails = response.data.user || [];
+  
+      if (searchQuery) {
+        allUserDetails = allUserDetails.filter(user => 
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.phoneNumber.includes(searchQuery)
+        );
       }
+  
+      setFilteredTruckData(allUserDetails);
       setLoading(false);
-
     } catch (err) {
-      console.log(err)
+      console.log(err);
       setLoading(false);
     }
-    setLoading(false);
-
   };
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
   const [activePageSize, setActivePageSize] = useState(10);
@@ -579,7 +598,7 @@ const UserMaster = ({ onData, showTabs, setShowTabs }) => {
             </Button>
           </span>
         </div>
-     
+
         <Table
           columns={columns}
           dataSource={filteredTruckData}

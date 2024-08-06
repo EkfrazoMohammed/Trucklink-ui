@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { DatePicker, Table, Input, Select, Space, Button, Tooltip, Row, Col } from 'antd';
 import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -112,13 +112,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         const month = selectedDate.month;
         const year = selectedDate.year;
         getTableData("", month, year);
-      },2000)
+      }, 2000)
     } else {
       alert("Unable to delete data");
     }
   };
-  
- 
+
+
   const Truck = ({ onAddVoucherClick }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery6') || '';
     const [searchQuery6, setSearchQuery6] = useState(initialSearchQuery);
@@ -151,9 +151,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       // const month = selectedDate.month;
       // const year = selectedDate.year;
       // Set current month and year as default values
-      const currentMonth = dayjs().month() + 1;
-      const currentYear = dayjs().year();
-      getTableData("", currentMonth, currentYear);
+      // const currentMonth = dayjs().month() + 1;
+      // const currentYear = dayjs().year();
+      // getTableData("", currentMonth, currentYear);
+      const month = selectedDate.month;
+      const year = selectedDate.year;
+      getTableData("", month, year);
+      // handleFilterClick()
     };
 
     const handleFilterClick = () => {
@@ -244,7 +248,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           const month = selectedDate.month;
           const year = selectedDate.year;
           getTableData("", month, year);
-        },2000)
+        }, 2000)
 
       } catch (error) {
         console.error('Error creating voucher:', error);
@@ -252,7 +256,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       }
     };
 
-  
+
     const [materials, setMaterials] = useState([]);
 
     const fetchMaterials = async () => {
@@ -444,11 +448,11 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-    
+
     const [currentPage, setCurrentPage] = useState(1);
     const [currentPageSize, setCurrentPageSize] = useState(10);
     const [activePageSize, setActivePageSize] = useState(10);
-       const columns = [
+    const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
@@ -531,7 +535,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     };
     return (
       <>
-      <div className='flex gap-2 mb-2 items-center justify-end'>
+        <div className='flex gap-2 mb-2 items-center justify-end'>
           {/* <Button icon={<DownloadOutlined />}></Button>
           <Button icon={<PrinterOutlined />}></Button> */}
 
@@ -588,7 +592,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredVoucherData}
-          scroll={{ x: 800}}
+          scroll={{ x: 800 }}
           rowKey="_id"
           pagination={{
             showSizeChanger: false,
@@ -780,7 +784,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
             const month = selectedDate.month;
             const year = selectedDate.year;
             getTableData("", month, year);
-          },2000)
+          }, 2000)
         } else {
           alert('Error occurred while updating truck data');
         }

@@ -269,7 +269,8 @@ const DashboardEarningContainer = ({ year,loadLocation,deliveryLocation,currentU
                                             {hubs.find(hub => hub._id === earning.hubId)?.location || earning.hubId}
                                         </div>
                                         <div className="category-title">
-                                            {value}
+                                            {/* {value} */}
+                                            {parseFloat(value).toFixed(2)}
                                         </div>
                                     </div>
                                 );
@@ -282,7 +283,20 @@ const DashboardEarningContainer = ({ year,loadLocation,deliveryLocation,currentU
                                 <div className="category-title">
                                     {earningsArray && earningsArray.length > 0 ? (
                                         viewMode === "amount" ? (
-                                            <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
+                                            // <p>{JSON.stringify(earningsArray[0].totalEarning, null, 2)}</p>
+                                            <p>
+  {JSON.stringify(
+    earningsArray[0].totalEarning,
+    (key, value) => {
+      if (typeof value === 'number') {
+        return parseFloat(value.toFixed(2));
+      }
+      return value;
+    },
+    2
+  )}
+</p>
+
                                         ) : (
                                             <p>{((earningsArray[0].totalEarning / totalEarningsAllHubs) * 100).toFixed(2)}%</p>
                                         )

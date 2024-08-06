@@ -45,7 +45,7 @@ const DashboardMaterialContainer = ({ year, loadLocation, deliveryLocation, curr
         yaxis: {
             labels: {
                 formatter: function (value) {
-                    return value + " Tons";
+                    return parseFloat(value).toFixed(2) + " Tons";                    
                     // return value >= 100000 ? (value / 100000).toFixed(1) + 'L' : value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value;
                     // return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
                 }
@@ -64,7 +64,7 @@ const DashboardMaterialContainer = ({ year, loadLocation, deliveryLocation, curr
             intersect: false,
             y: {
                 formatter: function (value) {
-                    return value + " Tons";
+                    return parseFloat(value).toFixed(2) + " Tons";
                     //    return (value >= 1000 ? (value / 1000).toFixed(1) + 'Tons' : value  + " Tons");
                 }
             }
@@ -131,14 +131,24 @@ const DashboardMaterialContainer = ({ year, loadLocation, deliveryLocation, curr
                             materialTypes.add(materialType);
                         });
                     });
-
                     materialTypes.forEach(materialType => {
-                        const data = months.map(month => materials[month][materialType] || 0);
+                        const data = months.map(month => (materials[month][materialType] || 0).toFixed(2));
                         seriesData.push({
-                            name: materialType,
-                            data: data
+                          name: materialType,
+                          data: data
                         });
-                    });
+                      });
+                      
+                      console.log(seriesData);
+                      
+                    // materialTypes.forEach(materialType => {
+                    //     const data = months.map(month => materials[month][materialType] || 0);
+                    //     seriesData.push({
+                    //         name: materialType,
+                    //         data: data
+                    //     });
+                    // });
+                    // console.log(seriesData)
 
                     // Update chart options
                     setChartOptions(prevOptions => ({

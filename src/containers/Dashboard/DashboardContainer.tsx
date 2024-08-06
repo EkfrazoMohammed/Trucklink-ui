@@ -95,8 +95,6 @@ const DashboardContainer = () => {
 
   const onReset = () => {
     setCurrentYear(dayjs().year())
-    setloadLocations([])
-    setDeliveryLocations([])
     setFormData({
       "deliveryLocation": null,
       "loadLocation": null,

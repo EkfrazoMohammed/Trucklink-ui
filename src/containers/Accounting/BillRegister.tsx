@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import {  UploadOutlined, DownloadOutlined, PrinterOutlined,FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -121,7 +121,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           setTimeout(() => {
             getTableData("", 1, 100000, selectedHubId);
             goBack()
-            
+
           }, 1000)
         } else {
           setShowSaveButton(false)
@@ -134,19 +134,19 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log('Validate Failed:', errInfo);
     }
   };
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
   const [activePageSize, setActivePageSize] = useState(10);
-      const columns = [
-        {
-          title: 'Sl No',
-          dataIndex: 'serialNumber',
-          key: 'serialNumber',
-          render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-          width: 80,
-          fixed: 'left',
-        },
+  const columns = [
+    {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+      width: 80,
+      fixed: 'left',
+    },
     {
       title: 'Bill Number',
       dataIndex: 'billNumber',
@@ -220,7 +220,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       dataIndex: 'difference',
       key: 'difference',
       width: 160,
-      render: (_,record) => {
+      render: (_, record) => {
         return (
           <p>{parseFloat(record.difference).toFixed(2)}</p>
         )
@@ -271,8 +271,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           const ledgerEntries = response.data.deliveryDetails.challan;
 
           const dataSource = ledgerEntries.map((data) => {
-            console.log(data)
-
             return {
               ...data,
               "quantityInMetricTons": data.quantityInMetricTons,
@@ -391,16 +389,12 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     };
 
     const handleDeleteLedgerData = async (key) => {
-      console.log("row", record)
-      console.log("challan", key)
       try {
         // Retrieve the existing data to prepare the payload
         const response = await API.get(`get-delivery-data/${record.key}`, headersOb);
         const existingData = response.data.deliveryDetails;
-        console.log(existingData)
         // Remove the item from the challan list
         const updatedChallan = existingData.challan.filter(challanItem => challanItem._id !== key);
-        console.log(updatedChallan)
         // Prepare the payload
         const payload = {
           _id: existingData._id,
@@ -426,6 +420,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             setTimeout(() => {
               getTableData("", 1, 100000, selectedHubId);
               goBack()
+              window.location.reload()
             }, 1000)
 
           })
@@ -604,27 +599,15 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       const total = entries.reduce((total, entry) => {
         const rate = parseFloat(entry.rate);
         const qty = parseFloat(entry.quantityInMetricTons);
-    
-        console.log('Rate:', rate, 'Type:', typeof rate);
-        console.log('Quantity:', qty, 'Type:', typeof qty);
-    
         // Check if rate and qty are valid numbers, if not set them to 0
         const validRate = isNaN(rate) ? 0 : rate;
         const validQty = isNaN(qty) ? 0 : qty;
-    
+
         return parseFloat(total) + parseFloat(validRate * validQty);
       }, 0);
-    
       const roundedTotal = Math.round(total * 100) / 100;
-      console.log('Total Expense:', roundedTotal, 'Type:', typeof roundedTotal);
-    
       return roundedTotal;
     };
-    
-   
-    
-
-
 
     return (
       <div className='bg-[#BBE2FF] p-4'>
@@ -659,6 +642,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           setTimeout(() => {
             getTableData("", 1, 100000, selectedHubId);
             goBack()
+            window.location.reload();
           }, 1000)
         })
         .catch((error) => {
@@ -763,10 +747,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.post('create-bill-register', payload, headersOb);
         console.log('Bill registered successfully:', response.data);
         message.success("Bill registered successfully");
-        setTimeout(()=>{
+        setTimeout(() => {
           getTableData("", 1, 100000, selectedHubId);
           goBack()
-        },1000)
+        }, 1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {
@@ -1057,10 +1041,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.put(`update-bill-register-data/${editRowData.key}`, payload, headersOb);
         console.log('Bill updated successfully:', response.data);
         message.success("Bill updated successfully");
-        setTimeout(()=>{
+        setTimeout(() => {
           getTableData("", 1, 100000, selectedHubId);
           goBack()
-        },1000)
+        }, 1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {
@@ -1318,61 +1302,61 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               </Button>
             </div>
 
-        
-  
-      <div className='flex gap-2 mb-2 items-center justify-end'>
-          {/* <Button icon={<DownloadOutlined />}></Button>
+
+
+            <div className='flex gap-2 mb-2 items-center justify-end'>
+              {/* <Button icon={<DownloadOutlined />}></Button>
           <Button icon={<PrinterOutlined />}></Button> */}
 
-          <div className='flex   my-paginations '>
-            <span className='bg-[#F8F9FD] p-1'>
-              <Button
-                onClick={() => handlePageSizeChange(10)}
-                style={{
-                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
-                  color: activePageSize === 10 ? 'white' : 'black',
-                  borderRadius: activePageSize === 10 ? '6px' : '0',
-                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                10
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(25)}
-                style={{
-                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
-                  color: activePageSize === 25 ? 'white' : 'black',
-                  borderRadius: activePageSize === 25 ? '6px' : '0',
-                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                25
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(50)}
-                style={{
-                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
-                  color: activePageSize === 50 ? 'white' : 'black',
-                  borderRadius: activePageSize === 50 ? '6px' : '0',
-                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                50
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(100)}
-                style={{
-                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
-                  color: activePageSize === 100 ? 'white' : 'black',
-                  borderRadius: activePageSize === 100 ? '6px' : '0',
-                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                100
-              </Button>
-            </span>
-          </div>
-        </div>
+              <div className='flex   my-paginations '>
+                <span className='bg-[#F8F9FD] p-1'>
+                  <Button
+                    onClick={() => handlePageSizeChange(10)}
+                    style={{
+                      backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                      color: activePageSize === 10 ? 'white' : 'black',
+                      borderRadius: activePageSize === 10 ? '6px' : '0',
+                      boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    10
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(25)}
+                    style={{
+                      backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                      color: activePageSize === 25 ? 'white' : 'black',
+                      borderRadius: activePageSize === 25 ? '6px' : '0',
+                      boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    25
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(50)}
+                    style={{
+                      backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                      color: activePageSize === 50 ? 'white' : 'black',
+                      borderRadius: activePageSize === 50 ? '6px' : '0',
+                      boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    50
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(100)}
+                    style={{
+                      backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                      color: activePageSize === 100 ? 'white' : 'black',
+                      borderRadius: activePageSize === 100 ? '6px' : '0',
+                      boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    100
+                  </Button>
+                </span>
+              </div>
+            </div>
             <Form form={form} component={false}>
               <Table
                 rowKey={(record) => record.key}

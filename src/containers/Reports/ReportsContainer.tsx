@@ -248,8 +248,7 @@ const ReportsContainer = ({ onData }) => {
             format='DD/MM/YYYY' // Display format for the DatePicker
             style={{ marginRight: 16 }}
           />
-
-          {startDateValue !== null && startDateValue !== "" || materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
+          {startDateValue !== null && startDateValue !== "" || materialType !== "" && materialType !== null || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <>
 
 
             {/* {materialType !== "" || vehicleTypeSearch !== "" && vehicleTypeSearch !== null ? <> */}
@@ -1586,9 +1585,14 @@ const ReportsContainer = ({ onData }) => {
     return (
       <>
         <div className='flex gap-2 mb-2 items-center justify-end'>
-
-          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
-          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+        {/* {tripData.length > 0 ? <>a</> : <>b</>} 
+          //  startDateValue !== null && startDateValue !== "" || materialType !== "" && materialType !== null || vehicleTypeSearch !== "" && vehicleTypeSearch !== null
+          */}
+          {tripData.length > 0 
+            ? <>
+            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+            <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+          </> : <></>}
 
           <div className='flex   my-paginations '>
             <span className='bg-[#F8F9FD] p-1'>

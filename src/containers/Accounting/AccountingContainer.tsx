@@ -453,6 +453,7 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
               >
                 <Select
+                showSearch
                   onChange={(value) => {
                     const selectedOwner = owners.find(owner => owner.name === value);
 

@@ -69,10 +69,15 @@ const DashboardTopContainer = ({ year,loadLocation,deliveryLocation,currentUserR
     const commissionData = !topContainerData || topContainerData.length === 0 ? 0 : topContainerData[0].commission;
     const quantityData = !topContainerData || topContainerData.length === 0 ? 0 : topContainerData[0].quantity;
     // Helper function to format number in Indian style
+    // const formatNumberToIndianStyle = (number) => {
+    //     if (number === 0) return '0';
+    //     return number.toLocaleString('en-IN');
+    // };
     const formatNumberToIndianStyle = (number) => {
-        if (number === 0) return '0';
-        return number.toLocaleString('en-IN');
-    };
+    if (number === 0) return '0.00';
+    return number.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
     // console.log(JSON.stringify(data[0].trips, null,2))
     const topData = [
         {

@@ -181,7 +181,10 @@ const DashboardExpenseContainer = ({ year, loadLocation, deliveryLocation, curre
     };
 
     const seriesToRender = selectedSeries || allSeries;
-
+    const formatNumberToIndianStyle = (number) => {
+        if (number === 0) return '0.00';
+        return number.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
     return (
         <div className='dashboard-expense-container'>
             <div className="cards-container">
@@ -195,7 +198,8 @@ const DashboardExpenseContainer = ({ year, loadLocation, deliveryLocation, curre
                         <div className="flex items-center justify-end px-4">
                             <div className="flex justify-between flex-col p-2 ml-4">
                                 <div className="category-value text-xl font-bold text-red-500">
-                                    ₹ {totalExpenses.toLocaleString()}
+                                    {/* ₹ {totalExpenses.toLocaleString()} */}
+                                    ₹ {formatNumberToIndianStyle(totalExpenses)}
                                 </div>
                                 <div className="category-title font-bold">
                                     TOTAL EXPENSES
@@ -211,7 +215,8 @@ const DashboardExpenseContainer = ({ year, loadLocation, deliveryLocation, curre
                             <div key={series.name} className="gutter-row flex flex-col gap-2" onClick={() => handleCardClick(series.name)}>
                                 <div className={`flex flex-col gap-2 p-2 border border-y-2 border-x-2 rounded-md bg-white cursor-pointer ${selectedSeries && selectedSeries[0].name === series.name ? 'border-blue-500' : ''}`}>
                                     <div className={`category-value text-xl font-bold ${series.name === 'Diesel' ? 'text-red-500' : series.name === 'Cash' ? 'text-yellow-500' : series.name === 'Bank Transfer' ? 'text-green-500' : 'text-pink-500'}`}>
-                                        ₹ {series.data.reduce((a, b) => a + b, 0).toLocaleString()}
+                                        {/* ₹ {series.data.reduce((a, b) => a + b, 0).toLocaleString()} */}
+                                        ₹ {formatNumberToIndianStyle(series.data.reduce((a, b) => a + b, 0))}
                                     </div>
                                     <div className="category-title">
                                         {series.name.toUpperCase()}

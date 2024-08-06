@@ -52,19 +52,7 @@ const ReportsContainer = ({ onData }) => {
     setVehicleTypeSearch(value)
     setFilters({ ...filters, vehicle: value === "All" ? "" : value });
   };
-  // // Function to handle start date change
-  // const handleStartDateChange = (date) => {
-  //   setStartDateValue(date); // Update DatePicker value
-  //   const startDateUnix = new Date(date).getTime(); // Convert dateString to Unix timestamp
-  //   setFilters({ ...filters, startDate: startDateUnix || "" }); // Update filters state with startDate
-  // };
 
-  // // Function to handle end date change
-  // const handleEndDateChange = (date) => {
-  //   setEndDateValue(date); // Update DatePicker value
-  //   const unixTimestamp = new Date(date).getTime();
-  //   setFilters({ ...filters, endDate: unixTimestamp || "" });
-  // };
   const handleStartDateChange = (date, dateString) => {
     if (date) {
       const formattedDate = dayjs(date, "DD/MM/YYYY").format("DD/MM/YYYY");
@@ -80,12 +68,7 @@ const ReportsContainer = ({ onData }) => {
     }
   };
 
-  // Function to handle end date change
-  const handleEndDateChange2 = (date) => {
-    setEndDateValue(date); // Update DatePicker value
-    const unixTimestamp = new Date(date).getTime();
-    setFilters({ ...filters, endDate: unixTimestamp || "" });
-  };
+ 
 
   const handleEndDateChange = (date, dateString) => {
     if (date) {
@@ -158,12 +141,7 @@ const ReportsContainer = ({ onData }) => {
   useEffect(() => {
     fetchMaterials();
   }, [])
-  // useEffect(() => {
-  //   getTableData();
-  // }, [selectedHubId, materialType, vehicleType, startDate]);
-  // useEffect(() => {
-  //   getTableData();
-  // }, [filters])
+
   // Truck master
   const Truck = () => {
     const onReset = () => {
@@ -184,18 +162,7 @@ const ReportsContainer = ({ onData }) => {
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
         <div className='flex gap-2 items-center'>
-          {/* <Select
-            name="materialType"
-            value={materialType ? materialType : null}
-            placeholder="Material Type*"
-            size="large"
-            style={{ width: "20%" }}
-            onChange={handleMaterialTypeChange}
-            filterOption={filterOption}
-          >
-            {materials.map((v, index) => (<Option key={index} value={v.materialType}>{`${v.materialType}`}</Option>))}
-          </Select>
-          */}
+         
           <Select
             name="materialType"
             value={materialType ? materialType : null}
@@ -275,7 +242,140 @@ const ReportsContainer = ({ onData }) => {
       setShowUserTable(true)
     }
     const componentRef = useRef(null);
+    const createPDFWithTables = () => {
+      const pdf = new jsPDF('p', 'mm', 'a4');
 
+      // Helper function to add a table to the PDF
+const addTableToPDF = (columns, data, title, isLastTable) => {
+
+  // Add the table
+  pdf.autoTable({
+    head: [columns],
+    body: data,
+   didDrawPage: function (data) {
+      // Header
+      pdf.setFontSize(10);
+      pdf.text(title +" Details", data.settings.margin.left, 10);
+      const d = new Date();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const year = d.getFullYear();
+      pdf.text(`Date: ${day}/${m}/${year}`, data.settings.margin.left + 150, 10);
+
+   
+    },
+  });
+  // Add a new page only if it's not the last table
+  if (!isLastTable) {
+    pdf.addPage();
+  }
+};
+
+      // Data for Dispatch Table
+      const dispatchColumns = [
+        "Sl No", "Material Type", "GR No", "GR Date", "Load Location",
+        "Delivery Location", "Vehicle Number", "Vehicle Type",
+        "Delivery Number", "Quantity", "Company Rate", "Market Rate",
+        "Diesel", "Cash", "Bank Transfer", "Shortage"
+      ];
+      const dispatchData = JSON.parse(localStorage.getItem("Dispatch Table"))?.tripDetails.map((item, index) => [
+        index + 1,
+        item.materialType,
+        item.grNumber,
+        formatDate(item.grDate),
+        item.loadLocation,
+        item.deliveryLocation,
+        item.vehicleNumber,
+        item.vehicleType,
+        item.deliveryNumber,
+        item.quantityInMetricTons,
+        item.ratePerTon,
+        item.marketRate,
+        item.diesel,
+        item.cash,
+        item.bankTransfer,
+        item.shortage
+      ]) || [];
+
+      addTableToPDF(dispatchColumns, dispatchData, 'Dispatch');
+
+      // Data for Owner Advance Table
+      const advanceColumns = [
+        "Sl No", "Date", "Narration", "Debit", "Credit"
+      ];
+      const advanceData = JSON.parse(localStorage.getItem("advance")).map((item, index) => [
+        index + 1,
+        formatDate(item.entryDate),
+        item.narration,
+        item.debit,
+        item.credit
+      ]) || [];
+
+      addTableToPDF(advanceColumns, advanceData, 'Advance');
+
+      // Data for Vouchers Table
+      const vouchersColumns = [
+        "Sl No", "Narration", "Amount"
+      ];
+      const vouchersData = JSON.parse(localStorage.getItem("ownersVoucher")).map((item, index) => [
+        index + 1,
+        item.narration,
+        item.amount
+      ]) || [];
+
+      addTableToPDF(vouchersColumns, vouchersData, 'Voucher');
+
+      // Data for Bank Accounts Table
+      const bankColumns = [
+        "Sl No", "Bank Name", "Branch Name", "IFSC Code", "Account Holder Name", "Account Number"
+      ];
+      const bankData = JSON.parse(localStorage.getItem("ac")).map((item, index) => [
+        index + 1,
+        item.bankName,
+        item.branchName,
+        item.ifscCode,
+        item.accountHolderName,
+        item.accountNumber
+      ]) || [];
+
+      addTableToPDF(bankColumns, bankData, 'Bank Accounts');
+
+      // Data for Expenses Table
+      const expensesColumns = [
+        "Particulars", "Amount "
+      ];
+      const storedData = JSON.parse(localStorage.getItem("TripReportsExpense1")) || {};
+      const storedDebitData = JSON.parse(localStorage.getItem("totalOutstandingDebit")) || {};
+      const storedVoucherAmountData = JSON.parse(localStorage.getItem("ownersVoucherAmount")) || {};
+
+      const expensesData = [
+        ["Total Amount", storedData.totalAmount],
+        ["Commision", storedData.totalCommisionTotal],
+        ["Diesel", storedData.totalDiesel],
+        ["Cash", storedData.totalCash],
+        ["Bank Transfer", storedData.totalBankTransfer],
+        ["Shortage", storedData.totalShortage],
+        ["Outstanding Debit", storedDebitData.totalOutstandingDebit],
+        ["Advance Voucher", storedVoucherAmountData.ownersVoucherAmount]
+      ];
+
+      addTableToPDF(expensesColumns, expensesData, 'Expenses',true);
+
+      pdf.save('Report.pdf');
+    };
+
+    // Helper function to format date
+    const formatDate = (date) => {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) {
+        return parsedDate.toLocaleDateString('en-US', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      }
+      return date;
+    };
     const downloadPDF = async () => {
       const input = componentRef.current;
       const canvas = await html2canvas(input);
@@ -892,17 +992,29 @@ const ReportsContainer = ({ onData }) => {
 
           const response = searchData ? await API.get(`get-ledger-data-owner/${editingRowId}${queryParams}`, headersOb)
             : await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb)
-          // : await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb)
 
-          // const response = await API.get(`get-ledger-data-owner/${editingRowId}`, headersOb);
-          const ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
-          const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
+            let ledgerEntries;
+          if (response.data.message === "No data found") {
+            ledgerEntries = [];
+            const ownersAdavanceAmountDebit = 0
+            setTotal(ownersAdavanceAmountDebit)
+            const saveLocal = {
+              "totalOutstandingDebit": ownersAdavanceAmountDebit
+            }
+            let allChallans=[]
+            localStorage.setItem("advance", JSON.stringify(allChallans));
+            localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
+          
+          } else {
+            ledgerEntries = response.data.ownersAdavance[0].ledgerDetails;
+            const ownersAdavanceAmountDebit = response.data.ownersAdavance[0].totalOutstandingDebit
+            setTotal(ownersAdavanceAmountDebit)
+            const saveLocal = {
+              "totalOutstandingDebit": ownersAdavanceAmountDebit
+            }
+            localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
 
-          setTotal(ownersAdavanceAmountDebit)
-          const saveLocal = {
-            "totalOutstandingDebit": ownersAdavanceAmountDebit
           }
-          localStorage.setItem("totalOutstandingDebit", JSON.stringify(saveLocal));
           triggerUpdate();
           setLoading(false)
           let allChallans;
@@ -1028,6 +1140,8 @@ const ReportsContainer = ({ onData }) => {
             }
             console.log(saveLocal)
             localStorage.setItem("ownersVoucherAmount", JSON.stringify(saveLocal));
+            const a=[]
+            localStorage.setItem("ownersVoucher", JSON.stringify(a));
           } else {
             setLoading(false)
             const ledgerEntries = response.data.voucher[0].voucherDetails;
@@ -1049,6 +1163,7 @@ const ReportsContainer = ({ onData }) => {
             } else {
               voucherDetails = ledgerEntries || "";
               setchallanData(voucherDetails);
+              console.log(voucherDetails)
               localStorage.setItem("ownersVoucher", JSON.stringify(voucherDetails));
             }
           }
@@ -1281,7 +1396,8 @@ const ReportsContainer = ({ onData }) => {
                 <div>
 
                   <Button size='large' onClick={() => exportMultipleTablesToExcel()}><DownloadOutlined /></Button>
-                  <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
+                  {/* <Button size='large' onClick={downloadPDF} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button> */}
+                  <Button size='large' onClick={createPDFWithTables} style={{ marginLeft: '10px' }}><PrinterOutlined /></Button>
                 </div>
               </div>
             </div>
@@ -1585,14 +1701,14 @@ const ReportsContainer = ({ onData }) => {
     return (
       <>
         <div className='flex gap-2 mb-2 items-center justify-end'>
-        {/* {tripData.length > 0 ? <>a</> : <>b</>} 
+          {/* {tripData.length > 0 ? <>a</> : <>b</>} 
           //  startDateValue !== null && startDateValue !== "" || materialType !== "" && materialType !== null || vehicleTypeSearch !== "" && vehicleTypeSearch !== null
           */}
-          {tripData.length > 0 
+          {tripData.length > 0
             ? <>
-            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
-            <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
-          </> : <></>}
+              <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+              <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+            </> : <></>}
 
           <div className='flex   my-paginations '>
             <span className='bg-[#F8F9FD] p-1'>

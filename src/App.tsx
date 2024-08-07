@@ -4,6 +4,7 @@ import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Error from "./pages/Error/Error";
 import "./App.css";
+import Reset from "./pages/Login/Reset";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/reset-password" element={<Reset />} />
           <Route path="/dashboard" element={<ProtectedDashboard />} />
           <Route path="*" element={<Error />} />
         </Routes>

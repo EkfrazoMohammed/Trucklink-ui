@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import FooterContainer from '../../containers/FooterContainer';
 import logo from "./../../assets/newlogo.png";
-import { Button, Input, Space } from 'antd';
+import { Button, Input, message, Space } from 'antd';
 import moment from "moment";
 
 import { publicIpv4 } from 'public-ip';
@@ -147,7 +147,58 @@ const Login = () => {
       setError("Invalid credentials");
     }
   };
-  
+
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [errorForgotPassword, setErrorForgotPassword] = useState("");
+  const handleForgotPassword = () => {
+    setForgotPassword(true);
+  }
+  const handleRememberedPassword = () => {
+    setForgotPassword(false);
+  }
+
+  const [verifiedUserEmail, setVerifiedUserEmail] = useState({
+    email: "",
+  });
+
+  const handleChangeVerifiedUserEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setVerifiedUserEmail(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  }
+
+  const handleVerifyEmail = async () => {
+    setForgotPassword(true);  
+    const emailToVerify = verifiedUserEmail.email;
+    const payload={ email: emailToVerify }
+    const headersOb={
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }
+    try {
+      const response = await API.post('forget-password',payload,headersOb);
+      if (response.status === 201) {
+        const { resetPasswordToken } = response.data;
+        message.success(`Reset password email has been sent to ${emailToVerify}`);
+        console.log(`Reset Password Token: ${resetPasswordToken}`);
+        handleRememberedPassword()
+        setErrorForgotPassword("");
+        localStorage.setItem("reset-email",emailToVerify)
+      } else {
+        message.error('Failed to send reset password email');
+        localStorage.setItem("reset-email","")
+      }
+    } catch (error) {
+      console.error('Error sending reset password email:', error);
+      message.error("An error occurred. Please try again.");
+      setErrorForgotPassword("An error occurred. Please try again")
+      localStorage.setItem("reset-email","")
+    }
+  };
+
   return (
     <div className=' bg-[#D7F1FF]  text-black max-h-[100vh]'>
       <div className='relative  w-full h-[95vh]'>
@@ -166,26 +217,44 @@ const Login = () => {
                   <img src={logo} alt="" className='w-full h-full' />
                 </div>
               </div>
-              <div className="w-full max-w-[400px] h-full bg-white/60 backdrop-blur rounded-md custom-shadow p-8">
-                <h1 className='mb-2 font-semibold text-lg'>Log in to your account</h1>
-                {error && <p className="text-red-500 mb-2">{error}</p>}
-                <Space direction="vertical" className='w-full mb-2'>
-                  <Input size="large" placeholder="User Name" className='mb-2 p-2' name="email" onChange={handleChange} />
-                  <Input.Password
-                    name="password"
-                    onChange={handleChange}
-                    className='mb-2 p-2'
-                    size="large"
-                    placeholder="Password"
-                    visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
-                  />
-                </Space>
-                <div className="flex gap-2 flex-col">
+              {!forgotPassword ? <>
+                <div className="w-full max-w-[400px] h-full bg-white/60 backdrop-blur rounded-md custom-shadow p-8">
+                  <h1 className='mb-2 font-semibold text-lg'>Log in to your account</h1>
+                  <div className="font-regular mb-2">Enter your Email and Password</div>
+                  {error && <p className="text-red-500 mb-2">{error}</p>}
+                  <Space direction="vertical" className='w-full mb-2'>
+                    <Input size="large" placeholder="Email" className='mb-2 p-2' name="email" onChange={handleChange} />
+                    <Input.Password
+                      name="password"
+                      onChange={handleChange}
+                      className='mb-2 p-2'
+                      size="large"
+                      placeholder="Password"
+                      visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
+                    />
+                  </Space>
+                  <div className="flex gap-2 flex-col">
 
-                  <Button type="primary" onClick={handleClick}>Sign in</Button>
-                  {/* <Button type="link" className='text-black'>Reset password</Button> */}
+                    <Button type="primary" onClick={handleClick}>Sign in</Button>
+                    <Button type="link" className='text-black' onClick={handleForgotPassword}>Forgot password</Button>
+                  </div>
                 </div>
-              </div>
+              </> : <>
+              <div className="w-full max-w-[400px] h-full bg-white/60 backdrop-blur rounded-md custom-shadow p-8">
+                    <h1 className='mb-2 font-semibold text-lg'>Verify Email ID</h1>
+                    <div className="font-regular mb-2">Enter your Email </div>
+                    {errorForgotPassword && <p className="text-red-500 mb-2">{errorForgotPassword}</p>}
+                    <Space direction="vertical" className='w-full mb-2'>
+                      <Input size="large" formNoValidate placeholder="Email" className='mb-2 p-2' name="email" onChange={handleChangeVerifiedUserEmail} />
+
+                    </Space>
+                    <div className="flex gap-2 flex-col">
+
+                      <Button type="primary" onClick={handleVerifyEmail}>Submit</Button>
+                      <Button type="link" className='text-black' onClick={handleRememberedPassword}>I know my password, Back to Login</Button>
+                    </div>
+                  </div>
+              </>}
             </div>
           </div>
         </div>

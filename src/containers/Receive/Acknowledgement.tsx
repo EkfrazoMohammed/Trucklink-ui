@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch } from 'antd';
 
 import { UploadOutlined, DownloadOutlined, EyeOutlined, RedoOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons';
@@ -26,47 +36,45 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
     // Initialize state variables for current page and page size
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentPageSize, setCurrentPageSize] = useState(50);
-    const [totalChallanData, setTotalChallanData] = useState(100)
+    const [currentPageSize, setCurrentPageSize] = useState(100000);
+    const [totalChallanData, setTotalChallanData] = useState(100000)
     const [searchQuery, setSearchQuery] = useState('');
     const [startDate, setStartDate] = useState("")
-    const [endDate, setEndDate] = useState("")
     const [startDateValue, setStartDateValue] = useState("")
+    const [endDate, setEndDate] = useState("")
     const [endDateValue, setEndDateValue] = useState("")
     const [loading, setLoading] = useState(false);
     // const handleSearch = (e) => {
     //     setSearchQuery(e);
     // };
-
-    const convertToIST = (date) => {
-        const istDate = moment.tz(date, "Asia/Kolkata");
-        return istDate.valueOf();
-    };
+    const goBack = () => {
+        setShowTable(true)
+        onData('flex')
+        setShowTabs(true); // Set showTabs to false when adding owner
+    }
     const handleStartDateChange = (date, dateString) => {
-        console.log(convertToIST(dateString))
-        setStartDateValue(date)
-        setStartDate(date ? convertToIST(dateString) : null);
+        if (date) {
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setStartDateValue(formattedDate); // Set formatted date for display
+            setStartDate(date); // Set Date object for further processing if needed
+        } else {
+            setStartDateValue(null);
+            setStartDate(null);
+        }
     };
-
-    // const handleEndDateChange = (date, dateString) => {
-    //     setEndDateValue(date)
-    //     setEndDate(date ? convertToIST(dateString) : null);
-    // };
     const handleEndDateChange = (date, dateString) => {
         if (date) {
-          // Set endDate to the last minute of the selected day in IST
-          const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-          setEndDateValue(date);
-          setEndDate(endOfDay.valueOf());
+            // Format the date for display
+            const formattedDate = dayjs(date).format("DD/MM/YYYY");
+            setEndDateValue(formattedDate); // Set formatted date for display
+            setEndDate(date); // Set Date object for further processing if needed
         } else {
-          setEndDateValue(null);
-          setEndDate(null);
+            setEndDateValue(null);
+            setEndDate(null);
         }
-      };
-      // Disable dates before the selected start date
- const disabledEndDate = (current) => {
-    return current && current < moment(startDate).startOf('day');
-  };
+    };
+
     const buildQueryParams = (params) => {
         let queryParams = [];
         for (const param in params) {
@@ -90,12 +98,32 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             data.searchTDNo = [searchQuery];
         }
 
+        // if (startDate) {
+        //   data.startDate = startDate;
+        // }
         if (startDate) {
-            data.startDate = startDate;
+            // Calculate the start of the day in IST (5:30 AM)
+            const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+            //    console.log(startOfDayInIST)
+
+            // Convert the IST timestamp to a dayjs object in IST timezone
+            const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+
+            // Convert the IST date to the start of the same day in UTC and get the timestamp in milliseconds
+            const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+
+            console.log(utcStartOfDay); // Output: Equivalent UTC timestamp in milliseconds
+
+            data.startDate = utcStartOfDay;
         }
 
+        // if (endDate) {
+        //   data.endDate = endDate;
+        // }
         if (endDate) {
-            data.endDate = endDate;
+            const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+
+            data.endDate = endOfDayInIST;
         }
 
 
@@ -108,8 +136,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             //     : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
 
             const response = searchData
-                ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=50&hubId=${selectedHubId}`, headersOb)
-                : await API.get(`get-acknowledgement-register?page=1&limit=50&hubId=${selectedHubId}`, headersOb);
+                ? await API.get(`get-acknowledgement-register${queryParams}&page=1&limit=100000&hubId=${selectedHubId}`, headersOb)
+                : await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
             let allAcknowledgement;
             setLoading(false)
@@ -180,11 +208,11 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             localStorage.removeItem('searchQuery3');
         };
         return (
-            <div className='flex gap-2 flex-col justify-between p-2'>
+            <div className='flex gap-2 justify-between p-2'>
 
                 <div className='flex gap-2'>
                     <Search
-                        placeholder="Search by Delivery Number"
+                        placeholder="Search by keyword"
                         size='large'
                         value={searchQuery3}
                         onChange={onChangeSearch}
@@ -193,26 +221,32 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     />
                     <DatePicker
                         size='large'
-                        value={startDateValue}
                         onChange={handleStartDateChange}
+                        value={startDate} // Set Date object directly as the value
                         placeholder='From date'
-                    /> -
+                        format='DD/MM/YYYY' // Display format for the DatePicker
+                    />
                     <DatePicker
                         size='large'
-                        value={endDateValue}
+                        // value={endDateValue}
+                        value={endDate}
                         onChange={handleEndDateChange}
-                        disabledDate={disabledEndDate}
                         placeholder='To date'
+                        format='DD/MM/YYYY' // Display format for the DatePicker
+
                     />
 
                     {searchQuery3 !== null && searchQuery3 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
                 </div>
+
+
+
             </div>
 
         );
     };
 
-    const DispatchChallanComponentTable = ({ onEditChallanClick, onSaveAndMoveToReceive }) => {
+    const DispatchChallanComponentTable = ({ onEditChallanClick, onSaveAndMarkToPost, onSaveAndMoveToReceive }) => {
 
         const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -226,13 +260,35 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             onChange: onSelectChange,
         };
 
+        // const formatDate = (date) => {
+        //     const parsedDate = new Date(date);
+        //     if (!isNaN(parsedDate)) {
+        //       return parsedDate.toLocaleDateString('en-GB');
+        //     }
+        //     return date; // Return the original date if parsing fails
+        //   };
+        const formatDate = (date) => {
+            const parsedDate = new Date(date);
+            if (!isNaN(parsedDate)) {
+                return parsedDate.toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
+            }
+            return date; // Return the original date if parsing fails
+        };
+
+        const [currentPage, setCurrentPage] = useState(1);
+        const [currentPageSize, setCurrentPageSize] = useState(10);
+        const [activePageSize, setActivePageSize] = useState(10);
         const columns = [
 
             {
                 title: 'Ageing',
                 dataIndex: 'ageing',
                 key: 'ageing',
-                width: 110,
+                width: 80,
                 fixed: 'left',
                 onCell: (record) => {
                     const givenDate = new Date(record.grISODate);
@@ -241,21 +297,26 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
 
                     let backgroundColor;
+                    let color;
 
                     if (differenceInDays < 10) {
-                        backgroundColor = '#009F23';
+                        backgroundColor = '#34ff61';
+                        color = '#000';
                     } else if (differenceInDays < 20) {
                         backgroundColor = '#FFED4A';
+                        color = '#000';
 
                     } else if (differenceInDays >= 30) {
                         backgroundColor = '#FF0000';
+                        color = '#fff';
                     } else {
                         backgroundColor = '#FFED4A'; // Default background color
+                        color = '#000';
                     }
 
                     return {
                         id: `ageing-${record._id}`,
-                        style: { backgroundColor, color: "#000", textAlign: "center" },
+                        style: { backgroundColor, color, textAlign: "center" },
                     };
                 },
                 render: (_, record) => {
@@ -263,31 +324,39 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                     const today = new Date();
                     const differenceInMs = today - givenDate;
                     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-
                     return (
                         <span>{differenceInDays}</span>
+
                     );
                 },
             },
+
             {
                 title: 'Sl No',
                 dataIndex: 'serialNumber',
                 key: 'serialNumber',
-                render: (text, record, index: any) => index + 1,
-                width: 90,
-
+                render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+                width: 80,
             },
             {
-                title: 'GR Number',
+                title: 'GR No',
                 dataIndex: 'grNumber',
                 key: 'grNumber',
                 width: 100,
+                sorter: (a, b) => a.grNumber - b.grNumber,
             },
+            // {
+            //     title: 'GR Date',
+            //     dataIndex: 'grDate',
+            //     key: 'grDate',
+            //     width: 140,
+            // },
             {
                 title: 'GR Date',
                 dataIndex: 'grDate',
                 key: 'grDate',
-                width: 140,
+                width: 120,
+                render: (text) => formatDate(text),
             },
             {
                 title: 'Truck Number',
@@ -295,23 +364,36 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'vehicleNumber',
                 width: 140,
             },
+            // {
+            //     title: 'Owner Name',
+
+            //     width: 160,
+            //     render: (_, record) => {
+            //         return <p>{record.ownerName}</p>
+            //     }
+
+            // },
             {
                 title: 'Owner Name',
-
-                width: 160,
+                width: 210,
                 render: (_, record) => {
-                    return <p>{record.ownerName}</p>
-                }
-
+                    return <p>{record.ownerName}</p>;
+                },
+                sorter: (a, b) => {
+                    const nameA = a.ownerName ? a.ownerName.toLowerCase() : '';
+                    const nameB = b.ownerName ? b.ownerName.toLowerCase() : '';
+                    return nameA.localeCompare(nameB);
+                },
+                ellipsis: true,
             },
             {
-                title: 'From',
+                title: 'Load Location',
                 dataIndex: 'loadLocation',
                 key: 'loadLocation',
                 width: 180,
             },
             {
-                title: 'Destination',
+                title: 'Delivery Location',
                 dataIndex: 'deliveryLocation',
                 key: 'deliveryLocation',
                 width: 180,
@@ -342,18 +424,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'marketRate',
                 width: 110,
             },
-            // {
-            //     title: 'Total',
-            //     dataIndex: 'commisionTotal',
-            //     key: 'commisionTotal',
-            //     width: 110,
-            // },
-            // {
-            //     title: 'Commission',
-            //     dataIndex: 'commisionTotal',
-            //     key: 'commisionTotal',
-            //     width: 140,
-            // },
+
             {
                 title: 'Total',
                 width: 110,
@@ -366,14 +437,14 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 width: 160,
                 render: (_, record) => {
                     const percentCommission = (record.commisionRate) * (record.quantityInMetricTons * record.rate)
-                    const percentCommissionINR = (percentCommission / 100)
+                    const percentCommissionINR = (percentCommission / 100).toFixed(2);
                     return (
                         <div style={{ display: "flex", gap: "2rem", alignItems: "space-between", justifyContent: "center" }}>
 
                             {record.isMarketRate ? <>
                                 <p>-</p>
                                 <p>
-                                    {`${record.commisionTotal}`}
+                                    {`${record.commisionTotal.toFixed(2)}`}
                                 </p>
                             </>
                                 :
@@ -428,9 +499,9 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 render: (_, record: unknown) => (
                     <p>
                         {record.balance > 0 ?
-                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {(record.balance)}</span>
+                            <span style={{ color: "#009f23", fontWeight: "600" }}>+ {parseFloat((record.balance)).toFixed(2)}</span>
                             :
-                            <span style={{ color: "red" }}>{(record.balance)}</span>
+                            <span style={{ color: "red" }}>{parseFloat((record.balance)).toFixed(2)}</span>
 
                         }
                     </p>
@@ -442,52 +513,316 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 key: 'action',
                 width: 120,
                 fixed: 'right',
-                render: (record: unknown) => (
-                    <Space size="middle">
-                        <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
-                        <Tooltip placement="top" title="save"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Save</Button></Tooltip>
-                    </Space>
-                ),
+                render: (record: unknown) => {
+                    return (
+
+
+                        <Space size="middle">
+
+                            {record.isReceived == true ? <>
+                                <Tooltip placement="top" title="post"><Button type='primary' onClick={() => onSaveAndMoveToReceive(record)}>Post</Button></Tooltip>
+                            </> : <>
+                                <Tooltip placement="top" title="Edit"><a onClick={() => onEditChallanClick(record)}><FormOutlined /></a></Tooltip>
+                                <Tooltip placement="top" title="save"><Button onClick={() => onSaveAndMarkToPost(record)}>Save</Button></Tooltip>
+                            </>}
+                        </Space>
+                    )
+
+                }
             },
         ];
-        const changePagination = async (pageNumber, pageSize) => {
-            try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setAcknowledgement(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
 
-        const changePaginationAll = async (pageNumber, pageSize) => {
+        const handlePageSizeChange = (newPageSize) => {
+            setCurrentPageSize(newPageSize);
+            setCurrentPage(1); // Reset to the first page
+            setActivePageSize(newPageSize); // Update the active page size
+        };
+        const handleDownload = () => {
+            const challans = acknowledgement;
+
+            // Prepare data for owner details
+            const ownerDetails = challans.map((challan) => (
+                {
+                    "_id": challan._id,
+                    "quantityInMetricTons": challan.quantityInMetricTons,
+                    "rate": challan.rate,
+                    "commisionRate": challan.commisionRate,
+                    "commisionTotal": challan.commisionTotal,
+                    "totalExpense": challan.totalExpense,
+                    "shortage": challan.shortage,
+                    "balance": challan.balance,
+                    "diesel": challan.diesel,
+                    "cash": challan.cash,
+                    "bankTransfer": challan.bankTransfer,
+                    "recovery": challan.recovery,
+                    "outstanding": challan.outstanding,
+                    "isAcknowledged": challan.isAcknowledged,
+                    "isReceived": challan.isReceived,
+                    "isMarketRate": challan.isMarketRate,
+                    "marketRate": challan.marketRate,
+                    "billNumber": challan.billNumber,
+                    "excel": challan.excel,
+                    "materialType": challan.materialType,
+                    "grDate": challan.grDate,
+                    "grISODate": challan.grISODate,
+                    "loadLocation": challan.loadLocation,
+                    "deliveryLocation": challan.deliveryLocation,
+                    "vehicleNumber": challan.vehicleNumber,
+                    "ownerId": challan.ownerId,
+                    "ownerName": challan.ownerName,
+                    "vehicleId": challan.vehicleId,
+                    "vehicleBank": challan.vehicleBank,
+                    "ownerPhone": challan.ownerPhone,
+                    "vehicleType": challan.vehicleType,
+                    "deliveryNumber": challan.deliveryNumber,
+                    "vehicleReferenceId": challan.vehicleReferenceId,
+                    "vehicleBankReferenceId": challan.vehicleBankReferenceId,
+                    "ownerReferenceId": challan.ownerReferenceId,
+                    "hubId": challan.hubId,
+                    "createdAt": challan.createdAt,
+                    "modifiedAt": challan.modifiedAt,
+                    "__v": 0
+                    ,
+                }
+            ));
+
+
+
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+
+            // Add the owner details sheet to the workbook
+            const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+            XLSX.utils.book_append_sheet(wb, ownerWS, 'Acknowledgement Details');
+
+
+            // Export the workbook to an Excel file
+            XLSX.writeFile(wb, 'Acknowledgement.xlsx');
+        };
+        const handlePrint = () => {
+            const totalPagesExp = "{total_pages_count_string}";
             try {
-                setCurrentPage(pageNumber);
-                setCurrentPageSize(pageSize);
-                const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-                setAcknowledgement(newData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
+                const doc = new jsPDF("l", "mm", "a4");
+                const items = acknowledgement.map((challan, index) => [
+                    index + 1,
+                    challan.materialType || "-",
+                    challan.grNumber || "-",
+                    challan.grDate || "-",
+                    challan.loadLocation || "-",
+                    challan.deliveryLocation || "-",
+                    challan.vehicleNumber || "-",
+                    challan.ownerName || "-",
+                    challan.vehicleType || "-",
+                    challan.deliveryNumber || "-",
+                    challan.quantityInMetricTons || "-",
+                    challan.rate || "-",
+                    challan.commisionRate || "-",
+                    challan.commisionTotal || "-",
+                    challan.diesel || "-",
+                    challan.cash || "-",
+                    challan.bankTransfer || "-",
+                    // challan.totalExpense || "-",
+                    challan.balance || "-",
+                    challan.excel || "-",
+                    challan.hubId || "-",
+
+                ]);
+
+                if (items.length === 0) {
+                    message.error("No data available to download");
+                } else {
+                    doc.setFontSize(10);
+                    const d = new Date();
+                    const m = d.getMonth() + 1;
+                    const day = d.getDate();
+                    const year = d.getFullYear();
+
+                    doc.autoTable({
+                        head: [
+                            [
+                                "Sl No",
+
+                                "materialType",
+                                "gr No ",
+                                "gr Date    ",
+                                "loadLocation",
+                                "deliveryLocation",
+                                "Vehicle No         ",
+                                "Owner Name             ",
+                                "Vehicle Type           ",
+                                "DO Number        ",
+                                "Qty  ",
+                                "rate                  ",
+                                "commisionRate (%)",
+                                "Total commision ",
+                                "diesel ",
+                                "cash",
+                                "bank Transfer ",
+                                // "totalExpense ",
+                                "balance   ",
+                                "excel   ",
+                                "hubId   ",
+
+                            ],
+                        ],
+                        body: items,
+                        startY: 10,
+                        headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+                        bodyStyles: { fontSize: 8, textAlign: "center" },
+                        columnStyles: {
+                            0: { cellWidth: 7 },
+                            1: { cellWidth: 14 },
+                            2: { cellWidth: 14 },
+                            3: { cellWidth: 14 },
+                            4: { cellWidth: 14 },
+                            5: { cellWidth: 14 },
+                            6: { cellWidth: 14 },
+                            7: { cellWidth: 14 },
+                            8: { cellWidth: 14 },
+                            9: { cellWidth: 14 },
+                            10: { cellWidth: 14 },
+                            11: { cellWidth: 14 },
+                            12: { cellWidth: 14 },
+                            13: { cellWidth: 14 },
+                            14: { cellWidth: 14 },
+                            15: { cellWidth: 14 },
+                            16: { cellWidth: 14 },
+                            17: { cellWidth: 14 },
+                            18: { cellWidth: 14 },
+                            19: { cellWidth: 14 },
+                            20: { cellWidth: 14 },
+                            21: { cellWidth: 14 },
+                            22: { cellWidth: 14 },
+                            23: { cellWidth: 14 },
+                            // 24: { cellWidth: 14 },
+
+                        },
+                        didDrawPage: function (data) {
+                            // Header
+                            doc.setFontSize(10);
+                            doc.text("Challan Details", data.settings.margin.left + 0, 5);
+                            doc.text("Date:-", data.settings.margin.left + 155, 5);
+                            doc.text(
+                                day + "/" + m + "/" + year,
+                                data.settings.margin.left + 170,
+                                5
+                            );
+
+                            // Footer
+                            var str = "Page " + doc.internal.getNumberOfPages();
+                            // Total page number plugin only available in jspdf v1.0+
+                            if (typeof doc.putTotalPages === "function") {
+                                str = str + " of " + totalPagesExp;
+                            }
+                            doc.setFontSize(10);
+
+
+                            // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+                            var pageSize = doc.internal.pageSize;
+                            var pageHeight = pageSize.height
+                                ? pageSize.height
+                                : pageSize.getHeight();
+                            doc.text(str, data.settings.margin.left, pageHeight - 10);
+                        },
+                        margin: { top: 10 },
+                    });
+
+
+                    if (typeof doc.putTotalPages === "function") {
+                        doc.putTotalPages(totalPagesExp);
+                    }
+                    doc.save("challans.pdf");
+                }
+            } catch (err) {
+                message.error("Unable to Print");
             }
         };
         return (
             <>
+                <div className='flex gap-2 mb-2 items-center justify-end'>
+                    <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+                    <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+
+                    <div className='flex   my-paginations '>
+                        <span className='bg-[#F8F9FD] p-1'>
+                            <Button
+                                onClick={() => handlePageSizeChange(10)}
+                                style={{
+                                    backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                                    color: activePageSize === 10 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 10 ? '6px' : '0',
+                                    boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                10
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(25)}
+                                style={{
+                                    backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                                    color: activePageSize === 25 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 25 ? '6px' : '0',
+                                    boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                25
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(50)}
+                                style={{
+                                    backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                                    color: activePageSize === 50 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 50 ? '6px' : '0',
+                                    boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                50
+                            </Button>
+                            <Button
+                                onClick={() => handlePageSizeChange(100)}
+                                style={{
+                                    backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                                    color: activePageSize === 100 ? 'white' : 'black',
+                                    borderRadius: activePageSize === 100 ? '6px' : '0',
+                                    boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                                }}
+                            >
+                                100
+                            </Button>
+                        </span>
+                    </div>
+                </div>
                 <Table
                     rowSelection={rowSelection}
                     columns={columns}
                     dataSource={acknowledgement}
-                    scroll={{ x: 800, y: 320 }}
+                    scroll={{ x: 800 }}
                     rowKey="_id"
                     loading={loading}
+
+                    // pagination={{
+                    //     showSizeChanger: true,
+                    //     position: ['bottomCenter'],
+                    //     current: currentPage,
+                    //     pageSize: pageSize,
+                    //     onChange: (page, pageSize) => {
+                    //         setCurrentPage(page);
+                    //         setPageSize(pageSize);
+                    //     },
+                    // }}
+
                     pagination={{
+                        showSizeChanger: false,
                         position: ['bottomCenter'],
-                        showSizeChanger: true,
                         current: currentPage,
-                        total: totalChallanData,
-                        defaultPageSize: currentPageSize, // Set the default page size
-                        onChange: changePagination,
-                        onShowSizeChange: changePaginationAll,
+                        pageSize: currentPageSize,
+                        onChange: (page) => {
+                            setCurrentPage(page);
+                        },
+                    }}
+                    // antd site header height
+                    sticky={{
+                        offsetHeader: 0,
                     }}
                 />
             </>
@@ -516,7 +851,33 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 .then((response) => {
                     console.log('Challan moved to register successfully:', response.data);
                     alert("Challan moved to register successfully")
-                    window.location.reload(); // Reload the page or perform any necessary action
+                    goBack()
+                    getTableData("");
+                })
+                .catch((error) => {
+                    alert("error occurred")
+                    console.error('Error moving challan data:', error);
+                });
+        } catch (error) {
+            console.log(err)
+        }
+    }
+
+    const handleSaveAndMarkToPost = (rowData) => {
+        const headersOb = {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
+        }
+        try {
+            // {{domain}}prod/v1/update-dispatch-challan-invoice/663a2e60e1d51550194c9402
+            API.put(`update-challan-status/${rowData._id}/CHECK`, rowData, headersOb)
+                .then((response) => {
+                    console.log('Challan marked as POST:', response.data);
+                    alert("Challan marked as POST")
+                    goBack()
+                    getTableData("");
                 })
                 .catch((error) => {
                     alert("error occurred")
@@ -529,9 +890,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
 
     const EditableChallan = ({ editingRow }) => {
-
         const selectedHubId = localStorage.getItem("selectedHubID");
-
         const [formData, setFormData] = useState(
             {
                 "balance": editingRow.balance,
@@ -567,7 +926,6 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
 
 
         const onResetClick = () => {
-            console.log('reset clicked')
             setFormData(
                 {
                     "balance": editingRow.balance,
@@ -627,19 +985,21 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             }
         };
         const formatDate = (dateString) => {
+
             // Split the date string by '-'
             const parts = dateString.split('-');
             // Rearrange the parts in the required format
-            const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
             return formattedDate;
         };
         // Function to handle date change
+
         const handleDateChange = (date, dateString) => {
             const formattedGrDate = formatDate(dateString);
-            console.log(formattedGrDate); // Output: "01/05/2024"
-            // dateString will be in the format 'YYYY-MM-DD'
+            console.log(formattedGrDate)
             handleChange('grDate', formattedGrDate);
         };
+
         const [materials, setMaterials] = useState([]);
         const [loadLocation, setloadLocations] = useState([]);
 
@@ -867,7 +1227,8 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 .then((response) => {
                     console.log('Challan updated successfully:', response.data);
                     alert("Challan updated successfully")
-                    window.location.reload(); // Reload the page or perform any necessary action
+                    goBack()
+                    getTableData("");
                 })
                 .catch((error) => {
                     alert("error occurred")
@@ -875,11 +1236,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                 });
 
         }
-        const goBack = () => {
-            setShowTable(true)
-            onData('flex')
-            setShowTabs(true); // Set showTabs to false when adding owner
-        }
+
 
         return (
             <>
@@ -954,7 +1311,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                         onChange={(e) => handleChange('grNumber', e.target.value)}
                                     />
                                 </Col>
-                                <Col className="gutter-row mt-6" span={6}>
+                                {/* <Col className="gutter-row mt-6" span={6}>
 
                                     <DatePicker
                                         placeholder="GR Date"
@@ -962,13 +1319,25 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
                                         style={{ width: "100%" }}
                                         onChange={handleDateChange} // Call handleDateChange function on date change
                                     />
+                                    
+                                </Col> */}
+                                <Col className="gutter-row mt-6" span={6}>
+                                    <DatePicker
+                                        required
+                                        placeholder="GR Date"
+                                        size="large"
+                                        format="DD-MM-YYYY"
+                                        style={{ width: "100%" }}
+                                        onChange={handleDateChange}
+                                        value={dayjs(formData.grDate, 'DD/MM/YYYY')}
+                                    />
                                 </Col>
                                 <Col className="gutter-row mt-6" span={6}>
 
                                     <Select
                                         name="loadLocation"
                                         onChange={(value) => handleChange('loadLocation', value)}
-                                        placeholder="Loaded From*"
+                                        placeholder="Load Location*"
                                         size="large"
                                         value={formData.loadLocation}
                                         style={{ width: '100%' }}
@@ -1169,7 +1538,7 @@ const Acknowledgement = ({ onData, showTabs, setShowTabs }) => {
             {showTable ? (
                 <>
                     <DispatchChallanComponent />
-                    <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} onSaveAndMoveToReceive={handleSaveAndMoveToReceiveChallan} />
+                    <DispatchChallanComponentTable onEditChallanClick={handleEditChallanClick} onSaveAndMarkToPost={handleSaveAndMarkToPost} onSaveAndMoveToReceive={handleSaveAndMoveToReceiveChallan} />
                 </>
             ) : (
                 <EditableChallan editingRow={editingRow} />

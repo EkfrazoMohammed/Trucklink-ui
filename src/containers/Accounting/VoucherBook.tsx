@@ -1,219 +1,204 @@
-import { useState, useEffect } from 'react';
-import { DatePicker, Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
-import { FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
-const { Search } = Input;
+import React, { useState, useCallback, useEffect } from 'react';
+import { DatePicker, Table, Input, Select, Space, Button, Tooltip, Row, Col } from 'antd';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import backbutton_logo from "../../assets/backbutton.png"
-import { API } from "../../API/apirequest"
-import moment from 'moment';
+import backbutton_logo from "../../assets/backbutton.png";
+import { API } from "../../API/apirequest";
+import moment from "moment"
+const { Search } = Input;
+const { Option } = Select;
 
-
-const filterOption = (input, option) =>
-  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+const filterOption = (input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
 const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
   const authToken = localStorage.getItem("token");
   const selectedHubId = localStorage.getItem("selectedHubID");
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredVoucherData, setFilteredVoucherData] = useState([]);
-  const [totalMonthlyAmount, setTotalMonthlyAmount] = useState('')
+  const [totalMonthlyAmount, setTotalMonthlyAmount] = useState('');
 
   // Set current month and year as default values
   const currentMonth = dayjs().month() + 1;
   const currentYear = dayjs().year();
   const [selectedDate, setSelectedDate] = useState({ month: currentMonth, year: currentYear });
 
-  // const handleSearch = (e) => {
-  //   setSearchQuery(e);
-  // };
-
   const [showVoucherTable, setshowVoucherTable] = useState(true);
   const [showVoucherView, setshowVoucherView] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
+  const goBack = () => {
+    setshowVoucherTable(true);
+    setShowTabs(true);
+  };
+
   const handleEditVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(rowData);
     setshowVoucherTable(false);
     setShowTransferForm(false);
-    setshowVoucherView(false)
+    setshowVoucherView(false);
   };
+
   const handleViewVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(rowData);
     setshowVoucherTable(false);
     setShowTransferForm(false);
-    setshowVoucherView(true)
+    setshowVoucherView(true);
   };
+
   const handleAddVoucherClick = () => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
+    setShowTabs(false);
     setRowDataForTruckEdit(null);
     setshowVoucherTable(false);
   };
-
-  const handleTransferVoucherClick = (rowData) => {
-    //onData('none')
-    setShowTabs(false); // Set showTabs to false when adding owner
-    setShowTransferForm(true);
-    setRowDataForTruckEdit(rowData);
-    setshowVoucherTable(false);
-  };
-
-  const handleDeleteVoucherClick = async (rowData) => {
-    console.log("deleting", rowData._id)
-
-    const voucherId = rowData._id
+  const getTableData = useCallback(async (searchData, month, year) => {
     const headersOb = {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }
-    }
-    const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
-    if (response.status === 201) {
-      alert("deleted data")
-      window.location.reload()
-
-    } else {
-      alert(`unable to delete data`)
-      console.log(response.data)
-    }
-  }
-
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalVoucherData, setTotalVoucherData] = useState(null)
-
-  const getTableData = async (searchData, month, year) => {
-    const headersOb = {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${authToken}`
-      }
-    }
+        "Authorization": `Bearer ${authToken}`,
+      },
+    };
     try {
-      const month = selectedDate.month
-      const year = selectedDate.year
-      const text = searchData;
-      
-      const response = text ? await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}&searchDN=${searchData}`, headersOb)
-        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb)
-      // const response = searchData ? await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb)
-      //   : await API.get(`get-vouchers-by-month/${month}/${year}&hubId=${selectedHubId}`, headersOb);
+      const text = searchData || "";
+      const filterPayload = {
+        searchTN: text,
+      };
+
+      const response = text
+        ? await API.post(`get-vouchers-filter-by-name-date/${month}/${year}/${selectedHubId}`, filterPayload, headersOb)
+        : await API.get(`get-vouchers-by-month/${month}/${year}/${selectedHubId}`, headersOb);
 
       let truckDetails;
       let amount;
-      if (response.data.vaucharEntries == 0) {
-        truckDetails = response.data.vaucharEntries
-        setFilteredVoucherData(truckDetails);
-        amount = '0'
-        setTotalMonthlyAmount(amount)
-      } else {
 
-        truckDetails = response.data.vaucharEntries || "";
-        setTotalVoucherData(response.data.vaucharEntries.count);
-        // "amounts": {
-        //         "monthlyTotalAmount": "155.00"
-        //     },
+      if (response.data.vaucharEntries.length === 0) {
+        truckDetails = response.data.vaucharEntries;
         setFilteredVoucherData(truckDetails);
-        amount = response.data.amounts.monthlyTotalAmount
-        setTotalMonthlyAmount(amount)
+        amount = '0';
+        setTotalMonthlyAmount(amount);
+      } else {
+        truckDetails = response.data.vaucharEntries || "";
+
+        setFilteredVoucherData(truckDetails);
+        amount = response.data.amounts.monthlyTotalAmount;
+        setTotalMonthlyAmount(amount);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
+    }
+  }, [authToken, selectedHubId]);
 
+  useEffect(() => {
+    const month = selectedDate.month;
+    const year = selectedDate.year;
+    getTableData(searchQuery, month, year);
+  }, [selectedDate, searchQuery, getTableData]);
+
+
+  const handleDeleteVoucherClick = async (rowData) => {
+    const voucherId = rowData._id;
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`,
+      },
+    };
+    const response = await API.delete(`delete-voucher/${voucherId}`, headersOb);
+    if (response.status === 201) {
+      alert("Deleted data");
+      setTimeout(() => {
+        goBack()
+        const month = selectedDate.month;
+        const year = selectedDate.year;
+        getTableData("", month, year);
+      }, 2000)
+    } else {
+      alert("Unable to delete data");
     }
   };
-  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
-  useEffect(() => {
-    const month = selectedDate.month
-    const year = selectedDate.year
-    getTableData("", month, year);
-  }, []);
-  // useEffect(() => {
-  //   getTableData(searchQuery);
-  // }, [selectedHubId]);
 
-  // Truck master
-  const Truck = ({ onAddVoucherClick }: { onAddVoucherClick: () => void }) => {
+
+  const Truck = ({ onAddVoucherClick }) => {
     const initialSearchQuery = localStorage.getItem('searchQuery6') || '';
-    const [searchQuery6, setSearchQuery6] = useState<string>(initialSearchQuery);
+    const [searchQuery6, setSearchQuery6] = useState(initialSearchQuery);
 
-    // Update localStorage whenever searchQuery6 changes
     useEffect(() => {
       localStorage.setItem('searchQuery6', searchQuery6);
     }, [searchQuery6]);
-    console.log(searchQuery6)
 
     const handleSearch = (value) => {
-      const query = value;
-      setSearchQuery(query);
-      const searchFilteredData = filteredVoucherData.filter(voucher => {
-        return (
-          // voucher.vehicleNumber.includes(query)
-          voucher
-        );
-      });
-      const month = selectedDate.month
-      const year = selectedDate.year
-      getTableData(searchQuery6, month, year)
-      console.log(searchFilteredData)
-      // setFilteredVoucherData(searchFilteredData);
+      setSearchQuery6(value);
     };
-    const handleMonthChange = (date, dateString) => {
+
+    const handleMonthChange = (date) => {
       if (date) {
         const month = date.month() + 1;
         const year = date.year();
         setSelectedDate({ month, year });
-        getTableData(searchQuery6, month, year);
       }
     };
 
-    const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeSearch = (e) => {
       setSearchQuery6(e.target.value);
-      if (e.target.value == "") {
-        onReset()
+      if (e.target.value === "") {
+        onReset();
       }
     };
 
     const onReset = () => {
       setSearchQuery6("");
-      const month = selectedDate.month
-      const year = selectedDate.year
+      // const month = selectedDate.month;
+      // const year = selectedDate.year;
+      // Set current month and year as default values
+      // const currentMonth = dayjs().month() + 1;
+      // const currentYear = dayjs().year();
+      // getTableData("", currentMonth, currentYear);
+      const month = selectedDate.month;
+      const year = selectedDate.year;
       getTableData("", month, year);
-    }
+      // handleFilterClick()
+    };
+
+    const handleFilterClick = () => {
+      const month = selectedDate.month;
+      const year = selectedDate.year;
+      getTableData(searchQuery6, month, year);
+    };
+
     return (
-      <div className='flex gap-2 justify-between  py-3'>
-        <div className='flex items-center gap-2'>
-          <Search
+      <div className="flex gap-2 justify-between py-3">
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
             placeholder="Search by Truck No / Owner Name"
-            size='large'
+            size="large"
             value={searchQuery6}
             onChange={onChangeSearch}
-            onSearch={handleSearch}
+            // onSearch={handleSearch}
             style={{ width: 320 }}
           />
           <DatePicker
-            size='large'
-            placeholder='By Month'
+            size="large"
+            placeholder="By Month"
             picker="month"
             onChange={handleMonthChange}
+            value={dayjs().month(selectedDate.month - 1).year(selectedDate.year)}
           />
-          {searchQuery6 !== null && searchQuery6 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>} 
-          
+
+          <Button size="large" type="primary" onClick={handleFilterClick}>
+            APPLY
+          </Button>
+          {searchQuery6 !== "" && (
+            <Button size="large" onClick={onReset} style={{ transform: "rotate(180deg)" }} icon={<RedoOutlined />} />
+          )}
         </div>
-        <div className='flex gap-2'>
-          <Button onClick={onAddVoucherClick} className='bg-[#1572B6] text-white'> CREATE VOUCHER</Button>
+        <div className="flex gap-2">
+          <Button onClick={onAddVoucherClick} className="bg-[#1572B6] text-white">CREATE VOUCHER</Button>
         </div>
       </div>
-
     );
   };
-
   const VoucherBookForm = () => {
     const [formData, setFormData] = useState({
       hubId: selectedHubId,
@@ -258,17 +243,20 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.post('create-voucher', formData, headersOb);
         console.log('Voucher created successfully:', response.data);
         alert("Voucher created successfully");
-        window.location.reload();
+        setTimeout(() => {
+          goBack()
+          const month = selectedDate.month;
+          const year = selectedDate.year;
+          getTableData("", month, year);
+        }, 2000)
+
       } catch (error) {
         console.error('Error creating voucher:', error);
         alert("An error occurred while creating the voucher. Please try again.");
       }
     };
 
-    const goBack = () => {
-      setshowVoucherTable(true);
-      setShowTabs(true);
-    };
+
     const [materials, setMaterials] = useState([]);
 
     const fetchMaterials = async () => {
@@ -367,6 +355,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                   value={formData.vehicleNumber ? formData.vehicleNumber : null}
                   placeholder="Truck Number*"
                   size="large"
+                  showSearch
                   style={{ width: "100%" }}
                   onChange={handleVoucherOwnerChange}
                   filterOption={filterOption}
@@ -448,7 +437,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
-  const TruckTable = ({ onEditVoucherClick, onTransferVoucherClick, onViewVoucherClick, onDeleteVoucherClick }) => {
+  const TruckTable = ({ onEditVoucherClick, onViewVoucherClick, onDeleteVoucherClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -460,26 +449,16 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       onChange: onSelectChange,
     };
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPageSize, setCurrentPageSize] = useState(10);
+    const [activePageSize, setActivePageSize] = useState(10);
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
         width: 80,
-        fixed: 'left',
-      },
-      {
-        title: 'Amount',
-        dataIndex: 'amount',
-        key: 'amount',
-        width: 90,
-      },
-      {
-        title: 'Mode of Payment',
-        dataIndex: 'modeOfPayment',
-        key: 'modeOfPayment',
-        width: 100,
       },
       {
         title: 'Voucher Number',
@@ -520,10 +499,21 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         width: 110,
       },
       {
+        title: 'Mode of Payment',
+        dataIndex: 'modeOfPayment',
+        key: 'modeOfPayment',
+        width: 100,
+      },
+      {
+        title: 'Amount',
+        dataIndex: 'amount',
+        key: 'amount',
+        width: 90,
+      },
+      {
         title: 'Action',
         key: 'action',
         width: 90,
-
         fixed: 'right',
         render: (record) => (
           <Space size="middle">
@@ -537,21 +527,85 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         ),
       },
     ];
+
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
     return (
       <>
+        <div className='flex gap-2 mb-2 items-center justify-end'>
+          {/* <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button> */}
+
+          <div className='flex   my-paginations '>
+            <span className='bg-[#F8F9FD] p-1'>
+              <Button
+                onClick={() => handlePageSizeChange(10)}
+                style={{
+                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                  color: activePageSize === 10 ? 'white' : 'black',
+                  borderRadius: activePageSize === 10 ? '6px' : '0',
+                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                10
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(25)}
+                style={{
+                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                  color: activePageSize === 25 ? 'white' : 'black',
+                  borderRadius: activePageSize === 25 ? '6px' : '0',
+                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                25
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(50)}
+                style={{
+                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                  color: activePageSize === 50 ? 'white' : 'black',
+                  borderRadius: activePageSize === 50 ? '6px' : '0',
+                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                50
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(100)}
+                style={{
+                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                  color: activePageSize === 100 ? 'white' : 'black',
+                  borderRadius: activePageSize === 100 ? '6px' : '0',
+                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                100
+              </Button>
+            </span>
+          </div>
+        </div>
         <Table
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredVoucherData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800 }}
           rowKey="_id"
           pagination={{
-            position: ['bottomCenter'],
             showSizeChanger: false,
+            position: ['bottomCenter'],
             current: currentPage,
-            total: totalVoucherData,
-            defaultPageSize: currentPageSize, // Set the default page size
-
+            pageSize: currentPageSize,
+            onChange: (page) => {
+              setCurrentPage(page);
+            },
+          }}
+          // antd site header height
+          sticky={{
+            offsetHeader: 0,
           }}
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
@@ -576,8 +630,6 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     );
   };
   const EditTruckDataRow = ({ filterTruckTableData }) => {
-    const initialVoucherData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
-    const initialOwnerId = `${filterTruckTableData.ownerId[0]._id}`;
     const [formData, setFormData] = useState({
       amount: filterTruckTableData.amount,
       modeOfPayment: filterTruckTableData.modeOfPayment,
@@ -639,9 +691,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         console.error('Error fetching materials:', error);
       }
     };
-    useEffect(() => {
-      fetchMaterials();
-    }, [])
+
 
     const [materialType, setMaterialType] = useState('')
 
@@ -684,9 +734,13 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
     };
 
     useEffect(() => {
+      fetchMaterials();
       fetchVoucherOwners();
     }, []);
 
+    const handleDateChange = (date, dateString) => {
+      handleChange('voucherDate', dateString)
+    };
     const handleChange = (name, value) => {
       setFormData(prevFormData => ({
         ...prevFormData,
@@ -725,7 +779,12 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.put(url, payload, headersOb);
         if (response.status === 201) {
           alert("Voucher data updated successfully");
-          window.location.reload(); // Optional: Reload the page after successful submission
+          setTimeout(() => {
+            goBack()
+            const month = selectedDate.month;
+            const year = selectedDate.year;
+            getTableData("", month, year);
+          }, 2000)
         } else {
           alert('Error occurred while updating truck data');
         }
@@ -767,13 +826,24 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                  <DatePicker
+                  {/* <DatePicker
                     style={{ width: "100%" }}
                     placeholder="Voucher Date*"
                     size="large"
                     format="DD/MM/YYYY"
                     value={formData.voucherDate ? moment(formData.voucherDate, 'DD/MM/YYYY') : null}
                     onChange={(date, dateString) => handleChange('voucherDate', dateString)}
+                  /> */}
+
+                  <DatePicker
+                    required
+                    style={{ width: "100%" }}
+                    placeholder="Voucher Date*"
+                    size="large"
+                    format="DD/MM/YYYY"
+                    onChange={handleDateChange}
+                    // onChange={(date, dateString) => handleChange('voucherDate', dateString)}
+                    value={dayjs(formData.voucherDate, 'DD/MM/YYYY')}
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
@@ -781,6 +851,7 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
                     name="vehicleNumber"
                     value={formData.vehicleNumber ? formData.vehicleNumber : null}
                     placeholder="Truck Number*"
+                    showSearch
                     size="large"
                     style={{ width: "100%" }}
                     onChange={handleVoucherOwnerChange}
@@ -869,14 +940,12 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       </>
     );
   };
-
-
   return (
     <>
       {showVoucherTable ? (
         <>
           <Truck onAddVoucherClick={handleAddVoucherClick} />
-          <TruckTable onEditVoucherClick={handleEditVoucherClick} onViewVoucherClick={handleViewVoucherClick} onTransferVoucherClick={handleTransferVoucherClick} onDeleteVoucherClick={handleDeleteVoucherClick} />
+          <TruckTable onEditVoucherClick={handleEditVoucherClick} onViewVoucherClick={handleViewVoucherClick} onDeleteVoucherClick={handleDeleteVoucherClick} />
         </>
       ) : (
         rowDataForTruckEdit ? (

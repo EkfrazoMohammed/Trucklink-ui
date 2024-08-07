@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined,RedoOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -42,6 +42,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     setShowEditRecoveryForm(true);
     setEditRowData(data);
 
+  };
+  const goBack = () => {
+    setShowTabs(true);
+    setShowAddRecoveryForm(false);
   };
 
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
@@ -115,7 +119,9 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           setEditingKey('');
           setShowSaveButton(false)
           setTimeout(() => {
-            window.location.reload()
+            getTableData("", 1, 100000, selectedHubId);
+            goBack()
+
           }, 1000)
         } else {
           setShowSaveButton(false)
@@ -128,7 +134,19 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log('Validate Failed:', errInfo);
     }
   };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
   const columns = [
+    {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+      width: 80,
+      fixed: 'left',
+    },
     {
       title: 'Bill Number',
       dataIndex: 'billNumber',
@@ -202,6 +220,11 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       dataIndex: 'difference',
       key: 'difference',
       width: 160,
+      render: (_, record) => {
+        return (
+          <p>{parseFloat(record.difference).toFixed(2)}</p>
+        )
+      }
     },
     {
       title: 'Remarks',
@@ -248,7 +271,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           const ledgerEntries = response.data.deliveryDetails.challan;
 
           const dataSource = ledgerEntries.map((data) => {
-
             return {
               ...data,
               "quantityInMetricTons": data.quantityInMetricTons,
@@ -257,7 +279,8 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
               "deliveryLocation": data.deliveryLocation,
               "vehicleNumber": data.vehicleNumber,
               "deliveryNumber": data.deliveryNumber,
-              "invoiceDate": data.invoiceDate,
+              "invoiceDate": data.grDate,
+
               key: data._id
             };
           });
@@ -351,7 +374,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           await API.put(`create-owner-ledger-entry/${record.key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry");
-              getTableData("", "1", "500", selectedHubId);
+              getTableData("", "1", "100000", selectedHubId);
             })
             .catch((error) => {
               const { response } = error;
@@ -366,16 +389,12 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     };
 
     const handleDeleteLedgerData = async (key) => {
-      console.log("row", record)
-      console.log("challan", key)
       try {
         // Retrieve the existing data to prepare the payload
         const response = await API.get(`get-delivery-data/${record.key}`, headersOb);
         const existingData = response.data.deliveryDetails;
-        console.log(existingData)
         // Remove the item from the challan list
         const updatedChallan = existingData.challan.filter(challanItem => challanItem._id !== key);
-        console.log(updatedChallan)
         // Prepare the payload
         const payload = {
           _id: existingData._id,
@@ -393,13 +412,14 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
           __v: existingData.__v,
           // slno: existingData.slno
         };
-        console.log(payload)
 
         // // Send the PUT request to update the bill register data
         await API.put(`update-bill-register-data/${existingData._id}`, payload, headersOb)
           .then(() => {
             message.success("Successfully Deleted Ledger Entry");
             setTimeout(() => {
+              getTableData("", 1, 100000, selectedHubId);
+              goBack()
               window.location.reload()
             }, 1000)
 
@@ -415,88 +435,34 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     };
 
-
-
     const columnsInsideRow = [
       {
+        title: 'Sl No',
+        dataIndex: 'serialNumber',
+        key: 'serialNumber',
+        render: (text, record, index) => index + 1,
+        width: 80,
+        fixed: 'left',
+      },
+      {
         title: 'Invoice Date',
-        dataIndex: 'entryDate',
-        key: 'entryDate',
+        dataIndex: 'grDate',
+        key: 'grDate',
         render: (text, record) => {
           const editable = isEditing(record);
           return editable ? (
             <Form.Item
-              name="entDate"
+              name="grDate"
               style={{ margin: 0 }}
               rules={[{ required: true, message: 'Please input date!' }]}
             >
               <DatePicker format={dateFormat} />
             </Form.Item>
           ) : (
-            dayjs(text).format('DD/MM/YYYY')
-          );
-        },
-      },
-      {
-        title: 'QTY',
-        dataIndex: 'quantityInMetricTons',
-        key: 'quantityInMetricTons',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="quantityInMetricTons"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input Qty!' }]}
-            >
-              <Input />
-            </Form.Item>
-          ) : (
             text
           );
         },
       },
-      {
-        title: 'rate',
-        dataIndex: 'rate',
-        key: 'rate',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="rate"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input Rate!' }]}
-            >
-              <Input />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-
-      {
-        title: 'Total',
-        dataIndex: 'totalExpense',
-        key: 'totalExpense',
-        render: (text, record) => {
-          const editable = isEditing(record);
-          return editable ? (
-            <Form.Item
-              name="totalExpense"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Please input totalExpense!' }]}
-            >
-              <Input />
-            </Form.Item>
-          ) : (
-            text
-          );
-        },
-      },
-
-
       {
         title: 'Truck Number',
         dataIndex: 'vehicleNumber',
@@ -536,6 +502,61 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         },
       },
       {
+        title: 'QTY',
+        dataIndex: 'quantityInMetricTons',
+        key: 'quantityInMetricTons',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="quantityInMetricTons"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input Qty!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+      {
+        title: 'Rate',
+        dataIndex: 'rate',
+        key: 'rate',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="rate"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input Rate!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            text
+          );
+        },
+      },
+      {
+        title: 'Total',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <Form.Item
+              name="totalExpense"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Please input totalExpense!' }]}
+            >
+              <Input />
+            </Form.Item>
+          ) : (
+            (record.rate) * (record.quantityInMetricTons)
+          );
+        },
+      },
+      {
         title: 'Action',
         key: 'operation',
         render: (_, record) => {
@@ -568,6 +589,25 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         },
       },
     ];
+    // const calculateTotalExpense = () => {
+    //   return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+    // };
+    //  const calculateTotalExpense = () => {
+    //   return entries.reduce((total, entry) => total + parseFloat(entry.totalExpense || 0), 0).toFixed(2);
+    // };
+    const calculateTotal = () => {
+      const total = entries.reduce((total, entry) => {
+        const rate = parseFloat(entry.rate);
+        const qty = parseFloat(entry.quantityInMetricTons);
+        // Check if rate and qty are valid numbers, if not set them to 0
+        const validRate = isNaN(rate) ? 0 : rate;
+        const validQty = isNaN(qty) ? 0 : qty;
+
+        return parseFloat(total) + parseFloat(validRate * validQty);
+      }, 0);
+      const roundedTotal = Math.round(total * 100) / 100;
+      return roundedTotal;
+    };
 
     return (
       <div className='bg-[#BBE2FF] p-4'>
@@ -579,6 +619,16 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
             dataSource={entries}
             columns={columnsInsideRow}
             pagination={false}
+            summary={() => (
+              <Table.Summary.Row>
+                <Table.Summary.Cell colSpan={columnsInsideRow.length - 2} align="right">
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {calculateTotal()}
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            )}
           />
         </Form>
       </div>
@@ -588,9 +638,12 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     try {
       await API.delete(`delete-bill-register-data/${key}`, headersOb)
         .then(() => {
-          message.success("Successfully Deleted Ledger Entry");
-          getTableData("", "1", "500", selectedHubId);
-
+          message.success("Successfully Deleted Bill Entry");
+          setTimeout(() => {
+            getTableData("", 1, 100000, selectedHubId);
+            goBack()
+            window.location.reload();
+          }, 1000)
         })
         .catch((error) => {
           const { response } = error;
@@ -603,7 +656,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
   useEffect(() => {
-    getTableData("", "1", "500", selectedHubId);
+    getTableData("", "1", "100000", selectedHubId);
 
   }, []);
   const BillRegisterFormComponent = () => {
@@ -678,7 +731,6 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         [name]: value,
       }));
     };
-    const [pay, setPay] = useState(null)
     const handleSubmit = async (e) => {
       e.preventDefault();
       const payload = {
@@ -695,7 +747,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.post('create-bill-register', payload, headersOb);
         console.log('Bill registered successfully:', response.data);
         message.success("Bill registered successfully");
-        window.location.reload();
+        setTimeout(() => {
+          getTableData("", 1, 100000, selectedHubId);
+          goBack()
+        }, 1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {
@@ -707,10 +762,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
       }
     };
 
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
+
 
     const onResetClick = () => {
       setFormData({
@@ -989,7 +1041,10 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
         const response = await API.put(`update-bill-register-data/${editRowData.key}`, payload, headersOb);
         console.log('Bill updated successfully:', response.data);
         message.success("Bill updated successfully");
-        window.location.reload();
+        setTimeout(() => {
+          getTableData("", 1, 100000, selectedHubId);
+          goBack()
+        }, 1000)
       } catch (error) {
         console.error('Error registering bill:', error);
         if (error.response.data.message == "This billNumber already exists") {
@@ -1180,7 +1235,7 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
   }, [searchQuery8, initialSearchQuery]);
 
   const handleSearch = () => {
-    getTableData(searchQuery8, 1, 600, selectedHubId);
+    getTableData(searchQuery8, 1, 100000, selectedHubId);
   };
 
   const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1196,9 +1251,13 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
     setSearchQuery8("");
     setLoading(false)
     localStorage.removeItem('searchQuery8');
-    getTableData("", 1, 600, selectedHubId);
+    getTableData("", 1, 100000, selectedHubId);
   };
-
+  const handlePageSizeChange = (newPageSize) => {
+    setCurrentPageSize(newPageSize);
+    setCurrentPage(1); // Reset to the first page
+    setActivePageSize(newPageSize); // Update the active page size
+  };
   return (
     <>
       {showAddRecoveryForm ?
@@ -1242,10 +1301,66 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                 CREATE BILL
               </Button>
             </div>
+
+
+
+            <div className='flex gap-2 mb-2 items-center justify-end'>
+              {/* <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button> */}
+
+              <div className='flex   my-paginations '>
+                <span className='bg-[#F8F9FD] p-1'>
+                  <Button
+                    onClick={() => handlePageSizeChange(10)}
+                    style={{
+                      backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                      color: activePageSize === 10 ? 'white' : 'black',
+                      borderRadius: activePageSize === 10 ? '6px' : '0',
+                      boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    10
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(25)}
+                    style={{
+                      backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                      color: activePageSize === 25 ? 'white' : 'black',
+                      borderRadius: activePageSize === 25 ? '6px' : '0',
+                      boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    25
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(50)}
+                    style={{
+                      backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                      color: activePageSize === 50 ? 'white' : 'black',
+                      borderRadius: activePageSize === 50 ? '6px' : '0',
+                      boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    50
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(100)}
+                    style={{
+                      backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                      color: activePageSize === 100 ? 'white' : 'black',
+                      borderRadius: activePageSize === 100 ? '6px' : '0',
+                      boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    100
+                  </Button>
+                </span>
+              </div>
+            </div>
             <Form form={form} component={false}>
               <Table
                 rowKey={(record) => record.key}
-                scroll={{ x: "auto", y: 290 }}
+                scroll={{ x: "auto" }}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
                 // columns={columns}
@@ -1263,28 +1378,40 @@ const BillRegister = ({ onData, showTabs, setShowTabs }) => {
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
                 }}
-                pagination={false}
+                pagination={{
+                  showSizeChanger: false,
+                  position: ['bottomCenter'],
+                  current: currentPage,
+                  pageSize: currentPageSize,
+                  onChange: (page) => {
+                    setCurrentPage(page);
+                  },
+                }}
+                // antd site header height
+                sticky={{
+                  offsetHeader: 5,
+                }}
                 loading={loading}
 
               />
               <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
-                <div style={{ textAlign: 'right', width: '220px' }}>
+                <div style={{ textAlign: 'right', width: '280px' }}>
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
+                <div style={{ fontWeight: 'bold', width: '140px' }}>
                   Total
                 </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
-                  {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueRaised}</p> : <p style={{ color: "red" }}>{totalValueRaised}</p>}
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueRaised > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueRaised).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueRaised).toFixed(2)}</p>}
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueReceived).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueReceived).toFixed(2)}</p>}
+                </div>
+                <div style={{ fontWeight: 'bold', width: '160px' }}>
+                  {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueTax).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueTax).toFixed(2)}</p>}
                 </div>
                 <div style={{ fontWeight: 'bold', width: '120px' }}>
-                  {totalValueReceived > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueReceived}</p> : <p style={{ color: "red" }}>{totalValueReceived}</p>}
-                </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
-                  {totalValueTax > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueTax}</p> : <p style={{ color: "red" }}>{totalValueTax}</p>}
-                </div>
-                <div style={{ fontWeight: 'bold', width: '120px' }}>
-                  {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{totalValueDifference}</p> : <p style={{ color: "red" }}>{totalValueDifference}</p>}
+                  {totalValueDifference > 0 ? <p style={{ color: "green", fontWeight: "600" }}>{parseFloat(totalValueDifference).toFixed(2)}</p> : <p style={{ color: "red" }}>{parseFloat(totalValueDifference).toFixed(2)}</p>}
                 </div>
               </div>
             </Form>

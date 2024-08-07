@@ -71,6 +71,7 @@ const MasterData = () => {
 
                         // setErrMsg("Create material type from the follwing list : 'CEMENT','FLYASH','GYPSUM', 'MT', 'C&T BAG', 'OTHERS' ")
                     } else {
+                        alert("error occurred")
                         setErrMsg("")
                     }
                 }
@@ -233,8 +234,9 @@ const MasterData = () => {
                 alert('Material Type is required')
             }
         } catch (error) {
+            console.log(error)
             fetchMaterials();
-            alert('Error updating material');
+            alert(error.response.data.message);
             console.error('Error updating material:', error);
         }
     };
@@ -292,7 +294,8 @@ const MasterData = () => {
             }
         } catch (error) {
             fetchMaterials();
-            alert('Error updating load location');
+            // alert('Error updating load location');
+            alert(error.response.data.message);
             console.error('Error updating load location:', error);
         }
     };
@@ -351,12 +354,11 @@ const MasterData = () => {
 
         } catch (error) {
             fetchDeliveryLocations();
-            alert('Error updating load location');
+            // alert('Error updating load location');
+            alert(error.response.data.message);
             console.error('Error updating load location:', error);
         }
     };
-
-
 
     return (
         <>
@@ -410,13 +412,11 @@ const MasterData = () => {
                     </Space>
                 </div>
             </Modal>
-            <div className="flex flex-col mymastertab-content">
-                <div className="flex gap-12">
-
-
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+            {/* <div className="flex flex-col mymastertab-content"> */}
+            <div className="flex flex-col">
+                <div className="flex gap-6 mt-4">
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Material Type"
                                 value={materialType}
@@ -424,13 +424,11 @@ const MasterData = () => {
                                 onChange={(e) => setMaterialType(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddMaterial}>
-                                Add Material
+                                ADD
                             </Button>
                         </div>
                         {errMsg && errMsg.length > 0 ? <><p style={{ color: "red", paddingRight: "1rem" }}><InfoCircleOutlined />{" "}{errMsg}</p></> : <></>}
-
                         <div>
-
                             <div>
                                 <Select
                                     placeholder="Materials"
@@ -446,11 +444,10 @@ const MasterData = () => {
                                             {value.materialType}
                                         </Option>
                                     ))}
-
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
+                                style={{ overflowY: "scroll", height: "54vh" }}
 
                                 dataSource={materials}
                                 renderItem={(item) => (
@@ -461,11 +458,8 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-
-
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Load Location"
                                 value={loadLocationName}
@@ -473,7 +467,7 @@ const MasterData = () => {
                                 onChange={(e) => setLoadLocationName(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddLoadLocation}>
-                                Add Load Location
+                                ADD
                             </Button>
                         </div>
 
@@ -497,7 +491,7 @@ const MasterData = () => {
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
+                                style={{ overflowY: "scroll", height: "54vh" }}
                                 dataSource={loadLocation}
                                 renderItem={(item) => (
                                     <List.Item style={{ width: "100%", padding: "8px 16px" }}>
@@ -508,13 +502,8 @@ const MasterData = () => {
                         </div>
                     </div>
 
-                </div>
-                <div className="flex mt-8 gap-12">
-
-
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", border: "2px solid #eee" }} >
+                    <div className='flex flex-col gap-2 p-2' style={{ width: "580px", height : "70vh", border: "2px solid #eee" }} >
                         <div className="flex gap-2">
-
                             <Input
                                 placeholder="Enter Delivery Location"
                                 value={deliveryLocationName}
@@ -522,10 +511,9 @@ const MasterData = () => {
                                 onChange={(e) => setDeliveryLocationName(e.target.value)}
                             />
                             <Button size='large' type="primary" onClick={handleAddDeliveryLocation}>
-                                Add Delivery Location
+                                ADD
                             </Button>
                         </div>
-
                         <div>
                             <div>
                                 <Select
@@ -542,13 +530,10 @@ const MasterData = () => {
                                             {value.location}
                                         </Option>
                                     ))}
-
                                 </Select>
                             </div>
                             <List
-                                style={{ overflowY: "scroll", height: "180px" }}
-
-
+                                style={{ overflowY: "scroll", height: "54vh" }}
                                 dataSource={deliveryLocation}
                                 renderItem={(item) => (
                                     <List.Item style={{ width: "100%", padding: "8px 16px" }}>
@@ -558,10 +543,6 @@ const MasterData = () => {
                             />
                         </div>
                     </div>
-
-                    <div className='flex flex-col gap-2 p-2' style={{ width: "600px", }} >
-                    </div>
-
                 </div>
             </div>
         </>

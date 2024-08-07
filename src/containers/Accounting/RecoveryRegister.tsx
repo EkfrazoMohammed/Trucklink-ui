@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import { FormOutlined, DeleteOutlined, ExclamationCircleOutlined, RedoOutlined } from '@ant-design/icons';
+import {  UploadOutlined, DownloadOutlined, PrinterOutlined,FormOutlined, DeleteOutlined, ExclamationCircleOutlined, RedoOutlined } from '@ant-design/icons';
 
 import dayjs, { locale } from 'dayjs';
 import { API } from "../../API/apirequest"
@@ -23,7 +23,10 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       "Authorization": `Bearer ${authToken}`
     }
   };
-
+  const goBack = () => {
+    setShowTabs(true);
+    setShowAddRecoveryForm(false);
+  };
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     try {
       setLoading(true);
@@ -133,9 +136,18 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log("Validate Failed:", errInfo);
     }
   };
-
-  const columns = [
-
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
+      const columns = [
+        {
+          title: 'Sl No',
+          dataIndex: 'serialNumber',
+          key: 'serialNumber',
+          render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+          width: 80,
+        },
     {
       title: 'Code',
       dataIndex: 'recoveryCode',
@@ -244,11 +256,12 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
 
           await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
             .then(() => {
-              message.success("Successfully Updated Ledger Entry");
-              getTableData("", "1", "500", selectedHubId);
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
+              message.success("Successfully Updated Ledger Entry, re-open the row");
+              setTimeout(()=>{
+
+                getTableData("", "1", "100000", selectedHubId);
+                goBack()
+              },1000)
             })
             .catch((error) => {
               const { response } = error;
@@ -313,9 +326,9 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
             console.log("Second API Response:", secondResponse.data);
 
             message.success("Successfully Updated Ledger Entry");
-            getTableData("", "1", "500", selectedHubId);
             setTimeout(() => {
-              window.location.reload();
+              getTableData("", "1", "10000", selectedHubId);
+              goBack()
             }, 1000);
           } catch (error) {
             const { response } = error;
@@ -328,51 +341,6 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log("Validate Failed:", errInfo);
       }
     };
-
-
-    // const handleDeleteLedgerData = async (key) => {
-    //   console.log("ledgerEntries=>",ledgerEntries)
-    //   try {
-    //     const row = await form.validateFields();
-    //     const newData = [...entries];
-    //     const index = newData.findIndex((item) => key === item.key);
-
-    //     if (index > -1) {
-    //       const item = newData[index];
-    //       newData.splice(index, 1, { ...item, ...row });
-    //       setLedgerEntries((prevEntries) => ({
-    //         ...prevEntries,
-    //         [record.key]: newData,
-    //       }));
-    //       setEditingKeyIn("");
-
-
-
-    //       const payload = {
-    //         recovery: 0
-    //       };
-    //       console.log(`update-recovered-value/${record.key}/${key}`)
-    //       console.log(payload)
-    //       // await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
-    //       //   .then(() => {
-    //       //     message.success("Successfully Updated Ledger Entry");
-    //       //     getTableData("", "1", "500", selectedHubId);
-    //       //     setTimeout(() => {
-    //       //       window.location.reload();
-    //       //     }, 1000)
-    //       //   })
-    //       //   .catch((error) => {
-    //       //     const { response } = error;
-    //       //     const { data } = response;
-    //       //     const { message: msg } = data;
-    //       //     message.error(msg);
-    //       //   });
-    //     }
-    //   } catch (errInfo) {
-    //     console.log("Validate Failed:", errInfo);
-    //   }
-    // };
-
 
     const columnsInsideRow = [
 
@@ -527,7 +495,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       await API.delete(`delete-recovered-data/${key}`, headersOb)
         .then(() => {
           message.success("Successfully Deleted Recovered Entry");
-          getTableData("", "1", "500", selectedHubId);
+          getTableData("", "1", "100000", selectedHubId);
           getOutstandingData();
         })
         .catch((error) => {
@@ -541,7 +509,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     }
   };
   useEffect(() => {
-    getTableData("", "1", "500", selectedHubId);
+    getTableData("", "1", "100000", selectedHubId);
 
   }, []);
 
@@ -658,18 +626,16 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log('Recovery code created successfully:', response.data);
         message.success("Recovery code created successfully");
         setTimeout(() => {
-          window.location.reload();
-        }, 1000)
+          getTableData("", "1", "10000", selectedHubId);
+          goBack()
+        }, 1000);
       } catch (error) {
         console.error('Error creating recovery code:', error);
         message.error("Error occurred");
       }
     };
 
-    const goBack = () => {
-      setShowTabs(true);
-      setShowAddRecoveryForm(false);
-    };
+
 
     const onResetClick = () => {
       setFormData({
@@ -927,7 +893,8 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
         console.log('Recovery code updated successfully:', response.data);
         message.success("Recovery code updated successfully");
         setTimeout(() => {
-          window.location.reload();
+          getTableData("", "1", "10000", selectedHubId);
+          goBack()
         }, 1000);
       } catch (error) {
         console.error('Error creating recovery code:', error);
@@ -1086,7 +1053,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
   }, [searchQuery7, initialSearchQuery]);
 
   const handleSearch = () => {
-    getTableData(searchQuery7, 1, 600, selectedHubId);
+    getTableData(searchQuery7, 1, 100000, selectedHubId);
   };
 
   const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1102,7 +1069,12 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     setSearchQuery7("");
     setLoading(false)
     localStorage.removeItem('searchQuery7');
-    getTableData("", 1, 600, selectedHubId);
+    getTableData("", 1, 100000, selectedHubId);
+  };
+  const handlePageSizeChange = (newPageSize) => {
+    setCurrentPageSize(newPageSize);
+    setCurrentPage(1); // Reset to the first page
+    setActivePageSize(newPageSize); // Update the active page size
   };
   return (
     <>
@@ -1152,9 +1124,65 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                 ADD RECOVERY CODE
               </Button>
             </div>
+
+        
+    
+      <div className='flex gap-2 mb-2 items-center justify-end'>
+          {/* <Button icon={<DownloadOutlined />}></Button>
+          <Button icon={<PrinterOutlined />}></Button> */}
+
+          <div className='flex   my-paginations '>
+            <span className='bg-[#F8F9FD] p-1'>
+              <Button
+                onClick={() => handlePageSizeChange(10)}
+                style={{
+                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                  color: activePageSize === 10 ? 'white' : 'black',
+                  borderRadius: activePageSize === 10 ? '6px' : '0',
+                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                10
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(25)}
+                style={{
+                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                  color: activePageSize === 25 ? 'white' : 'black',
+                  borderRadius: activePageSize === 25 ? '6px' : '0',
+                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                25
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(50)}
+                style={{
+                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                  color: activePageSize === 50 ? 'white' : 'black',
+                  borderRadius: activePageSize === 50 ? '6px' : '0',
+                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                50
+              </Button>
+              <Button
+                onClick={() => handlePageSizeChange(100)}
+                style={{
+                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                  color: activePageSize === 100 ? 'white' : 'black',
+                  borderRadius: activePageSize === 100 ? '6px' : '0',
+                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                }}
+              >
+                100
+              </Button>
+            </span>
+          </div>
+        </div>
             <Form form={form} component={false}>
               <Table
-                scroll={{ x: "auto", y: 300 }}
+                scroll={{ x: "auto"}}
                 rowKey={(record) => record.key}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
@@ -1163,7 +1191,20 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
                 }}
-                pagination={false}
+               
+                pagination={{
+                  showSizeChanger: false,
+                  position: ['bottomCenter'],
+                  current: currentPage,
+                  pageSize: currentPageSize,
+                  onChange: (page) => {
+                    setCurrentPage(page);
+                  },
+                }}
+                // antd site header height
+                sticky={{
+                  offsetHeader: 5,
+                }}
                 loading={loading}
 
               />

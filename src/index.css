@@ -425,3 +425,132 @@
 :where(.css-11xg00t).ant-menu-dark>.ant-menu:not(.ant-menu-horizontal) .ant-menu-item:not(.ant-menu-item-selected):hover {
   background-color: #424242 !important;
 }
+
+
+.dashboard-table-pagination-container {
+
+  text-align: right !important;
+  /* margin: 10px; */
+  width: fit-content !important;
+  padding: 10px !important;
+  background-color: #8080800a !important;
+  border-radius: 5px !important;
+}
+
+.dashboard-table-pagination-container Button {
+  border-radius: 6px !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+
+}
+
+.dashboard-table-pagination-container Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn {
+  font-size: 16px !important;
+  line-height: 16px !important;
+
+  padding: 1px 14px !important;
+  border-radius: 6px !important;
+}
+
+
+.reports-bank {
+  background: linear-gradient(0deg, #E8F1FF 0%, #E8F5FF 100%) !important;
+  border-radius: 10px;
+  box-shadow: 3px 3px 2px #E8F5FF;
+  width: 50%;
+  border: 1px solid #C6C6C6,
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-summary tr td {
+  border: 1px solid #f0f0f0 !important;
+  font-weight: 600 !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children,
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider- .ant-layout-sider-dark {
+  position: sticky !important;
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}
+
+:where(.css-11xg00t).ant-layout .ant-layout-sider-children,
+.ant-layout .ant-layout-sider-children {
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary),
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
+  /* color: #03b9e7 !important; */
+  /* background-color: transparent !important; */
+  color: #000000 !important;
+  border-left: 0 !important;
+  padding: 0 !important;
+}
+
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-group-wrapper-outlined .ant-input-group-addon {
+  /* background: rgba(0, 0, 0, 0.02);
+  border: 1px solid #d9d9d9; */
+  background: transparent !important;
+  border: 1px solid #d9d9d9;
+}
+
+
+.dashboard-top-container {
+  padding: 16px;
+  height: auto;
+  /* background: #F5FCFF; */
+  background-image: url("/src/assets/wallpaper_widget.png") !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  /* margin: 1rem auto; */
+  border-radius: 8px;
+  /* box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; */
+}
+
+.header-notifications-dropdown {
+  font-weight: 600;
+}
+
+.header-notifications-dropdown:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-description,
+:where(.css-dev-only-do-not-override-11xg00t).ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-description {
+  color: rgb(0 0 0);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-dropdown {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 14px;
+  line-height: 1.5714285714285714;
+  list-style: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  z-index: 1050;
+  display: block;
+
+  --arrow-x: 259.6000061035156px;
+  --arrow-y: -2px;
+  inset: 62px 134.062px auto auto;
+  box-sizing: border-box;
+  min-width: 400px;
+
+}

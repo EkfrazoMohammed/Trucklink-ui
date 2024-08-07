@@ -1,0 +1,394 @@
+import { useState, useEffect } from 'react';
+import type { DatePickerProps } from 'antd';
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Col, Row, Switch } from 'antd';
+import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, RedoOutlined, SearchOutlined } from '@ant-design/icons';
+const { Search } = Input;
+import backbutton_logo from "../../assets/backbutton.png";
+import { API } from "../../API/apirequest";
+
+const filterOption = (input, option) =>
+  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+
+const UserMaster = ({ onData, showTabs, setShowTabs }) => {
+  const authToken = localStorage.getItem("token");
+  const selectedHubId = localStorage.getItem("selectedHubID");
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredOwnerData, setFilteredOwnerData] = useState([]);
+  const [filteredTruckData, setFilteredTruckData] = useState([]);
+  const [showTruckTable, setShowTruckTable] = useState(true);
+  const [showTruckView, setShowTruckView] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(false);
+  const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
+
+  const goBack = () => {
+    setShowTruckTable(true);
+    onData('flex');
+    setShowTabs(true); // Set showTabs to true when going back
+  };
+
+  const handleEditTruckClick = (rowData) => {
+    onData('none');
+    setShowTabs(false); // Set showTabs to false when adding owner
+    setRowDataForTruckEdit(rowData);
+    setShowTruckTable(false);
+    setShowTransferForm(false);
+    setShowTruckView(false);
+  };
+
+  const handleAddTruckClick = () => {
+    onData('none');
+    setShowTabs(false); // Set showTabs to false when adding owner
+    setRowDataForTruckEdit(null);
+    setShowTruckTable(false);
+  };
+
+  const handleDeleteTruckClick = async (rowData) => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+    try {
+      const response = await API.delete(`delete-user/${rowData._id}`, headersOb);
+      if (response.status === 200 || response.status === 201) {
+        alert("Deleted data");
+        getTableData("", selectedHubId);
+        goBack();
+      } else {
+        alert(`Unable to delete data`);
+        console.log(response.data);
+      }
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      alert("An error occurred while deleting the data");
+    }
+  };
+
+  const getTableData = async (searchQuery, selectedHubID) => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+    setLoading(true);
+    try {
+      const response = await API.get(`users`, headersOb);
+      const allUserDetails = response.data.user || [];
+      setFilteredTruckData(allUserDetails);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getTableData(searchQuery, selectedHubId);
+  }, [searchQuery, selectedHubId]);
+
+  const Truck = ({ onAddTruckClick }) => {
+    const initialSearchQuery = localStorage.getItem('searchQuery9') || '';
+    const [searchQuery9, setSearchQuery9] = useState<string>(initialSearchQuery);
+
+    useEffect(() => {
+      if (searchQuery9 !== initialSearchQuery) {
+        localStorage.setItem('searchQuery9', searchQuery9);
+      }
+    }, [searchQuery9, initialSearchQuery]);
+
+    const handleSearch = () => {
+      getTableData(searchQuery9, selectedHubId);
+    };
+
+    const onChangeSearch = (e) => {
+      const value = e.target.value;
+      setSearchQuery9(value);
+      if (value === "") {
+        onReset();
+      }
+    };
+
+    const onReset = () => {
+      setSearchQuery9("");
+      localStorage.removeItem('searchQuery9');
+      getTableData("", selectedHubId);
+    };
+
+    return (
+      <div className='flex gap-2 justify-between py-3'>
+        <div className='flex items-center gap-2'>
+          <Search
+            placeholder="Search by Owner Name"
+            size='large'
+            value={searchQuery9}
+            onChange={onChangeSearch}
+            onSearch={handleSearch}
+            style={{ width: 320 }}
+          />
+          {searchQuery9 !== "" && (
+            <Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button>
+          )}
+        </div>
+        <div className='flex gap-2'>
+          <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'>CREATE USER</Button>
+        </div>
+      </div>
+    );
+  };
+
+  const UserMasterForm = () => {
+    const [hubs, setHubs] = useState([]);
+    const [select3HubId, setSelect3HubId] = useState([]);
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    };
+
+    const handleChangeHub = (value) => {
+      if (value.length <= 1) {
+        setSelect3HubId(value);
+      }
+    };
+
+    const fetchHubs = async () => {
+      try {
+        const response = await API.get('get-hubs', headersOb);
+        setHubs(response.data.hubs);
+      } catch (error) {
+        console.error('Error fetching hub data:', error);
+      }
+    };
+
+    useEffect(() => {
+      fetchHubs();
+    }, []);
+
+    const [formData, setFormData] = useState({
+      name: "",
+      countryCode: "+91",
+      firstName: "",
+      email: "",
+      phoneNumber: null,
+      roleName: "",
+      password: "",
+      hubId: selectedHubId,
+    });
+
+    const onResetClick = () => {
+      setFormData({
+        name: '',
+        countryCode: "+91",
+        firstName: "",
+        email: "",
+        phoneNumber: null,
+        roleName: "",
+        password: "",
+        hubId: selectedHubId,
+      });
+    };
+
+    const handleChange = (name, value) => {
+      if (name === 'userRole' && value === 'Admin') {
+        setSelect3HubId([]);
+      }
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const payload = {
+        countryCode: formData.countryCode,
+        firstName: formData.name.charAt(0).toUpperCase() + formData.name.slice(1),
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        name: formData.name,
+        roleName: formData.userRole,
+        role: formData.userRole,
+        password: formData.password,
+        hubId: select3HubId
+      };
+      try {
+        const response = await API.post('create-user', payload, headersOb);
+        if (response.status === 201) {
+          alert("User created successfully");
+          getTableData("", selectedHubId);
+          goBack();
+        } else {
+          alert('Error occurred');
+        }
+      } catch (error) {
+        console.error('Error creating user:', error);
+        alert("An error occurred while creating the user");
+      }
+    };
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-xl font-bold">Create User</h1>
+            <img src={backbutton_logo} alt="backbutton_logo" className='w-5 h-5 object-cover cursor-pointer' onClick={goBack} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="text-md font-normal">Enter User Details</div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row mt-6" span={6}>
+                <Space direction="vertical">
+                  <label className="text-sm text-gray-600">Name</label>
+                  <Input placeholder="Name" value={formData.name} onChange={(e) => handleChange('name', e.target.value)} />
+                </Space>
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Space direction="vertical">
+                  <label className="text-sm text-gray-600">Email</label>
+                  <Input placeholder="Email" value={formData.email} onChange={(e) => handleChange('email', e.target.value)} />
+                </Space>
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Space direction="vertical">
+                  <label className="text-sm text-gray-600">Phone Number</label>
+                  <Input placeholder="Phone Number" value={formData.phoneNumber} onChange={(e) => handleChange('phoneNumber', e.target.value)} />
+                </Space>
+              </Col>
+              <Col className="gutter-row mt-6" span={6}>
+                <Space direction="vertical">
+                  <label className="text-sm text-gray-600">Password</label>
+                  <Input.Password placeholder="Password" value={formData.password} onChange={(e) => handleChange('password', e.target.value)} />
+                </Space>
+              </Col>
+            </Row>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col className="gutter-row mt-6" span={6}>
+              <Space direction="vertical">
+                <label className="text-sm text-gray-600">User Role</label>
+                <Select
+                  placeholder="User Role"
+                  value={formData.userRole}
+                  onChange={(value) => handleChange('userRole', value)}
+                >
+                  <Select.Option value="Admin">Admin</Select.Option>
+                  <Select.Option value="Driver">Driver</Select.Option>
+                  <Select.Option value="Manager">Manager</Select.Option>
+                </Select>
+              </Space>
+            </Col>
+            <Col className="gutter-row mt-6" span={6}>
+              <Space direction="vertical">
+                <label className="text-sm text-gray-600">Select Hubs</label>
+                <Select
+                  mode="multiple"
+                  placeholder="Select Hubs"
+                  value={select3HubId}
+                  onChange={handleChangeHub}
+                  optionFilterProp="children"
+                  filterOption={filterOption}
+                >
+                  {hubs.map((hub) => (
+                    <Select.Option key={hub._id} value={hub._id}>
+                      {hub.hubName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+        <div className="flex gap-2 mt-6">
+          <Button onClick={handleSubmit} className="bg-[#1572B6] text-white">Submit</Button>
+          <Button onClick={onResetClick} className="bg-[#D3D3D3] text-black">Reset</Button>
+        </div>
+      </div>
+    );
+  };
+
+  const columns = [
+    {
+      title: "Actions",
+      key: "action",
+      align: "left",
+      render: (_, rowData) => (
+        <div className="flex justify-start">
+          <div className="bg-blue-500 text-white p-1 rounded-md cursor-pointer mr-2">
+            <Tooltip title="View Truck">
+              <EyeOutlined onClick={() => handleEditTruckClick(rowData)} />
+            </Tooltip>
+          </div>
+          <div className="bg-yellow-500 text-white p-1 rounded-md cursor-pointer mr-2">
+            <Tooltip title="Edit Truck">
+              <FormOutlined onClick={() => handleEditTruckClick(rowData)} />
+            </Tooltip>
+          </div>
+          <div className="bg-red-500 text-white p-1 rounded-md cursor-pointer">
+            <Tooltip title="Delete Truck">
+              <DeleteOutlined onClick={() => handleDeleteTruckClick(rowData)} />
+            </Tooltip>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Owner",
+      dataIndex: "owner",
+      key: "owner",
+    },
+    {
+      title: "Truck Number",
+      dataIndex: "truckNumber",
+      key: "truckNumber",
+    },
+    {
+      title: "Truck Type",
+      dataIndex: "truckType",
+      key: "truckType",
+    },
+    {
+      title: "Truck Capacity",
+      dataIndex: "truckCapacity",
+      key: "truckCapacity",
+    }
+  ];
+
+  return (
+    <div>
+      {showTruckTable && (
+        <div>
+          <Truck onAddTruckClick={handleAddTruckClick} />
+          <Table
+            columns={columns}
+            dataSource={filteredTruckData}
+            pagination={{
+              current: currentPage,
+              pageSize: currentPageSize,
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setCurrentPageSize(pageSize);
+                setActivePageSize(pageSize);
+              },
+            }}
+            loading={loading}
+            rowKey="_id"
+          />
+        </div>
+      )}
+      {!showTruckTable && <UserMasterForm />}
+    </div>
+  );
+};
+
+export default UserMaster;

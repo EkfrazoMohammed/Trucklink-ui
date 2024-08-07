@@ -28,15 +28,13 @@ const { Content, Footer, Sider } = Layout;
 
 const Dashboard: React.FC = () => {
   const [dataFromChild, setDataFromChild] = useState('');
-
-  console.log(dataFromChild)
-
   const handleDataFromChild = (childData) => {
     setDataFromChild(childData);
   };
   const currentHub = localStorage.getItem("selectedHubName")
-  console.log(currentHub)
+  const currentUserRole = localStorage.getItem("userRole")
 
+  // console.log(currentHub)
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(localStorage.getItem('selectedMenuItem'));
   const [selectedMenuTitle, setSelectedMenuTitle] = useState(localStorage.getItem("selectedMenuItemTitle") || 'Dashboard')
@@ -45,42 +43,63 @@ const Dashboard: React.FC = () => {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false); // State variable for logout modal visibility
 
   const IconImage: React.FC<{ src: string }> = ({ src }) => <img src={src} alt={src} className='IconImage-icon' />;
+  let items = [];
+  if (currentUserRole === "Accountant") {
+    items = [
+      { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+      { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: false },
+      { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: false },
+    ];
+  } else {
+    items = [
+      { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
+      { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+      { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+    ];
 
+  }
   // const items = [
   //   { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-  //   { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild}/> },
-  //   { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer  onData={handleDataFromChild} /> },
-  //   { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer  onData={handleDataFromChild} /> },
-  //   { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer  /> },
-  //   { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer /> },
-  //   { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer /> },
+  //   { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer onData={handleDataFromChild} />, disabled: !currentHub },
+  //   { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer onData={handleDataFromChild} />, disabled: !currentHub  },
   // ];
-  const items = [
-    { key: '1', label: 'Dashboard', icon: <IconImage src={dashboard_logo} />, container: <DashboardContainer /> },
-    { key: '2', label: 'Onboarding', icon: <IconImage src={onboarding_logo} />, container: <OnboardingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '3', label: 'Dispatch', icon: <IconImage src={dispatch_logo} />, container: <DispatchContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '4', label: 'Receive', icon: <IconImage src={recieve_logo} />, container: <ReceiveContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '5', label: 'Accounting', icon: <IconImage src={accounting_logo} />, container: <AccountingContainer onData={handleDataFromChild} />, disabled: !currentHub },
-    { key: '6', label: 'Reports', icon: <IconImage src={reports_logo} />, container: <ReportsContainer />, disabled: !currentHub },
-    { key: '7', label: 'Settings', icon: <IconImage src={settings_logo} />, container: <SettingsContainer />, disabled: !currentHub },
-  ];
 
   const handleMenuClick = (menuItemKey: string, menuTitle: string, disabled: boolean) => {
-    //  if(disabled){
-    //   alert("seelct hub location first")
-    //  }
-    console.log("disabled", !currentHub)
-    if (!currentHub) {
-      alert("seelct hub location first")
-    } else {
-
-
-      setSelectedMenuItem(menuItemKey);
-      setTitle(menuTitle);
-      setSelectedMenuTitle(menuTitle)
-      setDataFromChild("flex")
+    if (!currentHub && currentUserRole !== "Accountant") {
+      alert("select hub location first")
     }
+    else {
+      if (menuItemKey == "1" && menuTitle == 'Dashboard') {
+        console.log('Dashboard')
+        setSelectedMenuItem('1');
+        setTitle('Dashboard');
+        setSelectedMenuTitle('Dashboard')
+        setDataFromChild("flex")
+      if (currentUserRole !== "Accountant") {
+        localStorage.removeItem("selectedHubID");
+        localStorage.removeItem("selectedHubName");
+        localStorage.removeItem("selectedHubColor");
+      }
+        // localStorage.setItem("selectedHubName", "All Locations")
+      } else {
 
+        setSelectedMenuItem(menuItemKey);
+        setTitle(menuTitle);
+        setSelectedMenuTitle(menuTitle)
+        setDataFromChild("flex")
+      }
+    }
 
   };
 
@@ -111,6 +130,10 @@ const Dashboard: React.FC = () => {
           localStorage.removeItem('selectedMenuItemTitle');
           localStorage.removeItem('selectedMenuItem'); // Clear the selected menu item from localStorage when logging out
           localStorage.removeItem('loginID')
+          localStorage.removeItem('userRole')
+          localStorage.removeItem('selectedHubId')
+          localStorage.removeItem('selectedHubName')
+
           localStorage.clear();
           window.location.replace("/");
         })
@@ -121,7 +144,7 @@ const Dashboard: React.FC = () => {
 
   };
   return (
-    <Layout style={{ minHeight: '95vh' }}>
+    <Layout>
       <Sider style={{ background: "radial-gradient(84.22% 84.22% at 0% 50%, #2C7FCB 0%, #44B0FF 100%)" }} trigger={null} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} >
         <div className="demo-logo-vertical" style={{ display: "flex", justifyContent: "space-between" }} />
         <div
@@ -166,13 +189,13 @@ const Dashboard: React.FC = () => {
               {item.label}
             </Menu.Item>
           ))}
+          <Menu.Item key={8} icon={<IconImage src={logout_logo} />} onClick={() => setLogoutModalVisible(true)} >
+            <span>Logout</span>
+          </Menu.Item>
         </Menu>
 
-        <div>
-          {/* <button className='flex  mx-8 my-0 items-center gap-2' onClick={() => setLogoutModalVisible(true)}> 
-          <img src={logout_logo} alt="" style={{width:"30px"}}/>
-          {collapsed ? null : <span className='text-white'>Logout</span>}
-          </button> */}
+        {/* <div>
+      
           {collapsed ?
             <button className='flex  mx-4 my-0 items-center gap-2   trucklink-sidemenu-logout-close' onClick={() => setLogoutModalVisible(true)}>
               <img src={logout_logo} alt="" style={{ width: "30px" }} />
@@ -184,15 +207,16 @@ const Dashboard: React.FC = () => {
               <span className='text-white'>Logout</span>
             </button>
           }
-        </div>
+        </div> */}
       </Sider>
       <Layout>
-        <Content style={{ margin: '1rem 1rem 0 1rem' }}>
+        <Content style={{ margin: '1rem' }}>
+          {/* <Content style={{ margin: '1rem 1rem 0 1rem' }}> */}
           <div
             style={{
               padding: 16,
-              height: "90vh",
-              minHeight: "80vh",
+              height: "100%",
+              minHeight: "92vh",
               background: "#fff",
               borderRadius: "8px",
               boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",

@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
 import { API } from "../../API/apirequest"
-import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image } from 'antd';
-import axios from "axios"
+import { DatePicker, Table, Input, Select, Space, Button, Upload, Tooltip, Breadcrumb, Col, Row, Switch, Image, message } from 'antd';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Extend dayjs with the plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import moment from 'moment-timezone';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, EyeOutlined, FormOutlined, DeleteOutlined, SwapOutlined, RedoOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import type { DatePickerProps } from 'antd';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-  console.log(date, dateString);
-};
 const filterOption = (input, option) =>
   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
@@ -25,8 +31,6 @@ const DispatchContainer = ({ onData }) => {
 
   // Initialize state variables for current page and page size
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalDispatchData, setTotalDispatchData] = useState(100)
   const [searchQuery, setSearchQuery] = useState('');
   const [materialType, setMaterialType] = useState('')
   const [vehicleType, setVehicleType] = useState("")
@@ -36,15 +40,18 @@ const DispatchContainer = ({ onData }) => {
 
   const [startDateValue, setStartDateValue] = useState("")
   const [endDateValue, setEndDateValue] = useState("")
-  const [materialSearch,setMaterialSearch]=useState("")
-  const [vehicleTypeSearch,setVehicleTypeSearch]=useState(null)
+  const [materialSearch, setMaterialSearch] = useState("")
+  const [vehicleTypeSearch, setVehicleTypeSearch] = useState(null)
 
-
+  const goBack = () => {
+    setShowDispatchTable(true)
+    onData('flex')
+  }
   const handleMaterialTypeChange = (value) => {
     setMaterialType(value);
     console.log(value)
     setMaterialSearch(value)
-  
+
   };
 
   const handleVehicleTypeChange = (value) => {
@@ -52,32 +59,31 @@ const DispatchContainer = ({ onData }) => {
     setVehicleTypeSearch(value)
   };
 
-  const convertToIST = (date) => {
-    const istDate = moment.tz(date, "Asia/Kolkata");
-    return istDate.valueOf();
-  };
+  // Function to handle date change
   const handleStartDateChange = (date, dateString) => {
-    setStartDateValue(date)
-    setStartDate(date ? convertToIST(dateString) : null);
+    if (date) {
+      // Format the date for display
+      const formattedDate = dayjs(date).format("DD/MM/YYYY");
+      setStartDateValue(formattedDate); // Set formatted date for display
+      setStartDate(date); // Set Date object for further processing if needed
+    } else {
+      setStartDateValue(null);
+      setStartDate(null);
+    }
   };
 
-  // const handleEndDateChange = (date, dateString) => {
-  //   setEndDateValue(date)
-  //   setEndDate(date ? convertToIST(dateString) : null);
-  // };
   const handleEndDateChange = (date, dateString) => {
     if (date) {
-      // Set endDate to the last minute of the selected day in IST
-      const endOfDay = moment(dateString, "YYYY-MM-DD").endOf('day').tz("Asia/Kolkata").subtract(1, 'minute');
-      setEndDateValue(date);
-      setEndDate(endOfDay.valueOf());
+      // Format the date for display
+      const formattedDate = dayjs(date).format("DD/MM/YYYY");
+      setEndDateValue(formattedDate); // Set formatted date for display
+      setEndDate(date); // Set Date object for further processing if needed
     } else {
       setEndDateValue(null);
       setEndDate(null);
     }
   };
-  
-  
+
 
   const getTableData = async () => {
     const headersOb = {
@@ -101,31 +107,31 @@ const DispatchContainer = ({ onData }) => {
       data.searchTDNo = [searchQuery];
     }
 
-    if (startDate) {
-      data.startDate = startDate;
-    }
 
+    if (startDate) {
+      const startOfDayInIST = dayjs(startDate).startOf('day').set({ hour: 5, minute: 30 }).valueOf();
+      const istDate = dayjs(startOfDayInIST).tz("Asia/Kolkata");
+      const utcStartOfDay = istDate.startOf('day').add(5, 'hours').add(30, 'minutes').valueOf();
+      data.startDate = utcStartOfDay;
+    }
     if (endDate) {
-      data.endDate = endDate;
+      const endOfDayInIST = dayjs(endDate).endOf('day').set({ hour: 5, minute: 30 }).valueOf();
+      data.endDate = endOfDayInIST;
     }
     setLoading(true)
     try {
       const searchData = searchQuery ? searchQuery : null;
-      const response = searchData ? await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb)
-        : await API.post(`get-challan-data?page=1&limit=150&hubId=${selectedHubId}`, data, headersOb);
+      const response = searchData ? await API.post(`get-challan-data?page=1&limit=100000&hubId=${selectedHubId}`, data, headersOb)
+        : await API.post(`get-challan-data?page=1&limit=100000&hubId=${selectedHubId}`, data, headersOb);
 
-        setLoading(false)
+      setLoading(false)
       let allChallans;
       if (response.data.disptachData == 0) {
         allChallans = response.data.disptachData
         setchallanData(allChallans);
       } else {
-
         allChallans = response.data.disptachData[0].data || "";
         setchallanData(allChallans);
-        setTotalDispatchData(allChallans.length);
-
-
       }
     } catch (err) {
       setLoading(false)
@@ -156,11 +162,11 @@ const DispatchContainer = ({ onData }) => {
   }, [])
   useEffect(() => {
     getTableData();
-  }, [searchQuery, currentPage, currentPageSize, selectedHubId, materialType, vehicleType, startDate, endDate]);
+  }, [searchQuery, currentPage, selectedHubId, materialType, vehicleType, startDate, endDate]);
 
   // Truck master
   const Truck = ({ onAddTruckClick }: { onAddTruckClick: () => void }) => {
-    const initialSearchQuery = localStorage.getItem('searchQuery4') || '';
+    const initialSearchQuery = localStorage.getItem('searchQuery4') || "";
     const [searchQuery4, setSearchQuery4] = useState<string>(initialSearchQuery);
 
     // Update localStorage whenever searchQuery4 changes
@@ -169,6 +175,60 @@ const DispatchContainer = ({ onData }) => {
     }, [searchQuery4]);
     const handleSearch = (e) => {
       setSearchQuery(e);
+    };
+
+    const spreadSheetUploadRequest = async (file) => {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const config = {
+          headers: {
+            "content-type": "multipart/form-data",
+            "Authorization": `Bearer ${authToken}`
+          },
+        };
+
+
+        const response = await API.post('uploadDispatchChallanExcelNew', formData, config);
+        // const response = await axios.post('http://localhost:3000/prod/v1/uploadDispatchChallanExcelNew', formData, config);
+        console.log(response)
+        localStorage.setItem("1dispatch-fileUpload", JSON.stringify(response));
+        if (response.data && response.data.error_code === 1) {
+          console.error('File upload error:', response.data.err_desc);
+          message.error(`File upload error: ${response.data.err_desc.code} - ${response.data.err_desc.syscall}`);
+        } else {
+          message.success("Successfully Uploaded");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000)
+        }
+      } catch (error) {
+        console.error('File upload failed:', error);
+        localStorage.setItem("1dispatch-fileUpload", JSON.stringify(error));
+        if (error.response && error.response.data && error.response.data.message) {
+          if (message.error || error.response.data.message == "Unable to create challan save") {
+            message.success("Successfully Uploaded");
+
+          } else {
+
+            message.error(error.response.data.message);
+          }
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000)
+        } else {
+          message.error("Network Failed, Please Try Again");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleBeforeUpload = (file) => {
+      spreadSheetUploadRequest(file);
+      return false; // Prevent automatic upload
     };
 
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,49 +240,261 @@ const DispatchContainer = ({ onData }) => {
 
     const onReset = () => {
       setSearchQuery4("");
-      setStartDateValue("")
-      setEndDateValue("")
       localStorage.removeItem("searchQuery4");
       setSearchQuery("");
       handleSearch("")
-      setMaterialSearch("")
-      setVehicleTypeSearch("")
-      window.location.reload()
+      setStartDateValue("")
+      setStartDate("");
+      setEndDate("");
+      setEndDateValue("")
+      setMaterialType('')
+      setMaterialSearch(null)
+      setVehicleType('')
+      setVehicleTypeSearch(null)
+      getTableData()
     }
 
- // Disable dates before the selected start date
- const disabledEndDate = (current) => {
-  return current && current < moment(startDate).startOf('day');
-};
+
+    const handleDownload = () => {
+      const challans = challanData;
+
+      // Prepare data for owner details
+      const ownerDetails = challans.map((challan) => (
+        {
+          "_id": challan._id,
+          "quantityInMetricTons": challan.quantityInMetricTons,
+          "rate": challan.rate,
+          "commisionRate": challan.commisionRate,
+          "commisionTotal": challan.commisionTotal,
+          "totalExpense": challan.totalExpense,
+          "shortage": challan.shortage,
+          "balance": challan.balance,
+          "diesel": challan.diesel,
+          "cash": challan.cash,
+          "bankTransfer": challan.bankTransfer,
+          "recovery": challan.recovery,
+          "outstanding": challan.outstanding,
+          "isAcknowledged": challan.isAcknowledged,
+          "isReceived": challan.isReceived,
+          "isMarketRate": challan.isMarketRate,
+          "marketRate": challan.marketRate,
+          "billNumber": challan.billNumber,
+          "excel": challan.excel,
+          "materialType": challan.materialType,
+          "grDate": challan.grDate,
+          "grISODate": challan.grISODate,
+          "loadLocation": challan.loadLocation,
+          "deliveryLocation": challan.deliveryLocation,
+          "vehicleNumber": challan.vehicleNumber,
+          "ownerId": challan.ownerId,
+          "ownerName": challan.ownerName,
+          "vehicleId": challan.vehicleId,
+          "vehicleBank": challan.vehicleBank,
+          "ownerPhone": challan.ownerPhone,
+          "vehicleType": challan.vehicleType,
+          "deliveryNumber": challan.deliveryNumber,
+          "vehicleReferenceId": challan.vehicleReferenceId,
+          "vehicleBankReferenceId": challan.vehicleBankReferenceId,
+          "ownerReferenceId": challan.ownerReferenceId,
+          "hubId": challan.hubId,
+          "createdAt": challan.createdAt,
+          "modifiedAt": challan.modifiedAt,
+          "__v": 0
+          ,
+        }
+      ));
+
+
+
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Dispatch Challans Details');
+
+
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'Dispatch Challans.xlsx');
+    };
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+        const items = challanData.map((challan, index) => [
+          index + 1,
+          challan.materialType || "-",
+          challan.grNumber || "-",
+          challan.grDate || "-",
+          challan.loadLocation || "-",
+          challan.deliveryLocation || "-",
+          challan.vehicleNumber || "-",
+          challan.ownerName || "-",
+          challan.vehicleType || "-",
+          challan.deliveryNumber || "-",
+          challan.quantityInMetricTons || "-",
+          challan.rate || "-",
+          challan.commisionRate || "-",
+          challan.commisionTotal || "-",
+          challan.diesel || "-",
+          challan.cash || "-",
+          challan.bankTransfer || "-",
+          // challan.totalExpense || "-",
+          challan.balance || "-",
+          challan.excel || "-",
+          // challan.hubId || "-",
+          localStorage.getItem("selectedHubName") || "-",
+
+        ]);
+
+        if (items.length === 0) {
+          message.error("No data available to download");
+        } else {
+          doc.setFontSize(10);
+          const d = new Date();
+          const m = d.getMonth() + 1;
+          const day = d.getDate();
+          const year = d.getFullYear();
+
+          doc.autoTable({
+            head: [
+              [
+                "Sl No",
+                "materialType",
+                "gr No ",
+                "gr Date    ",
+                "loadLocation",
+                "deliveryLocation",
+                "Vehicle No         ",
+                "Owner Name             ",
+                "Vehicle Type           ",
+                "DO Number        ",
+                "Qty  ",
+                "rate                  ",
+                "commisionRate (%)",
+                "Total commision ",
+                "diesel ",
+                "cash",
+                "bank Transfer ",
+                // "totalExpense ",
+                "balance   ",
+                "excel   ",
+                "hub   ",
+
+              ],
+            ],
+            body: items,
+            startY: 10,
+            headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+            bodyStyles: { fontSize: 8, textAlign: "center" },
+            columnStyles: {
+              0: { cellWidth: 7 },
+              1: { cellWidth: 14 },
+              2: { cellWidth: 14 },
+              3: { cellWidth: 14 },
+              4: { cellWidth: 14 },
+              5: { cellWidth: 14 },
+              6: { cellWidth: 14 },
+              7: { cellWidth: 14 },
+              8: { cellWidth: 14 },
+              9: { cellWidth: 14 },
+              10: { cellWidth: 14 },
+              11: { cellWidth: 14 },
+              12: { cellWidth: 14 },
+              13: { cellWidth: 14 },
+              14: { cellWidth: 14 },
+              15: { cellWidth: 14 },
+              16: { cellWidth: 14 },
+              17: { cellWidth: 14 },
+              18: { cellWidth: 14 },
+              19: { cellWidth: 14 },
+              20: { cellWidth: 14 },
+              21: { cellWidth: 14 },
+              22: { cellWidth: 14 },
+              23: { cellWidth: 14 },
+              // 24: { cellWidth: 14 },
+
+            },
+            didDrawPage: function (data) {
+              // Header
+              doc.setFontSize(10);
+              doc.text("Challan Details", data.settings.margin.left + 0, 5);
+              doc.text("Date:-", data.settings.margin.left + 155, 5);
+              doc.text(
+                day + "/" + m + "/" + year,
+                data.settings.margin.left + 170,
+                5
+              );
+
+              // Footer
+              var str = "Page " + doc.internal.getNumberOfPages();
+              // Total page number plugin only available in jspdf v1.0+
+              if (typeof doc.putTotalPages === "function") {
+                str = str + " of " + totalPagesExp;
+              }
+              doc.setFontSize(10);
+
+
+              // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+              var pageSize = doc.internal.pageSize;
+              var pageHeight = pageSize.height
+                ? pageSize.height
+                : pageSize.getHeight();
+              doc.text(str, data.settings.margin.left, pageHeight - 10);
+            },
+            margin: { top: 10 },
+          });
+
+
+          if (typeof doc.putTotalPages === "function") {
+            doc.putTotalPages(totalPagesExp);
+          }
+          doc.save("challans.pdf");
+        }
+      } catch (err) {
+        message.error("Unable to Print");
+      }
+    };
 
     return (
       <div className='flex gap-2 flex-col justify-between p-2'>
         <div className='flex gap-2 items-center'>
           <Search
-            placeholder="Search by Delivery Number"
+            placeholder="Search by Delivery / Vehicle Number"
             size='large'
             value={searchQuery4}
             onChange={onChangeSearch}
             onSearch={handleSearch}
             style={{ width: 320 }}
           />
-          <DatePicker
+          {/* <DatePicker
             size='large'
             onChange={handleStartDateChange}
             value={startDateValue}
             placeholder='From date'
-          /> -
+          /> - */}
+
           <DatePicker
             size='large'
-            value={endDateValue}
+            onChange={handleStartDateChange}
+            value={startDate} // Set Date object directly as the value
+            placeholder='From date'
+            format='DD/MM/YYYY' // Display format for the DatePicker
+          />
+          <DatePicker
+            size='large'
+            // value={endDateValue}
+            value={endDate}
             onChange={handleEndDateChange}
             placeholder='To date'
-            disabledDate={disabledEndDate}
+            format='DD/MM/YYYY' // Display format for the DatePicker
+
           />
 
           <Select
             name="materialType"
-            value={materialType ? materialType : null}
+            // value={materialType ? materialType : null}
+            value={materialType || undefined}
             placeholder="Material Type*"
             size="large"
             style={{ width: "20%" }}
@@ -240,26 +512,33 @@ const DispatchContainer = ({ onData }) => {
             placeholder="Truck Type*"
             size="large"
             style={{ width: "20%" }}
-            value={vehicleTypeSearch}
+            value={vehicleTypeSearch || undefined}
             options={[
               { value: 'Open', label: 'Open' },
               { value: 'Bulk', label: 'Bulk' },
             ]}
             onChange={handleVehicleTypeChange}
           />
-          {searchQuery4 !== null && searchQuery4 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" || materialSearch !=="" || vehicleTypeSearch !=="" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
+
+          {searchQuery4 !== null && searchQuery4 !== "" || startDateValue !== null && startDateValue !== "" || endDateValue !== null && endDateValue !== "" || materialSearch !== "" || vehicleTypeSearch !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} title="reset" icon={<RedoOutlined />}></Button></> : <></>}
 
         </div>
         <div className='flex gap-2 justify-end'>
           {/* <Upload>
             <Button icon={<UploadOutlined />}></Button>
-          </Upload>
-          <Upload>
-            <Button icon={<DownloadOutlined />}></Button>
-          </Upload>
-          <Upload>
-            <Button icon={<PrinterOutlined />}></Button>
           </Upload> */}
+
+          <div className='flex gap-2'>
+
+            <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
+              <Button icon={<UploadOutlined />} loading={loading}>
+                {/* {loading ? "Uploading" : "Click to Upload"}  */}
+                {loading ? "" : ""}
+              </Button>
+            </Upload>
+            <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+            <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+          </div>
           <Button onClick={onAddTruckClick} className='bg-[#1572B6] text-white'> CREATE CHALLAN</Button>
         </div>
       </div>
@@ -449,7 +728,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -491,7 +770,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -558,36 +837,74 @@ const DispatchContainer = ({ onData }) => {
         commisionRate = parseFloat(selectedvehicleCommission);
       }
 
+      // const payload = {
+      //   "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (commissionTotal) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
+      //   // "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
+      //   "bankTransfer": formData.bankTransfer,
+      //   "cash": formData.cash,
+      //   "deliveryLocation": formData.deliveryLocation,
+      //   "deliveryNumber": formData.deliveryNumber,
+      //   "diesel": formData.diesel,
+      //   "grDate": formData.grDate,
+      //   "grNumber": formData.grNumber,
+      //   "invoiceProof": null,
+      //   "loadLocation": formData.loadLocation,
+      //   "materialType": formData.materialType,
+      //   "ownerId": formData.ownerId,
+      //   "ownerName": formData.ownerName,
+      //   "ownerPhone": formData.ownerPhone,
+      //   "quantityInMetricTons": formData.quantityInMetricTons,
+      //   "rate": formData.rate,
+      //   "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
+      //   "vehicleBank": formData.vehicleBank,
+      //   "vehicleId": formData.vehicleId,
+      //   "vehicleNumber": formData.vehicleNumber,
+      //   "vehicleType": formData.vehicleType,
+      //   "commisionRate": commisionRate,
+      //   "commisionTotal": commissionTotal,
+      //   "isMarketRate": formData.isMarketRate,
+      //   "marketRate": formData.marketRate,
+      //   "hubId": selectedHubId,
+      //   "shortage": formData.shortage
+      // }
       const payload = {
-        "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (commissionTotal) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage)),
-        // "balance": (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate)) - (parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer)),
-        "bankTransfer": formData.bankTransfer,
-        "cash": formData.cash,
-        "deliveryLocation": formData.deliveryLocation,
-        "deliveryNumber": formData.deliveryNumber,
-        "diesel": formData.diesel,
-        "grDate": formData.grDate,
-        "grNumber": formData.grNumber,
-        "invoiceProof": null,
-        "loadLocation": formData.loadLocation,
-        "materialType": formData.materialType,
-        "ownerId": formData.ownerId,
-        "ownerName": formData.ownerName,
-        "ownerPhone": formData.ownerPhone,
-        "quantityInMetricTons": formData.quantityInMetricTons,
-        "rate": formData.rate,
-        "totalExpense": parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage),
-        "vehicleBank": formData.vehicleBank,
-        "vehicleId": formData.vehicleId,
-        "vehicleNumber": formData.vehicleNumber,
-        "vehicleType": formData.vehicleType,
-        "commisionRate": commisionRate,
-        "commisionTotal": commissionTotal,
-        "isMarketRate": formData.isMarketRate,
-        "marketRate": formData.marketRate,
-        "hubId": selectedHubId,
-        "shortage": formData.shortage
-      }
+        balance: (parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate))
+          - commissionTotal
+          - (parseFloat(formData.diesel ?? 0)
+            + parseFloat(formData.cash ?? 0)
+            + parseFloat(formData.bankTransfer ?? 0)
+            + parseFloat(formData.shortage ?? 0)),
+        bankTransfer: formData.bankTransfer ?? 0,
+        cash: formData.cash ?? 0,
+        deliveryLocation: formData.deliveryLocation,
+        deliveryNumber: formData.deliveryNumber,
+        diesel: formData.diesel ?? 0,
+        grDate: formData.grDate,
+        grNumber: formData.grNumber,
+        invoiceProof: null,
+        loadLocation: formData.loadLocation,
+        materialType: formData.materialType,
+        ownerId: formData.ownerId,
+        ownerName: formData.ownerName,
+        ownerPhone: formData.ownerPhone,
+        quantityInMetricTons: formData.quantityInMetricTons,
+        rate: formData.rate,
+        totalExpense: parseFloat(formData.diesel ?? 0)
+          + parseFloat(formData.cash ?? 0)
+          + parseFloat(formData.bankTransfer ?? 0)
+          + parseFloat(formData.shortage ?? 0),
+        vehicleBank: formData.vehicleBank,
+        vehicleId: formData.vehicleId,
+        vehicleNumber: formData.vehicleNumber,
+        vehicleType: formData.vehicleType,
+        commisionRate: commisionRate,
+        commisionTotal: commissionTotal,
+        isMarketRate: formData.isMarketRate,
+        marketRate: formData.marketRate,
+        hubId: selectedHubId,
+        shortage: formData.shortage ?? 0
+      };
+
       const headersOb = {
         headers: {
           "Content-Type": "application/json",
@@ -601,7 +918,9 @@ const DispatchContainer = ({ onData }) => {
           .then((response) => {
             console.log('Challan added successfully:', response.data);
             alert("Challan added successfully")
-            window.location.reload(); // Reload the page or perform any necessary action
+            getTableData()
+            goBack()
+            // window.location.reload();
           })
           .catch((error) => {
             if (error.response.data.message == 'This Delivery Number already exists') {
@@ -614,13 +933,10 @@ const DispatchContainer = ({ onData }) => {
             console.error('Error adding truck data:', error.response);
           });
       } else {
-        alert("GR Date is required")
+        alert("enter all fields")
       }
     };
-    const goBack = () => {
-      setShowDispatchTable(true)
-      onData('flex')
-    }
+
 
     return (
       <>
@@ -703,10 +1019,23 @@ const DispatchContainer = ({ onData }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    type='number'
+                    placeholder="Delivery Number*"
+                    size="large"
+                    value={formData.deliveryNumber}
+                    name="deliveryNumber"
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
-                    placeholder="Loaded From*"
+                    placeholder="Load Location*"
                     size="large"
                     style={{ width: '100%' }}
                     showSearch
@@ -722,13 +1051,11 @@ const DispatchContainer = ({ onData }) => {
                   </Select>
 
                 </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="deliveryLocation"
                     onChange={(value) => handleChange('deliveryLocation', value)}
-                    placeholder="Deliver To*"
+                    placeholder="Delivery Location*"
                     size="large"
                     showSearch
                     value={formData.deliveryLocation}
@@ -782,17 +1109,7 @@ const DispatchContainer = ({ onData }) => {
 
 
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
 
-                  <Input
-                    type='number'
-                    placeholder="Delivery Number*"
-                    size="large"
-                    value={formData.deliveryNumber}
-                    name="deliveryNumber"
-                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
-                  />
-                </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -822,7 +1139,7 @@ const DispatchContainer = ({ onData }) => {
                       type='number'
                       placeholder="Market Rate Rs*"
                       size="large"
-                      name="diesel"
+                      name="marketRate"
                       onChange={(e) => handleChange('marketRate', e.target.value)}
                     />
                   </> : <></>}
@@ -918,9 +1235,9 @@ const DispatchContainer = ({ onData }) => {
     const response = await API.delete(`delete-dispatch-challan/${challanId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      localStorage.removeItem("searchQuery4");
+      setSearchQuery("");
+      getTableData();
     } else {
       alert(`unable to delete data`)
       console.log(response.data)
@@ -930,6 +1247,10 @@ const DispatchContainer = ({ onData }) => {
 
   const EditableChallan = ({ editingRow }) => {
 
+    const goBack = () => {
+      onData('flex')
+      setShowDispatchTable(true)
+    }
     const selectedHubId = localStorage.getItem("selectedHubID");
 
     const [formData, setFormData] = useState(
@@ -943,6 +1264,7 @@ const DispatchContainer = ({ onData }) => {
         "deliveryNumber": editingRow.deliveryNumber,
         "diesel": editingRow.diesel,
         "grDate": editingRow.grDate,
+        // "grDate": moment(editingRow.grDate, 'DD/MM/YYYY').toDate(),
         "grNumber": editingRow.grNumber,
         "invoiceProof": editingRow.invoiceProof,
         "loadLocation": editingRow.loadLocation,
@@ -964,9 +1286,6 @@ const DispatchContainer = ({ onData }) => {
       }
 
     );
-    const [a, setA] = useState(null)
-
-
     const handleResetClick = () => {
       console.log('reset clicked')
       setFormData(
@@ -1028,17 +1347,21 @@ const DispatchContainer = ({ onData }) => {
       }
     };
     const formatDate = (dateString) => {
+
       // Split the date string by '-'
       const parts = dateString.split('-');
       // Rearrange the parts in the required format
-      const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
       return formattedDate;
     };
     // Function to handle date change
+
     const handleDateChange = (date, dateString) => {
       const formattedGrDate = formatDate(dateString);
+      console.log(formattedGrDate)
       handleChange('grDate', formattedGrDate);
     };
+
     const [materials, setMaterials] = useState([]);
     const [loadLocation, setloadLocations] = useState([]);
 
@@ -1094,7 +1417,7 @@ const DispatchContainer = ({ onData }) => {
         console.error('Error fetching materials:', error);
       }
     };
-    const [vehicleDetails, setVehicleDetails] = useState([]); // State to store vehicle details
+    const [vehicleDetails, setVehicleDetails] = useState([]);
     const fetchVehicleDetails = async () => {
       try {
         const headersOb = {
@@ -1103,7 +1426,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         let truckDetails;
         if (response.data.truck == 0) {
           truckDetails = response.data.truck
@@ -1130,7 +1453,6 @@ const DispatchContainer = ({ onData }) => {
         }
       } catch (error) {
         console.error('Error fetching vehicle details:', error);
-        // Handle error
       }
     };
     const [selectedvehicleId, setselectedVehicleId] = useState(null); // State to store vehicle details
@@ -1145,7 +1467,7 @@ const DispatchContainer = ({ onData }) => {
             "Authorization": `Bearer ${authToken}`
           }
         }
-        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${120}&hubId=${selectedHubId}`, headersOb);
+        const response = await API.get(`get-vehicle-details/${vehicleId}?page=${1}&limit=${100000}&hubId=${selectedHubId}`, headersOb);
         const truckDetails = response.data.truck;
         if (truckDetails && truckDetails.length > 0) {
           const selectedVehicle = truckDetails[0];
@@ -1165,9 +1487,6 @@ const DispatchContainer = ({ onData }) => {
             commissionRate = selectedVehicle.commission
 
           }
-
-          console.log(commissionRate)
-
           setselectedCommission(commissionRate)
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -1201,30 +1520,48 @@ const DispatchContainer = ({ onData }) => {
     }, [selectedHubId]);
 
 
+    // const [temp,setTemp]=useState(null)
+
     const handleSubmit = (e) => {
       e.preventDefault();
-
       let commissionTotal = 0;
       let commisionRate = 0;
+
+      // const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
+      // if (formData.isMarketRate) {
+      //   console.log("isMarketRate", formData.isMarketRate);
+      //   const t = totalIncome;
+      //   const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+      //   commissionTotal = m;
+      //   commisionRate = 0;
+      // } else {
+        //   const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
+        //   commissionTotal = commissionTotalInPercentage / 100;
+        //   commisionRate = parseFloat(selectedvehicleCommission);
+        // }
+        // const totalExpenses = parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage);
+        // const balance = totalIncome - commissionTotal - totalExpenses;
+
 
       const totalIncome = parseFloat(formData.quantityInMetricTons) * parseFloat(formData.rate);
 
       if (formData.isMarketRate) {
-        console.log("isMarketRate", formData.isMarketRate);
-        const t = totalIncome;
-        const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
-        commissionTotal = m;
-        commisionRate = 0;
+          console.log("isMarketRate", formData.isMarketRate);
+          const t = totalIncome;
+          const m = (parseFloat(formData.quantityInMetricTons)) * parseFloat(formData.marketRate);
+          commissionTotal = totalIncome - m;
+          commisionRate = 0;
       } else {
-        console.log("isMarketRate", formData.isMarketRate);
-        const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
-        commissionTotal = commissionTotalInPercentage / 100;
-        commisionRate = parseFloat(selectedvehicleCommission);
+          console.log("isMarketRate", formData.isMarketRate);
+          const commissionTotalInPercentage = totalIncome * parseFloat(selectedvehicleCommission);
+          commissionTotal = commissionTotalInPercentage / 100;
+          commisionRate = parseFloat(selectedvehicleCommission);
       }
 
 
       const totalExpenses = parseFloat(formData.diesel) + parseFloat(formData.cash) + parseFloat(formData.bankTransfer) + parseFloat(formData.shortage);
       const balance = totalIncome - commissionTotal - totalExpenses;
+
 
       const payload = {
         balance: balance,
@@ -1255,8 +1592,8 @@ const DispatchContainer = ({ onData }) => {
         hubId: selectedHubId,
         shortage: formData.shortage,
       };
+      // setTemp(payload)
 
-      setA(payload);
 
       const headersOb = {
         headers: {
@@ -1269,7 +1606,9 @@ const DispatchContainer = ({ onData }) => {
         .then((response) => {
           console.log('Challan updated successfully:', response.data);
           alert("Challan updated successfully");
-          window.location.reload(); // Reload the page or perform any necessary action
+          getTableData()
+          goBack()
+          // window.location.reload(); // Reload the page or perform any necessary action
         })
         .catch((error) => {
           alert("error occurred");
@@ -1277,10 +1616,6 @@ const DispatchContainer = ({ onData }) => {
         });
     };
 
-    const goBack = () => {
-      onData('flex')
-      setShowDispatchTable(true)
-    }
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1349,23 +1684,36 @@ const DispatchContainer = ({ onData }) => {
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-
                   <DatePicker
                     required
                     placeholder="GR Date"
                     size="large"
-                    format="DD-MM-YYYY" // Display format
-                    value={moment()} // Set initial value if needed
+                    format="DD-MM-YYYY"
                     style={{ width: "100%" }}
-                    onChange={handleDateChange} // Call handleDateChange function on date change
+                    onChange={handleDateChange}
+                    value={dayjs(formData.grDate, 'DD/MM/YYYY')}
                   />
                 </Col>
+                <Col className="gutter-row mt-6" span={6}>
+
+                  <Input
+                    placeholder="DeliveryNumber*"
+                    size="large"
+                    type='number'
+                    name="deliveryNumber"
+                    value={formData.deliveryNumber}
+                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
+                  />
+                </Col>
+
+              </Row>
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
 
                   <Select
                     name="loadLocation"
                     onChange={(value) => handleChange('loadLocation', value)}
-                    placeholder="Loaded From*"
+                    placeholder="Load Location*"
                     size="large"
                     value={formData.loadLocation}
                     style={{ width: '100%' }}
@@ -1378,13 +1726,11 @@ const DispatchContainer = ({ onData }) => {
                   </Select>
 
                 </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
                     name="deliveryLocation"
                     onChange={(value) => handleChange('deliveryLocation', value)}
-                    placeholder="Deliver To*"
+                    placeholder="Delivery Location*"
                     size="large"
                     value={formData.deliveryLocation}
                     style={{ width: '100%' }}
@@ -1432,17 +1778,7 @@ const DispatchContainer = ({ onData }) => {
 
 
                 </Col>
-                <Col className="gutter-row mt-6" span={6}>
 
-                  <Input
-                    placeholder="DeliveryNumber*"
-                    size="large"
-                    type='number'
-                    name="deliveryNumber"
-                    value={formData.deliveryNumber}
-                    onChange={(e) => handleChange('deliveryNumber', e.target.value)}
-                  />
-                </Col>
               </Row>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -1542,6 +1878,7 @@ const DispatchContainer = ({ onData }) => {
 
             </div>
           </div>
+          {/* {JSON.stringify(temp, null, 2)} */}
           <div className="flex gap-4 items-center justify-center reset-button-container">
             <Button onClick={handleResetClick}>Reset</Button>
             <Button type="primary" className="bg-primary" onClick={handleSubmit}>
@@ -1564,15 +1901,37 @@ const DispatchContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    // const formatDate = (date) => {
+    //   const parsedDate = new Date(date);
+    //   if (!isNaN(parsedDate)) {
+    //     return parsedDate.toLocaleDateString('en-GB');
+    //   }
+    //   return date; // Return the original date if parsing fails
+    // };
+
+    const formatDate = (date) => {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) {
+        return parsedDate.toLocaleDateString('en-US', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      }
+      return date; // Return the original date if parsing fails
+    };
+
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPageSize, setCurrentPageSize] = useState(10);
+    const [activePageSize, setActivePageSize] = useState(10);
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
         width: 80,
-
-        fixed: 'left',
       },
       {
         title: 'Material Type',
@@ -1585,12 +1944,20 @@ const DispatchContainer = ({ onData }) => {
         dataIndex: 'grNumber',
         key: 'grNumber',
         width: 100,
+        sorter: (a, b) => a.grNumber - b.grNumber,
       },
+      // {
+      //   title: 'GR Date',
+      //   dataIndex: 'grDate',
+      //   key: 'grDate',
+      //   width: 120,
+      // },
       {
         title: 'GR Date',
         dataIndex: 'grDate',
         key: 'grDate',
         width: 120,
+        render: (text) => formatDate(text),
       },
       {
         title: 'Load Location',
@@ -1689,48 +2056,97 @@ const DispatchContainer = ({ onData }) => {
         ),
       },
     ];
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setchallanData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
     };
 
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setchallanData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     return (
       <>
-    <Table
-    rowSelection={rowSelection}
-    columns={columns}
-    dataSource={challanData}
-    scroll={{ x: 800, y: 320 }}
-    rowKey="_id"
-    loading={loading}
-    pagination={{
-      position: ['bottomCenter'],
-      showSizeChanger: true,
-      current: currentPage,
-      total: totalDispatchData,
-      defaultPageSize: currentPageSize, // Set the default page size
-      onChange: changePagination,
-      onShowSizeChange: changePaginationAll,
-    }}
-  />
-   
-        
+
+        <div className='flex items-items justify-end mb-2 my-paginations '>
+          <span className='bg-[#F8F9FD] p-1'>
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{
+                backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                color: activePageSize === 10 ? 'white' : 'black',
+                borderRadius: activePageSize === 10 ? '6px' : '0',
+                boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              10
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{
+                backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                color: activePageSize === 25 ? 'white' : 'black',
+                borderRadius: activePageSize === 25 ? '6px' : '0',
+                boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{
+                backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                color: activePageSize === 50 ? 'white' : 'black',
+                borderRadius: activePageSize === 50 ? '6px' : '0',
+                boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              50
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{
+                backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                color: activePageSize === 100 ? 'white' : 'black',
+                borderRadius: activePageSize === 100 ? '6px' : '0',
+                boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              100
+            </Button>
+          </span>
+        </div>
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={challanData}
+          scroll={{ x: 800 }}
+          rowKey="_id"
+          loading={loading}
+          // pagination={{
+          //   showSizeChanger: true,
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   pageSize: pageSize,
+          //   onChange: (page, pageSize) => {
+          //     setCurrentPage(page);
+          //     setPageSize(pageSize);
+          //   },
+          // }}
+          pagination={{
+            showSizeChanger: false,
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: currentPageSize,
+            onChange: (page) => {
+              setCurrentPage(page);
+            },
+          }}
+          // antd site header height
+          sticky={{
+            offsetHeader: 5,
+          }}
+
+        />
+
+
       </>
     );
   };

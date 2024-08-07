@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-// Assuming states.json is located in the same directory as your component
 import states from './states.json';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { Table, Input, Select, Space, Button, Upload, Tabs, Tooltip, Breadcrumb, Col, notification, Row, Pagination, message } from 'antd';
 import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined,PrinterOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 const { Search } = Input;
 import backbutton_logo from "../../assets/backbutton.png"
 import { API } from "../../API/apirequest"
@@ -11,7 +13,6 @@ import TruckMaster from './TruckMaster';
 import MasterData from './MasterData';
 import OwnerTransferLog from './OwnerTransferLog';
 import OwnerActivityLog from './OwnerActivityLog';
-import axios from "axios"
 
 const onSearch = (value: string) => {
   console.log('search:', value);
@@ -52,6 +53,11 @@ const OnboardingContainer = ({ onData }) => {
 
   const [totalOwnerData, setTotalOwnerData] = useState(100)
 
+  const goBack = () => {
+    setShowOwnerTable(true)
+    setShowTabs(true);
+    onData('flex')
+  }
   const getTableData = async (searchQuery, page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
@@ -62,13 +68,13 @@ const OnboardingContainer = ({ onData }) => {
 
     setLoading(true);
     try {
-      const pages = page;
-      const limitData = 600;
+      const pages = 1;
+      const limitData = 10000;
       const searchData = searchQuery || null; // Simplified conditional assignment
       const response = await API.get(
         searchData
           ? `get-owner-bank-details?searchOwnerName=${searchData}&page=${pages}&limit=${limitData}&hubId=${selectedHubId}`
-          : `get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`,
+          : `get-owner-bank-details?page=1&limit=${limitData}&hubId=${selectedHubId}`,
         headersOb
       );
 
@@ -90,6 +96,38 @@ const OnboardingContainer = ({ onData }) => {
       setLoading(false);
     }
   };
+  const jsonToCSV = (json) => {
+    const headers = Object.keys(json[0]);
+    const csvRows = [];
+
+    // Add the headers row
+    csvRows.push(headers.join(','));
+
+    // Add the data rows
+    for (const row of json) {
+      const values = headers.map(header => {
+        const escaped = ('' + row[header]).replace(/"/g, '\\"');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+  };
+
+  const downloadCSV = (data, filename = 'data.csv') => {
+    const csv = jsonToCSV(data);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
 
   const [showEditForm, setShowEditForm] = useState(false)
   const OwnerMaster = ({ showTabs, setShowTabs }) => {
@@ -150,11 +188,10 @@ const OnboardingContainer = ({ onData }) => {
         }
       }
       const response = await API.delete(`delete-owner-details/${rowData._id}`, headersOb);
+      console.log(response)
       alert("deleted data")
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
-
+      goBack()
+      getTableData("", 1, 100000, selectedHubId);
     }
     return (
       <>
@@ -183,22 +220,23 @@ const OnboardingContainer = ({ onData }) => {
   };
 
   const Owner = ({ onAddOwnerClick }: { onAddOwnerClick: () => void }) => {
+    // const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
+    // const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
     const initialSearchQuery = localStorage.getItem('searchQuery1') || '';
-    const [searchQuery1, setSearchQuery1] = useState<string>(localStorage.getItem('searchQuery1') || '');
-
-    // Update localStorage whenever searchQuery1 changes
-    // useEffect(() => {
-    //   localStorage.setItem('searchQuery1', searchQuery1);
-    // }, [searchQuery1]);
-    // Update localStorage whenever searchQuery1 changes
+    const [searchQuery1, setSearchQuery1] = useState<string>(initialSearchQuery);
+    const [loading, setLoading] = useState<boolean>(false);
     useEffect(() => {
       if (searchQuery1 !== initialSearchQuery) {
         localStorage.setItem('searchQuery1', searchQuery1);
       }
     }, [searchQuery1, initialSearchQuery]);
-
+    // useEffect(() => {
+    //   // Reset search query and remove from local storage on component mount
+    //   setSearchQuery1('');
+    //   localStorage.removeItem('searchQuery1');
+    // }, []);
     const handleSearch = () => {
-      getTableData(searchQuery1, 1, 600, selectedHubId);
+      getTableData(searchQuery1, 1, 100000, selectedHubId);
     };
 
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,30 +247,38 @@ const OnboardingContainer = ({ onData }) => {
         onReset();
       }
     };
-    const axiosFileUploadRequest = async (file) => {
+    const spreadSheetUploadRequest = async (file) => {
       setLoading(true);
       try {
         const formData = new FormData();
         formData.append("file", file);
-  
+
         const config = {
           headers: {
             "content-type": "multipart/form-data",
             "Authorization": `Bearer ${authToken}`
           },
         };
-        console.log(formData)
-  
-        // const response = await API.post('create-owner-by-xsl', formData, config);
-        const response = await axios.post(`http://localhost:3000/prod/v1/create-owner-by-xsl`, formData, config);
-        console.log(response);
-        message.success("Successfully Uploaded");
-        setTimeout(()=>{
-          window.location.reload();
-        },1000)
+
+
+        const response = await API.post('create-owner-by-xsl', formData, config);
+        localStorage.setItem("owner-fileUpload", JSON.stringify(response.data));
+        if (response.data && response.data.error_code === 1) {
+          console.error('File upload error:', response.data.err_desc);
+          message.error(`File upload error: ${response.data.err_desc.code} - ${response.data.err_desc.syscall}`);
+        } else {
+          message.success("Successfully Uploaded");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000)
+        }
       } catch (error) {
+        console.error('File upload failed:', error);
         if (error.response && error.response.data && error.response.data.message) {
           message.error(error.response.data.message);
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000)
         } else {
           message.error("Network Failed, Please Try Again");
         }
@@ -240,17 +286,417 @@ const OnboardingContainer = ({ onData }) => {
         setLoading(false);
       }
     };
-  
+
     const handleBeforeUpload = (file) => {
-      console.log(file)
-      axiosFileUploadRequest(file);
+      spreadSheetUploadRequest(file);
       return false; // Prevent automatic upload
     };
     const onReset = () => {
       setSearchQuery1("");
       localStorage.removeItem('searchQuery1');
-      getTableData("", 1, 600, selectedHubId);
+      getTableData("", 1, 100000, selectedHubId);
     };
+
+
+    const data = {
+      "ownerDetails": [
+        {
+          "count": 8,
+          "data": [
+            {
+              "_id": "66790d8c4a0ed60b1435333b",
+              "countryCode": "+91",
+              "vehicleIds": [],
+              "accountIds": [
+                {
+                  "_id": "66790d8c4a0ed60b1435333f",
+                  "accountNumber": "955410000001",
+                  "accountHolderName": "manoj",
+                  "ifscCode": "CNRB0000423",
+                  "bankName": "Canara Bank",
+                  "branchName": "BYATARAYANAPURA,BANGALORE",
+                  "ownerId": "66790d8c4a0ed60b1435333b",
+                  "createdAt": "2024-06-24T06:09:16.586Z",
+                  "modifiedAt": "2024-06-24T06:09:16.586Z",
+                  "__v": 0
+                }
+              ],
+              "name": "manoj",
+              "email": "manoj@gmail.com",
+              "phoneNumber": "5554443322",
+              "panNumber": "manoj",
+              "address": "manoj",
+              "district": "Leh(Ladakh)",
+              "state": "JAMMU_AND_KASHMIR",
+              "hubId": "66541b73a74686d081580179",
+              "oldVehicleDetails": [],
+              "vehicleDetails": [],
+              "createdAt": "2024-06-24T06:09:16.437Z",
+              "modifiedAt": "2024-06-24T06:09:16.437Z",
+              "__v": 0
+            },
+            {
+              "_id": "66557de735f213327e2c7acc",
+              "countryCode": "+91",
+              "vehicleIds": [
+                "665815c16364f6342e577911"
+              ],
+              "accountIds": [
+                {
+                  "_id": "66557de735f213327e2c7acf",
+                  "accountNumber": "423",
+                  "accountHolderName": "423",
+                  "ifscCode": "CNRB0000423",
+                  "bankName": "Canara Bank",
+                  "branchName": "BYATARAYANAPURA,BANGALORE",
+                  "hubId": "66541b73a74686d081580179",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "createdAt": "2024-05-28T06:47:03.222Z",
+                  "modifiedAt": "2024-06-13T05:14:05.844Z",
+                  "__v": 0
+                },
+                {
+                  "_id": "666a7feb4e95f87215549c95",
+                  "accountNumber": "1717",
+                  "accountHolderName": "1717",
+                  "ifscCode": "KVBL0001717",
+                  "bankName": "Karur Vysya Bank",
+                  "branchName": "MADURAI - KAMARAJAR SALAI",
+                  "hubId": "66541b73a74686d081580179",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "createdAt": "2024-06-13T05:13:15.716Z",
+                  "modifiedAt": "2024-06-13T05:14:05.845Z",
+                  "__v": 0
+                }
+              ],
+              "name": "tayib",
+              "email": "tayib@gmail.com",
+              "phoneNumber": "1231231231",
+              "panNumber": "TAYIBPANCARD",
+              "address": "Tayib",
+              "district": "Bengaluru (Bangalore) Urban",
+              "state": "Karnataka",
+              "hubId": "66541b73a74686d081580179",
+              "oldVehicleDetails": [
+                {
+                  "commission": 0,
+                  "_id": "6656f0ac934d44286dd49f43",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-06-04T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-05T00:00:00.000Z",
+                  "vehicleNumber": "KA02MT2241",
+                  "truckType": "open",
+                  "accountId": "66557aca35f213327e2c7a0c"
+                },
+                {
+                  "commission": 0,
+                  "_id": "6656f37a934d44286dd4a089",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-05-30T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-31T00:00:00.000Z",
+                  "vehicleNumber": "TN01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c"
+                },
+                {
+                  "commission": 0,
+                  "_id": "665703071525914c04023e85",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2027-07-03T00:00:00.000Z",
+                  "ownerTransferToDate": "2027-11-04T03:33:20.000Z",
+                  "vehicleNumber": "TN01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "commission": 5,
+                  "_id": "66570678cdae4f2be757e07b",
+                  "vehicleIds": "6657065dcdae4f2be757e04b",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "ownerTransferDate": "2024-05-29T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-30T00:00:00.000Z",
+                  "vehicleNumber": "KA01AB1234",
+                  "truckType": "bulk",
+                  "accountId": "66557aca35f213327e2c7a0c",
+                  "hubId": "66541b73a74686d081580179"
+                }
+              ],
+              "vehicleDetails": [
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656d340795b921fbc74644f",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerTransferDate": "2024-05-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-05-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656eee9934d44286dd49e84",
+                  "vehicleIds": "6655bbbb551b8f57d1837b35",
+                  "ownerTransferDate": "2024-06-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6656f48e934d44286dd4a0c3",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerTransferDate": "2024-06-01T00:00:00.000Z",
+                  "ownerTransferToDate": "2024-06-03T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                },
+                {
+                  "isOwnerTransfer": true,
+                  "_id": "6657062ecdae4f2be757e01b",
+                  "vehicleIds": "6656f312934d44286dd4a038",
+                  "ownerTransferDate": "2027-09-25T00:00:00.000Z",
+                  "ownerTransferToDate": "2027-10-30T00:00:00.000Z",
+                  "ownerId": "66557de735f213327e2c7acc",
+                  "hubId": "66541b73a74686d081580179"
+                }
+              ],
+              "createdAt": "2024-05-28T06:47:03.148Z",
+              "modifiedAt": "2024-06-13T05:14:05.754Z",
+              "__v": 0
+            }
+          ]
+        }
+      ]
+    };
+    // Function to convert JSON to CSV
+    const convertJSONToCSV = (data: any[]): string => {
+      if (data.length === 0) {
+        return '';
+      }
+
+      // Extract column headers from the first object in the array
+      const headers = Object.keys(data[0]);
+
+      // Create CSV content
+      const csvContent =
+        headers.join(',') +
+        '\n' +
+        data
+          .map((row) => {
+            return headers.map((fieldName) => {
+              let cellValue = row[fieldName];
+
+              // If cell value contains comma, escape it by enclosing in double quotes
+              if (typeof cellValue === 'string' && cellValue.includes(',')) {
+                cellValue = `"${cellValue}"`;
+              }
+
+              return cellValue;
+            }).join(',');
+          })
+          .join('\n');
+
+      return csvContent;
+    };
+    // const handleDownload = () => {
+    //   console.log(filteredOwnerData)
+    //   // const owners = data.ownerDetails[0].data;
+    //   const owners=filteredOwnerData
+    //   const csvData = owners.map((owner) => {
+    //     return {
+    //       id: owner._id,
+    //       name: owner.name,
+    //       email: owner.email,
+    //       phoneNumber: owner.phoneNumber,
+    //       panNumber: owner.panNumber,
+    //       address: owner.address,
+    //       district: owner.district,
+    //       state: owner.state,
+    //       hubId: owner.hubId,
+    //       accountDetails: owner.accountIds.map((account) => ({
+    //         accountNumber: account.accountNumber,
+    //         accountHolderName: account.accountHolderName,
+    //         ifscCode: account.ifscCode,
+    //         bankName: account.bankName,
+    //         branchName: account.branchName,
+    //         createdAt: account.createdAt,
+    //         modifiedAt: account.modifiedAt,
+    //       })),
+    //       oldVehicleDetails: owner.oldVehicleDetails.map((vehicle) => ({
+    //         vehicleNumber: vehicle.vehicleNumber,
+    //         truckType: vehicle.truckType,
+    //         ownerTransferDate: vehicle.ownerTransferDate,
+    //         ownerTransferToDate: vehicle.ownerTransferToDate,
+    //         commission: vehicle.commission,
+    //       })),
+    //       vehicleDetails: owner.vehicleDetails.map((vehicle) => ({
+    //         vehicleNumber: vehicle.vehicleNumber,
+    //         truckType: vehicle.truckType,
+    //         ownerTransferDate: vehicle.ownerTransferDate,
+    //         ownerTransferToDate: vehicle.ownerTransferToDate,
+    //         isOwnerTransfer: vehicle.isOwnerTransfer,
+    //       })),
+    //       createdAt: owner.createdAt,
+    //       modifiedAt: owner.modifiedAt,
+    //     };
+    //   });
+
+    //   const csvContent = convertJSONToCSV(csvData);
+
+    //   // Create a blob with the CSV data
+    //   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    //   // Create a temporary URL for the blob
+    //   const url = window.URL.createObjectURL(blob);
+
+    //   // Create a link element
+    //   const link = document.createElement('a');
+    //   link.href = url;
+    //   link.setAttribute('download', 'ownerDetails.csv');
+
+    //   // Append the link to the body
+    //   document.body.appendChild(link);
+
+    //   // Trigger the download
+    //   link.click();
+
+    //   // Cleanup
+    //   document.body.removeChild(link);
+    // };
+
+    const handleDownload = () => {
+      console.log(filteredOwnerData);
+      const owners = filteredOwnerData;
+    
+      // Prepare data for owner details
+      const ownerDetails = owners.map((owner) => ({
+        id: owner._id,
+        name: owner.name,
+        email: owner.email,
+        phoneNumber: owner.phoneNumber,
+        panNumber: owner.panNumber,
+        address: owner.address,
+        district: owner.district,
+        state: owner.state,
+        hubId: owner.hubId,
+        createdAt: owner.createdAt,
+        modifiedAt: owner.modifiedAt,
+      }));
+    
+      // Prepare data for account details
+      const accountDetails = [];
+      owners.forEach((owner) => {
+        owner.accountIds.forEach((account) => {
+          accountDetails.push({
+            ownerId: owner._id,
+            accountNumber: account.accountNumber,
+            accountHolderName: account.accountHolderName,
+            ifscCode: account.ifscCode,
+            bankName: account.bankName,
+            branchName: account.branchName,
+            createdAt: account.createdAt,
+            modifiedAt: account.modifiedAt,
+          });
+        });
+      });
+    
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+    
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Owner Details');
+    
+      // Add the account details sheet to the workbook
+      const accountWS = XLSX.utils.json_to_sheet(accountDetails);
+      XLSX.utils.book_append_sheet(wb, accountWS, 'Account Details');
+    
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'OwnerAndAccountDetails.xlsx');
+    };
+
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+        const items = filteredOwnerData.map((d, index) => [
+          index + 1,
+          d.name || "-",
+          d.address || "-",
+          d.phoneNumber || "-",
+          d.district || "-",
+          d.state || "-",
+          d.panNumber || "-",
+          d.email || "-",
+        ]);
+    
+        if (items.length === 0) {
+          message.error("No data available to download");
+        } else {
+          doc.setFontSize(10);
+          const d = new Date();
+          const m = d.getMonth() + 1;
+          const day = d.getDate();
+          const year = d.getFullYear();
+    
+          doc.autoTable({
+            head: [
+              [
+                "Sl No",
+                "Owner Name",
+                "Address",
+                "Phone Number",
+                "District",
+                "State",
+                "PAN Card",
+                "Email ID",
+              ],
+            ],
+            body: items,
+            startY: 10,
+            headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+            bodyStyles: { fontSize: 8, textAlign: "center" },
+            didDrawPage: function (data) {
+              // Header
+              doc.setFontSize(10);
+              doc.text("Owner Details", data.settings.margin.left + 0, 5);
+              doc.text("Date:-", data.settings.margin.left + 155, 5);
+              doc.text(
+                day + "/" + m + "/" + year,
+                data.settings.margin.left + 170,
+                5
+              );
+    
+              // Footer
+              var str = "Page " + doc.internal.getNumberOfPages();
+              // Total page number plugin only available in jspdf v1.0+
+              if (typeof doc.putTotalPages === "function") {
+                str = str + " of " + totalPagesExp;
+              }
+              doc.setFontSize(10);
+    
+              // jsPDF 1.4+ uses getWidth, <1.4 uses .width
+              var pageSize = doc.internal.pageSize;
+              var pageHeight = pageSize.height
+                ? pageSize.height
+                : pageSize.getHeight();
+              doc.text(str, data.settings.margin.left, pageHeight - 10);
+            },
+            margin: { top: 10 },
+          });
+          if (typeof doc.putTotalPages === "function") {
+            doc.putTotalPages(totalPagesExp);
+          }
+          doc.save("ownerdetails.pdf");
+        }
+      } catch (err) {
+        message.error("Unable to Print");
+      }
+    };
+    
+  
     return (
       <div className='flex justify-between  py-3'>
         <div className='flex items-center gap-2'>
@@ -266,18 +712,16 @@ const OnboardingContainer = ({ onData }) => {
           {searchQuery1 !== null && searchQuery1 !== "" ? <><Button size='large' onClick={onReset} style={{ rotate: "180deg" }} icon={<RedoOutlined />}></Button></> : <></>}
         </div>
         <div className='flex gap-2'>
-          {/* <Upload>
-            <Button icon={<UploadOutlined />} onClick={axiosFileUploadRequest} ></Button>
-          </Upload> */}
+
           <Upload beforeUpload={handleBeforeUpload} showUploadList={false}>
-      <Button icon={<UploadOutlined />} loading={loading}>
-        {/* {loading ? "Uploading" : "Click to Upload"} */}
-        {loading ? "Uploading" : ""}
-      </Button>
-    </Upload>
-          <Upload>
-            <Button icon={<DownloadOutlined />}></Button>
+            <Button icon={<UploadOutlined />} loading={loading}>
+              {loading ? "" : ""}
+            </Button>
           </Upload>
+         
+          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+           
           <Button onClick={onAddOwnerClick} className='bg-[#1572B6] text-white'> ADD TRUCK OWNER</Button>
         </div>
       </div>
@@ -318,12 +762,36 @@ const OnboardingContainer = ({ onData }) => {
       getDispatchDetails()
     }, [])
 
+    // const aggregateDispatchData = (data) => {
+    //   if (!data) return {};
+    //   const aggregatedData = {};
+
+    //   data.forEach((dispatch) => {
+    //     const { vehicleNumber, createdAt,grDate } = dispatch;
+    //     console.log(grDate)
+    //     if (!aggregatedData[vehicleNumber]) {
+    //       aggregatedData[vehicleNumber] = {
+    //         totalTrips: 0,
+    //         lastTrip: null
+    //       };
+    //     }
+
+    //     aggregatedData[vehicleNumber].totalTrips += 1;
+    //     if (!aggregatedData[vehicleNumber].lastTrip || new Date(grDate) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
+    //       aggregatedData[vehicleNumber].lastTrip = grDate;
+    //     }
+    //   });
+
+    //   return aggregatedData;
+    // };
     const aggregateDispatchData = (data) => {
       if (!data) return {};
+
       const aggregatedData = {};
 
       data.forEach((dispatch) => {
-        const { vehicleNumber, createdAt } = dispatch;
+        const { vehicleNumber, grDate } = dispatch;
+
         if (!aggregatedData[vehicleNumber]) {
           aggregatedData[vehicleNumber] = {
             totalTrips: 0,
@@ -332,38 +800,54 @@ const OnboardingContainer = ({ onData }) => {
         }
 
         aggregatedData[vehicleNumber].totalTrips += 1;
-        if (!aggregatedData[vehicleNumber].lastTrip || new Date(createdAt) > new Date(aggregatedData[vehicleNumber].lastTrip)) {
-          aggregatedData[vehicleNumber].lastTrip = createdAt;
+
+        // Convert grDate to Date object for comparison
+        const dispatchDate = toDateObject(grDate);
+
+        // Compare dates and update lastTrip if dispatchDate is later
+        if (!aggregatedData[vehicleNumber].lastTrip || dispatchDate > toDateObject(aggregatedData[vehicleNumber].lastTrip)) {
+          aggregatedData[vehicleNumber].lastTrip = grDate; // Store the date string if it's the latest
         }
       });
 
       return aggregatedData;
     };
 
+    // Helper function to convert DD/MM/YYYY string to Date object
+    const toDateObject = (dateString) => {
+      const [day, month, year] = dateString.split('/');
+      return new Date(`${year}-${month}-${day}`);
+    };
+
+
+
     const aggregatedDispatchData = aggregateDispatchData(dispatchDetails);
 
-    const goBack = () => {
-      setShowOwnerTable(true)
-      setShowTabs(true);
-      onData('flex')
-    }
+
 
     const LastTripComponent = ({ dispatchData }) => {
-      const isoDate = dispatchData;
-      const date = new Date(isoDate);
-      let formattedDate
-      if (isoDate == "-") {
-        formattedDate = `-`
-      } else {
-        formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`
+
+      let formattedDate = "-"; // Default value for formatted date
+
+      if (dispatchData && dispatchData !== "-") {
+        const dateParts = dispatchData.split('/');
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1; // Month is zero-indexed in JavaScript Date object
+        const year = parseInt(dateParts[2], 10);
+
+        const date = new Date(year, month, day);
+
+        // Format the date as DD/MM/YYYY
+        formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
       }
 
-
       return (
-        <p className="flex flex-col w-100 font-normal m-2">
-          <span className="label text-sm">Last trip</span>
-          {formattedDate}
-        </p>
+        <>
+          <p className="flex flex-col w-100 font-normal m-2">
+            <span className="label text-sm font-bold">Last trip</span>
+            {formattedDate}
+          </p>
+        </>
       );
     };
     return (
@@ -373,26 +857,26 @@ const OnboardingContainer = ({ onData }) => {
           <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowData.name}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowData.phoneNumber}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowData.email}</p></Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowData.panNumber}</p></Col>
-            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowData.district}</p></Col>
-            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowData.state}</p> </Col>
-            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm">Address</span> {rowData.address}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {rowData.name}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {rowData.phoneNumber}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {rowData.email}</p></Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {rowData.panNumber}</p></Col>
+            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {rowData.district}</p></Col>
+            <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {rowData.state}</p> </Col>
+            <Col className="gutter-row m-1" span={5}><p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Address</span> {rowData.address}</p></Col>
           </Row>
         </div>
         <div className="section mx-2 my-4">
           <h2 className='font-semibold text-md'>Owner Bank Details</h2>
           {rowData.accountIds.map((account, index) => (
             <div key={index}>
-              <h3>Bank Account {index + 1}</h3>
+              <h3 className='font-semibold text-md'>Bank Account {index + 1}</h3>
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm">IFSC Code</span> {account.ifscCode}</p> </Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Name</span> {account.bankName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Branch Name</span> {account.branchName}</p></Col>
-                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Number</span> {account.accountNumber}</p> </Col>
-                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
+                <Col className="gutter-row m-1" span={5}>  <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">IFSC Code</span> {account.ifscCode}</p> </Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Name</span> {account.bankName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Branch Name</span> {account.branchName}</p></Col>
+                <Col className="gutter-row m-1" span={5}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Account Number</span> {account.accountNumber}</p> </Col>
+                <Col className="gutter-row m-1" span={8}> <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Bank Account Holder Name</span> {account.accountHolderName}</p> </Col>
               </Row>
             </div>
           ))}
@@ -409,11 +893,11 @@ const OnboardingContainer = ({ onData }) => {
                   <Col className="gutter-row m-1 flex items-center gap-2" span={12}>
                     <p>{index + 1}</p>
                     <p className="flex flex-col w-100 font-normal m-2">
-                      <span className="label text-sm">Vehicle No</span>
+                      <span className="label text-sm font-bold">Vehicle No</span>
                       {vehicle.registrationNumber}
                     </p>
                     <p className="flex flex-col w-100 font-normal m-2">
-                      <span className="label text-sm">Total trips</span>
+                      <span className="label text-sm font-bold">Total trips</span>
                       {dispatchData.totalTrips}
                     </p>
 
@@ -496,7 +980,6 @@ const OnboardingContainer = ({ onData }) => {
         bankAccounts: prevFormData.bankAccounts.filter((_, i) => i !== index)
       }));
     };
-    const [message, setMessage] = useState('');
 
     const handleChangeBank = (index, e) => {
       const { value } = e.target;
@@ -512,14 +995,14 @@ const OnboardingContainer = ({ onData }) => {
       const bankAccount = formData.bankAccounts[index];
       const { ifscCode } = bankAccount;
       if (!ifscCode) {
-        setMessage('Please fill IFSC code');
+
+        message.warning('Please fill IFSC code');
         return;
       }
 
       fetch(`https://ifsc.razorpay.com/${ifscCode}`)
         .then(response => response.json())
         .then(data => {
-          // Update formData state with bank details for the specified bank account
           setFormData(prevFormData => ({
             ...prevFormData,
             bankAccounts: prevFormData.bankAccounts.map((account, i) => {
@@ -528,7 +1011,6 @@ const OnboardingContainer = ({ onData }) => {
                   ...account,
                   bankName: data.BANK,
                   branchName: data.BRANCH
-                  // You can add more fields as needed
                 };
               }
               return account;
@@ -536,7 +1018,7 @@ const OnboardingContainer = ({ onData }) => {
           }));
         })
         .catch(error => {
-          setMessage('Invalid IFSC code');
+          message.error('Invalid IFSC code');
         });
     };
 
@@ -612,9 +1094,8 @@ const OnboardingContainer = ({ onData }) => {
             if (response.status == 201) {
 
               alert('Owner data added successfully!');
-              setTimeout(() => {
-                window.location.reload();
-              }, 1000)
+              goBack()
+              getTableData("", 1, 100000, selectedHubId);
 
             }
           })
@@ -627,9 +1108,10 @@ const OnboardingContainer = ({ onData }) => {
               description: `${errorMessage}`,
               duration: 2,
             });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000)
+            // goBack()
+            //   getTableData("", 1, 100000, selectedHubId);
+
+
           });
       }
 
@@ -850,10 +1332,10 @@ const OnboardingContainer = ({ onData }) => {
                     />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
+                    <Input disabled placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
-                    <Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
+                    <Input disabled placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} />
                   </Col>
                   <Col className="gutter-row mt-2" span={8}>
                     <Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} />
@@ -901,6 +1383,33 @@ const OnboardingContainer = ({ onData }) => {
         ownerId: account.ownerId,
       }))
     });
+
+    const onReset = () => {
+      setFormData({
+        name: rowDataForEdit.name,
+        email: rowDataForEdit.email,
+        phoneNumber: rowDataForEdit.phoneNumber,
+        countryCode: rowDataForEdit.countryCode,
+        panNumber: rowDataForEdit.panNumber,
+        district: rowDataForEdit.district,
+        state: rowDataForEdit.state,
+        address: rowDataForEdit.address,
+        vehicleIds: [],
+        hubId: selectedHubId,
+        bankAccounts: rowDataForEdit.accountIds.map(account => ({
+          id: account._id,
+          accountNumber: account.accountNumber,
+          accountHolderName: account.accountHolderName,
+          ifscCode: account.ifscCode,
+          bankName: account.bankName,
+          branchName: account.branchName,
+          hubId: account.hubId,
+          ownerId: account.ownerId,
+        }))
+
+      }
+      )
+    }
 
     const handleOwnerFormChange = (e) => {
       const { name, value } = e.target;
@@ -965,7 +1474,7 @@ const OnboardingContainer = ({ onData }) => {
       const bankAccount = formData.bankAccounts[index];
       const { ifscCode } = bankAccount;
       if (!ifscCode) {
-        setMessage('Please fill IFSC code');
+        message.warning('Please fill IFSC code')
         return;
       }
 
@@ -987,7 +1496,7 @@ const OnboardingContainer = ({ onData }) => {
           }));
         })
         .catch(error => {
-          setMessage('Invalid IFSC code');
+          message.warning('Invalid IFSC code');
         });
     };
 
@@ -1123,9 +1632,11 @@ const OnboardingContainer = ({ onData }) => {
         await updateOwnerAccounts();
 
         alert('Owner data and bank details updated successfully!');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        goBack()
+        getTableData("", 1, 100000, selectedHubId);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
       } catch (error) {
         console.error('Submission error:', error);
       }
@@ -1136,6 +1647,7 @@ const OnboardingContainer = ({ onData }) => {
       onData("flex");
       setShowTabs(true);
     }
+
 
 
     return (
@@ -1246,8 +1758,8 @@ const OnboardingContainer = ({ onData }) => {
                       onSearch={() => fetchBankDetails(index)}
                     />
                   </Col>
-                  <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
-                  <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
+                  <Col className="gutter-row mt-2" span={8}><Input disabled placeholder="Bank Name*" size="large" name="bankName" value={bankAccount.bankName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
+                  <Col className="gutter-row mt-2" span={8}><Input disabled placeholder="Bank Branch*" size="large" name="branchName" value={bankAccount.branchName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                   <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Account Number*" size="large" name="accountNumber" value={bankAccount.accountNumber} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                   <Col className="gutter-row mt-2" span={8}><Input placeholder="Bank Account Holder Name*" size="large" name="accountHolderName" value={bankAccount.accountHolderName} onChange={(e) => handleBankAccountChange(index, e)} /></Col>
                 </Row>
@@ -1260,7 +1772,7 @@ const OnboardingContainer = ({ onData }) => {
 
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
-            <Button onClick={() => { setShowOwnerTable(true) }}>Reset</Button>
+            <Button onClick={onReset}>Reset</Button>
             <Button type="primary" className='bg-primary' onClick={handleSubmit}>Save</Button>
           </div>
         </div>
@@ -1271,10 +1783,14 @@ const OnboardingContainer = ({ onData }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
+
   useEffect(() => {
-    getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
-  }, [currentPage, currentPageSize, selectedHubId]);
-  const OwnerTable = ({ filteredOwnerData, onEditClick, onViewClick, onDeleteClick }) => {
+    // getTableData(searchQuery, currentPage, currentPageSize, selectedHubId);
+    getTableData("", 1, 100000, selectedHubId);
+  }, [selectedHubId]);
+
+  const OwnerTable = ({ filteredOwnerData, onEditClick, onViewClick, onDeleteClick, loading }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(newSelectedRowKeys);
@@ -1284,15 +1800,18 @@ const OnboardingContainer = ({ onData }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
-
-
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
 
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index) => index + 1,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
         width: 80,
       },
       {
@@ -1301,8 +1820,14 @@ const OnboardingContainer = ({ onData }) => {
         key: 'name',
         width: "auto",
         render: (_, record) => {
-          return record.name.charAt(0).toUpperCase() + record.name.slice(1)
-        }
+          return record.name.charAt(0).toUpperCase() + record.name.slice(1);
+        },
+        sorter: (a, b) => {
+          const nameA = a.name ? a.name.toLowerCase() : '';
+          const nameB = b.name ? b.name.toLowerCase() : '';
+          return nameA.localeCompare(nameB);
+      },
+      ellipsis: true,
       },
       {
         title: 'District',
@@ -1314,7 +1839,7 @@ const OnboardingContainer = ({ onData }) => {
         title: 'State',
         dataIndex: 'state',
         key: 'state',
-        width: 160,
+        width: 210,
       },
       {
         title: 'Email ID',
@@ -1327,7 +1852,6 @@ const OnboardingContainer = ({ onData }) => {
         key: 'action',
         width: 120,
         render: (record) => (
-
           <Space size="middle">
             <Tooltip placement="top" title="Preview"><a onClick={() => onViewClick(record)}><EyeOutlined /></a></Tooltip>
             <Tooltip placement="top" title="Edit"><a onClick={() => onEditClick(record)}><FormOutlined /></a></Tooltip>
@@ -1336,109 +1860,95 @@ const OnboardingContainer = ({ onData }) => {
         ),
       },
     ];
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
 
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    const handlePageSizeChange = async (pageNumber) => {
 
-      setCurrentPageSize(pageNumber);
-      setCurrentPage(pageNumber); // Reset to first page
-      // Call your data fetching function here if needed
-      try {
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredOwnerData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    const renderPaginationButtons = () => {
-      const totalPages = Math.ceil(totalOwnerData / currentPageSize);
-      let buttons = [];
-
-      for (let i = 1; i <= totalPages; i++) {
-        buttons.push(
-          <Button
-            key={i}
-            type={i === currentPage ? 'primary' : 'default'}
-            onClick={() => handlePageSizeChange(i)}
-          >
-            {i}
-          </Button>
-        );
-      }
-    }
     return (
       <>
-
-        <Table
-          rowSelection={rowSelection}
-          columns={columns}
-          dataSource={filteredOwnerData}
-          scroll={{ x: 800, y: 310 }}
-          rowKey="_id"
-          pagination={{
-            position: ['bottomCenter'],
-            current: currentPage,
-            total: totalOwnerData,
-            defaultPageSize: currentPageSize,
-            showSizeChanger: true,
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
-          }}
-          loading={loading}
-        />
-
-      </>
-    );
-  };
-  {/* <div style={{ textAlign: 'right', margin: '10px' }}>
-          {renderPaginationButtons()}
+       
+        <div className='flex items-items justify-end mb-2 my-paginations '>
+          <span className='bg-[#F8F9FD] p-1'>
           <Button
             onClick={() => handlePageSizeChange(10)}
-            style={{ backgroundColor: currentPageSize === 10 ? '#454545' : '#fff', color: currentPageSize === 10 ? '#fff' : '#000' }}
+            style={{ 
+              backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+              color: activePageSize === 10 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 10 ? '6px' : '0' ,
+              boxShadow:activePageSize === 10 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
           >
             10
           </Button>
-
           <Button
             onClick={() => handlePageSizeChange(25)}
-            style={{ backgroundColor: currentPageSize === 25 ? '#454545' : '#fff', color: currentPageSize === 25 ? '#fff' : '#000' }}
+            style={{ 
+              backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+              color: activePageSize === 25 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 25 ? '6px' : '0' ,
+              boxShadow:activePageSize === 25 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
           >
-            20
+            25
           </Button>
           <Button
             onClick={() => handlePageSizeChange(50)}
-            style={{ backgroundColor: currentPageSize === 50 ? '#454545' : '#fff', color: currentPageSize === 50 ? '#fff' : '#000' }}
+            style={{ 
+              backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+              color: activePageSize === 50 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 50 ? '6px' : '0' ,
+              boxShadow:activePageSize === 50 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
           >
             50
           </Button>
-
           <Button
             onClick={() => handlePageSizeChange(100)}
-            style={{ backgroundColor: currentPageSize === 100 ? '#454545' : '#fff', color: currentPageSize === 100 ? '#fff' : '#000' }}
+            style={{ 
+              backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+              color: activePageSize === 100 ? 'white' : 'black' ,
+              borderRadius:activePageSize === 100 ? '6px' : '0' ,
+              boxShadow:activePageSize === 100 ?  '0px 0px 4px 0px #00000040' :'none',
+            }}
           >
             100
           </Button>
-        </div> */}
+          </span>
+        </div>
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={filteredOwnerData}   
+          rowKey="_id"
+      //     pagination={{
+      //       showSizeChanger: false,
+      //       position: ['bottomCenter'],
+      //       current: currentPage,
+      //       pageSize: currentPageSize,
+      //       onChange: (page) => {
+      //         setCurrentPage(page);
+      //       },
+      //     }}
+         
+      //      // antd site header height
+      // sticky={true}
+          loading={loading}
+      pagination={{
+        showSizeChanger: false,
+        position: ['bottomCenter'],
+        current: currentPage,
+        pageSize: currentPageSize,
+        onChange: (page) => {
+          setCurrentPage(page);
+        },
+      }}
+      // antd site header height
+  sticky={{
+    offsetHeader: 10,
+  }}
+        />
+      </>
+    );
+
+  };
 
   const [showTabs, setShowTabs] = useState(true);
 

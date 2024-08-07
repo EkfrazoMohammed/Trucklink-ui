@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
-import { FormOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest";
 
@@ -14,8 +14,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
   const [editingRowKey, setEditingRowKey] = useState(null); // State for editable row
-  // const [selectedDate, setSelectedDate] = useState({ month: 6, year: 2024 });
-  // Set current month and year as default values
+  
   const currentMonth = dayjs().month() + 1;
   const currentYear = dayjs().year();
   const [selectedDate, setSelectedDate] = useState({ month: currentMonth, year: currentYear });
@@ -34,6 +33,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       setLoading(true);
       const response = await API.get(`get-cash-book-by-month/${month}/${year}/${selectedHubId}`, headersOb);
       const { cashBookEntries, amounts } = response.data || [];
+
       if (cashBookEntries && cashBookEntries.length > 0) {
         const dataSource = cashBookEntries.map((entry) => ({
           key: entry._id,
@@ -42,22 +42,36 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
           credit: entry.credit,
           narration: entry.narration,
         }));
+
+        // Calculate the sum of debits and credits
+        const currentMonthDebit = cashBookEntries.reduce((sum, entry) => sum + entry.debit, 0);
+        const currentMonthCredit = cashBookEntries.reduce((sum, entry) => sum + entry.credit, 0);
+        const currentMonthOutStanding = currentMonthCredit - currentMonthDebit
+
+        // Add currentMonthDebit and currentMonthCredit to amounts
+        const updatedAmounts = {
+          ...amounts,
+          currentMonthDebit,
+          currentMonthCredit,
+          currentMonthOutStanding,
+        };
+        console.log(updatedAmounts)
+
         setDataSource(dataSource);
         setCount(dataSource.length);
+        setAmountData(updatedAmounts);
       } else {
         setDataSource([]);
-      }
-      if (amounts) {
-        setAmountData(amounts);
-      } else {
         setAmountData([]);
       }
+
       setLoading(false);
     } catch (err) {
       setLoading(false);
       message.error("Error fetching data. Please try again later", 2);
     }
   };
+
 
   const createCashBookEntry = async (row) => {
     const { date, debit, credit, narration } = row;
@@ -121,13 +135,17 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log(err);
     }
   };
-
+  const [selectedMonth,setSelectedMonth]=useState(null)
   const handleMonthChange = (date, dateString) => {
     if (date) {
       const month = date.month() + 1;
       const year = date.year();
       setSelectedDate({ month, year });
+      const formattedDate = dayjs(date).format('YYYY-MM');
+      console.log(formattedDate)
+      setSelectedMonth(formattedDate)
       getTableData(month, year);
+      
     }
   };
 
@@ -182,12 +200,15 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
   const columns = [
     {
       title: 'Sl No',
       dataIndex: 'serialNumber',
       key: 'serialNumber',
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
       width: 80,
     },
     {
@@ -274,33 +295,78 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
         return text;
       }
     },
-    {
-      title: 'Action',
-      key: 'operation',
-      width: '190',
-      render: (_, record) => {
-        if (newRow && newRow.key === record.key) {
-          return (
-            <Space size="middle">
-              <Button onClick={saveNewRow} type="link">Save</Button>
-              <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
-            </Space>
-          );
-        }
-        if (editingRowKey && editingRowKey === record.key) {
-          return (
-            <Space size="middle">
-              <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
-              <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
-            </Space>
-          );
-        }
-        return (
+    // {
+    //   title: 'Action',
+    //   key: 'operation',
+    //   width: '190',
+    //   render: (_, record) => {
+    //     if (newRow && newRow.key === record.key) {
+    //       return (
+    //         <Space size="middle">
+    //           <Button onClick={saveNewRow} type="link">Save</Button>
+    //           <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
+    //         </Space>
+    //       );
+    //     }
+    //     if (editingRowKey && editingRowKey === record.key) {
+    //       return (
+    //         <Space size="middle">
+    //           <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
+    //           <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
+    //         </Space>
+    //       );
+    //     }
+    //     return (
+    //       <Space size="middle">
+    //         <Tooltip placement="top" title="Edit">
+    //           <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
+    //         </Tooltip>
+    //         {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
+    //           <Tooltip placement="top" title="Delete">
+    //             <a><DeleteOutlined /></a>
+    //           </Tooltip>
+    //         </Popconfirm> */}
+    //       </Space>
+    //     );
+    //   }
+    // }
+     {
+      title: 'Actions',
+      key: 'actions',
+      width: 180,
+      render: (text, record) => {
+        const editable = editingRowKey === record.key;
+        const isNewRow = newRow && newRow.key === record.key;
+
+        return isNewRow ? (
+          <Space size="middle">
+            <Button onClick={saveNewRow} type="link">Save</Button>
+            <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
+          </Space>
+        ) : editable ? (
+          <Space size="middle">
+            <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
+            <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
+          </Space>
+        ) : (
           <Space size="middle">
             <Tooltip placement="top" title="Edit">
-              <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
+              <a onClick={() => {
+                setEditingRowKey(record.key);
+                form.setFieldsValue({
+                  date: dayjs(record.date, dateFormat),
+                  narration: record.narration,
+                  debit: record.debit,
+                  credit: record.credit
+                });
+              }}><FormOutlined /></a>
             </Tooltip>
-            {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
+            {/* <Popconfirm
+              title="Are you sure to delete?"
+              onConfirm={() => handleDelete(record.key)}
+              okText="Yes"
+              cancelText="No"
+            >
               <Tooltip placement="top" title="Delete">
                 <a><DeleteOutlined /></a>
               </Tooltip>
@@ -329,7 +395,11 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log(err);
     }
   };
-
+  const handlePageSizeChange = (newPageSize) => {
+    setCurrentPageSize(newPageSize);
+    setCurrentPage(1); // Reset to the first page
+    setActivePageSize(newPageSize); // Update the active page size
+  };
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -339,6 +409,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             placeholder='By Month'
             picker="month"
             onChange={handleMonthChange}
+            value={dayjs().month(selectedDate.month - 1).year(selectedDate.year)}
+        
           />
         </div>
         <Button
@@ -349,33 +421,79 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
 
         </Button>
       </div>
+      <div className='flex gap-2 mb-2 items-center justify-end'>
+        {/* <Button icon={<DownloadOutlined />}></Button> */}
+
+        <div className='flex   my-paginations '>
+          <span className='bg-[#F8F9FD] p-1'>
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{
+                backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                color: activePageSize === 10 ? 'white' : 'black',
+                borderRadius: activePageSize === 10 ? '6px' : '0',
+                boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              10
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{
+                backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                color: activePageSize === 25 ? 'white' : 'black',
+                borderRadius: activePageSize === 25 ? '6px' : '0',
+                boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{
+                backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                color: activePageSize === 50 ? 'white' : 'black',
+                borderRadius: activePageSize === 50 ? '6px' : '0',
+                boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              50
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{
+                backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                color: activePageSize === 100 ? 'white' : 'black',
+                borderRadius: activePageSize === 100 ? '6px' : '0',
+                boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              100
+            </Button>
+          </span>
+        </div>
+      </div>
       <Form form={form} component={false}>
         <Table
           rowKey={(record) => record.key}
           bordered
           dataSource={newRow ? [newRow, ...dataSource] : dataSource}
           columns={columns}
-          pagination={false}
+          pagination={{
+            showSizeChanger: false,
+            position: ['bottomCenter'],
+            current: currentPage,
+            pageSize: currentPageSize,
+            onChange: (page) => {
+              setCurrentPage(page);
+            },
+          }}
+          // antd site header height
+          sticky={{
+            offsetHeader: 5,
+          }}
           loading={loading}
-          scroll={{ y: 310 }}
-        // summary={() => (
-        //   <Table.Summary.Row style={{ backgroundColor: "#eee" }}>
-        //     <Table.Summary.Cell index={0} colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold', backgroundColor: "#fff" }}>
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       Current Month balance
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyTotalDebit}
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyTotalCredit}
-        //     </Table.Summary.Cell>
-        //     <Table.Summary.Cell index={1} style={{ fontWeight: 'bold' }}>
-        //       {amountData.monthlyOutstanding > 0 ? <p style={{ color: "green" }}>{amountData.monthlyOutstanding}</p> : <p style={{ color: "red" }}>{amountData.monthlyOutstanding}</p>}
-        //     </Table.Summary.Cell>
-        //   </Table.Summary.Row>
-        // )}
+
         />
         <div className="flex my-4 text-md" style={{ backgroundColor: "#eee", padding: "1rem" }}>
 
@@ -385,16 +503,15 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             Current Month balance
           </div>
           <div style={{ textAlign: 'right', width: '160px', fontWeight: 'bold' }}>
-            {amountData.monthlyTotalDebit}
+            {amountData.currentMonthDebit}
           </div>
           <div style={{ fontWeight: 'bold', width: '160px' }}>
-            {/* {amountData.monthlyTotalCredit} */}
           </div>
           <div style={{ fontWeight: 'bold', width: '260px' }}>
-            {amountData.monthlyTotalCredit}
+            {amountData.currentMonthCredit}
           </div>
           <div style={{ fontWeight: 'bold', width: '160px' }}>
-            {amountData.monthlyOutstanding > 0 ? <p style={{ color: "green" }}>{amountData.monthlyOutstanding}</p> : <p style={{ color: "red" }}>{amountData.monthlyOutstanding}</p>}
+            {amountData.currentMonthOutStanding > 0 ? <p style={{ color: "green" }}>{amountData.currentMonthOutStanding}</p> : <p style={{ color: "red" }}>{amountData.currentMonthOutStanding}</p>}
           </div>
 
         </div>

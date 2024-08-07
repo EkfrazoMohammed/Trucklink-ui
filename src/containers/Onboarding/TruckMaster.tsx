@@ -30,6 +30,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   const [rowDataForTruckEdit, setRowDataForTruckEdit] = useState(null);
   const [rowDataForTruckView, setRowDataForTruckView] = useState(null);
   const [rowDataForTruckTransfer, setRowDataForTruckTransfer] = useState(null);
+  const goBack = () => {
+    setShowTruckTable(true)
+    onData('flex')
+    setShowTabs(true); // Set showTabs to false when adding owner
+  }
   const handleEditTruckClick = (rowData) => {
     onData('none')
     setShowTabs(false); // Set showTabs to false when adding owner
@@ -76,7 +81,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     const response = await API.delete(`delete-vehicle-details/${vehicleId}/${oldOwnerId}`, headersOb);
     if (response.status === 201) {
       alert("deleted data")
-      window.location.reload()
+      goBack()
+      getTableData("", 1, 100000, selectedHubId);
 
     } else {
       alert(`unable to delete data`)
@@ -85,9 +91,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
   }
 
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentPageSize, setCurrentPageSize] = useState(50);
-  const [totalTruckData, setTotalTruckData] = useState(100)
+
   const getOwnerData = async (page, limit, selectedHubID) => {
     const headersOb = {
       headers: {
@@ -95,18 +99,12 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         "Authorization": `Bearer ${authToken}`
       }
     }
-    
+
     try {
-      
+
       setLoading(true);
       const pages = page;
-      // const limitData = limit ? limit : null;
-
-      const limitData = 600;
-
-      // this.setState({loading: true});
-      // const response = searchData ? await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
-      //   : await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`)
+      const limitData = 100000;
       const response = await API.get(`get-owner-bank-details?page=${pages}&limit=${limitData}&hubId=${selectedHubId}`, headersOb)
       let ownerDetails;
       if (response.data.ownerDetails.length == 0) {
@@ -164,7 +162,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       } else {
 
         truckDetails = response.data.truck[0].data || "";
-        setTotalTruckData(response.data.truck[0].count);
 
         if (truckDetails && truckDetails.length > 0) {
           const arrRes = truckDetails.sort(function (a, b) {
@@ -191,6 +188,9 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     setLoading(false);
 
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageSize, setCurrentPageSize] = useState(10);
+  const [activePageSize, setActivePageSize] = useState(10);
   // Update the useEffect hook to include currentPage and currentPageSize as dependencies
   useEffect(() => {
     getOwnerData(currentPage, currentPageSize, selectedHubId);
@@ -208,22 +208,11 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         localStorage.setItem('searchQuery2', searchQuery2);
       }
     }, [searchQuery2, initialSearchQuery]);
-  
+
     const handleSearch = () => {
-      getTableData(searchQuery2, 1, 600, selectedHubId);
+      getTableData(searchQuery2, 1, 100000, selectedHubId);
     };
 
-    // const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //   setSearchQuery2(e.target.value);
-    //   if (e.target.value == "") {
-    //     onReset()
-    //   }
-    // };
-
-    // const onReset = () => {
-    //   setSearchQuery2("");
-    //   getTableData("", 1, 600, selectedHubId);
-    // }
     const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearchQuery2(value);
@@ -232,12 +221,12 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         onReset();
       }
     };
-  
+
     const onReset = () => {
       setSearchQuery2("");
       setLoading(false)
       localStorage.removeItem('searchQuery2');
-      getTableData("", 1, 600, selectedHubId);
+      getTableData("", 1, 100000, selectedHubId);
     };
     return (
       <div className='flex gap-2 justify-between  py-3'>
@@ -278,6 +267,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const onResetClick = () => {
       console.log('reset clicked')
+      setFileName("");
       setFormData({
         registrationNumber: '',
         commission: 0,
@@ -323,7 +313,6 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       }
     };
     const handleFileChange = (file) => {
-      console.log(file)
       axiosFileUploadRequest(file.file);
 
     };
@@ -406,7 +395,10 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
         .then((response) => {
           console.log('Truck data added successfully:', response.data);
           alert("Truck data added successfully")
-          window.location.reload();
+          setTimeout(() => {
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
+          }, 1000)
         })
         .catch((error) => {
           console.error('Error adding truck data:', error);
@@ -425,21 +417,17 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           if (errorMessages.length > 0) {
             console.log("Error:", errorMessages.join(", "));
             alert("error occurred")
-          } else if(errorResponse.error.message == "This vehicle number already exists"){
+          } else if (errorResponse.error.message == "This vehicle number already exists") {
             alert("This vehicle number already exists")
             console.log('This vehicle number already exists')
-          }else {
+          } else {
             alert("error occurred")
             console.log("Something went wrong");
           }
         });
     };
 
-    const goBack = () => {
-      setShowTruckTable(true)
-      onData('flex')
-      setShowTabs(true); // Set showTabs to false when adding owner
-    }
+
 
     return (
       <>
@@ -515,25 +503,39 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                   </Select>
 
                 </Col>
+
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
-                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large">
+                        <span className='flex gap-2'>
+                          <UploadOutlined /> Upload
+                        </span>
+                      </Button>
                     </Upload>
-                    {fileName}
+                    {formData.rcBookProof !== null ?
+                      <Image
+                        src={formData.rcBookProof}
+                        alt="img"
+                        width={40}
+                        height={40}
+                        style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }}
+                      />
+                      : null}
                   </div>
                 </Col>
 
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
                     {/* {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>} */}
-                    {formData.isCommission ? <>Commission%*</> : <>Commission%*</>}
+                    {formData.isCommission ? <>Commission%</> : <>Commission%</>}
                     <Switch
                       defaultChecked={formData.isCommission}
                       name="isCommission"
@@ -613,34 +615,60 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               />
             </div>
           </div>
+          <div className="section mx-2 my-1">
+            <h2 className='font-semibold text-md'>Vehicle Information</h2>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold font-bold">Vehicle Number</span> {filterTruckTableData.registrationNumber}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Vehicle Type</span> {filterTruckTableData.truckType}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Commission % </span> {filterTruckTableData.commission}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Market Rate</span>
+                  {filterTruckTableData.isMarketRate ? <>Yes</> : <>No</>}</p>
+              </Col>
+              <Col className="gutter-row m-1" span={5}>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">RC Book</span>
+                  {filterTruckTableData.rcBookProof !== null ?
+                    <Image src={filterTruckTableData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                    : null}
+                </p>
+              </Col>
+            </Row>
+          </div>
           <div className="section mx-2 my-4">
             <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {filterTruckTableData['ownerId'][0].name}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {filterTruckTableData['ownerId'][0].name}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {filterTruckTableData['ownerId'][0].phoneNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {filterTruckTableData['ownerId'][0].phoneNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {filterTruckTableData['ownerId'][0].email}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {filterTruckTableData['ownerId'][0].email}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {filterTruckTableData['ownerId'][0].panNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {filterTruckTableData['ownerId'][0].panNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {filterTruckTableData['ownerId'][0].district}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {filterTruckTableData['ownerId'][0].district}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {filterTruckTableData['ownerId'][0].state}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {filterTruckTableData['ownerId'][0].state}</p>
               </Col>
-
             </Row>
           </div>
+
         </div>
       </>
     );
   };
+
 
   const TruckTable = ({ onEditTruckClick, onTransferTruckClick, onViewTruckClick, onDeleteTruckClick }) => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -653,14 +681,19 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    const handlePageSizeChange = (newPageSize) => {
+      setCurrentPageSize(newPageSize);
+      setCurrentPage(1); // Reset to the first page
+      setActivePageSize(newPageSize); // Update the active page size
+    };
 
     const columns = [
       {
         title: 'Sl No',
         dataIndex: 'serialNumber',
         key: 'serialNumber',
-        render: (text, record, index: any) => index + 1,
-        width: 40,
+        render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+        width: 80,
       },
       {
         title: 'Vehicle Number',
@@ -718,49 +751,85 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
       },
     ];
 
-
-    // Update the changePagination and changePaginationAll functions to set currentPage and currentPageSize
-    const changePagination = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredTruckData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    const changePaginationAll = async (pageNumber, pageSize) => {
-      try {
-        setCurrentPage(pageNumber);
-        setCurrentPageSize(pageSize);
-        const newData = await getTableData(searchQuery, pageNumber, pageSize, selectedHubId);
-        setFilteredTruckData(newData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     return (
       <>
-
-
+        <div className='flex items-items justify-end mb-2 my-paginations '>
+          <span className='bg-[#F8F9FD] p-1'>
+            <Button
+              onClick={() => handlePageSizeChange(10)}
+              style={{
+                backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                color: activePageSize === 10 ? 'white' : 'black',
+                borderRadius: activePageSize === 10 ? '6px' : '0',
+                boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              10
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(25)}
+              style={{
+                backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                color: activePageSize === 25 ? 'white' : 'black',
+                borderRadius: activePageSize === 25 ? '6px' : '0',
+                boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              25
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(50)}
+              style={{
+                backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                color: activePageSize === 50 ? 'white' : 'black',
+                borderRadius: activePageSize === 50 ? '6px' : '0',
+                boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              50
+            </Button>
+            <Button
+              onClick={() => handlePageSizeChange(100)}
+              style={{
+                backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                color: activePageSize === 100 ? 'white' : 'black',
+                borderRadius: activePageSize === 100 ? '6px' : '0',
+                boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+              }}
+            >
+              100
+            </Button>
+          </span>
+        </div>
         <Table
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredTruckData}
-          scroll={{ x: 800, y: 320 }}
+          scroll={{ x: 800 }}
           rowKey="_id"
+          // pagination={{
+          //   showSizeChanger: true,
+          //   position: ['bottomCenter'],
+          //   current: currentPage,
+          //   pageSize: pageSize,
+          //   onChange: (page, pageSize) => {
+          //     setCurrentPage(page);
+          //     setPageSize(pageSize);
+          //   },
+          // }}
           pagination={{
-            position: ['bottomCenter'],
             showSizeChanger: false,
+            position: ['bottomCenter'],
             current: currentPage,
-            total: totalTruckData,
-            defaultPageSize: currentPageSize, // Set the default page size
-            onChange: changePagination,
-            onShowSizeChange: changePaginationAll,
+            pageSize: currentPageSize,
+            onChange: (page) => {
+              setCurrentPage(page);
+            },
           }}
-          // loading={loading}
+          // antd site header height
+          sticky={{
+            offsetHeader: 20,
+          }}
         />
       </>
     );
@@ -782,6 +851,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
     const handleResetClick = () => {
       console.log('reset clicked')
+      setFileName("")
       setFormData({
         ownerId: '',
         accountId: '',
@@ -903,7 +973,8 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
           if (res.status == 201) {
             console.log('Truck transfered successfully:', res.data);
             alert("Owner Transfered successfully")
-            window.location.reload();
+            goBack()
+            getTableData("", 1, 100000, selectedHubId);
           } else {
             console.error('Error adding truck data:', res);
 
@@ -956,6 +1027,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             <div className="flex p-2 " style={{ fontSize: "1rem", borderRadius: "5px", color: "rgb(255, 40, 40)", border: "2px solid rgb(255, 40, 40)", backgroundColor: "rgba(255, 40, 40, 0.2)" }}>
               Please review the owner details before transferring the vehicle owner.
             </div>
+
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={6}>
@@ -964,16 +1036,24 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     size="large"
                     name="registrationNumber"
                     value={rowDataForTruckTransfer.registrationNumber}
+                    disabled
                   />
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
-                  <Select
+                  <Input
+                    size="large"
+                    name="vehicleType"
+                    placeholder="Vehicle Type*"
+                    value={rowDataForTruckTransfer.truckType}
+                    disabled
+                  />
+                  {/* <Select
                     name="vehicleType"
                     placeholder="Vehicle Type*"
                     size="large"
                     style={{ width: '100%' }}
                     value={rowDataForTruckTransfer.truckType}
-                  />
+                  /> */}
                 </Col>
                 <Col className="gutter-row mt-6" span={6}>
                   <Select
@@ -1010,18 +1090,22 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     onChange={onDateChangeTransferToDate}
                   />
                 </Col>
+
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
-                      <Button size="large" style={{ width: "80px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
-                    {fileName}
+                    {formData.rcBookProof !== null ?
+                      <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                      : null}
                   </div>
                 </Col>
 
@@ -1036,22 +1120,22 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
             <h2 className='font-semibold text-md'>Vehicle Owner Information</h2>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Owner Name</span> {rowDataForTruckTransfer['ownerId'][0].name}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Mobile Number</span> {rowDataForTruckTransfer['ownerId'][0].phoneNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">Email ID</span> {rowDataForTruckTransfer['ownerId'][0].email}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">PAN CARD No</span> {rowDataForTruckTransfer['ownerId'][0].panNumber}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">District</span>  {rowDataForTruckTransfer['ownerId'][0].district}</p>
               </Col>
               <Col className="gutter-row m-1" span={5}>
-                <p className='flex flex-col font-normal m-2'><span className="label text-sm">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
+                <p className='flex flex-col font-normal m-2'><span className="label text-sm font-bold">State</span> {rowDataForTruckTransfer['ownerId'][0].state}</p>
               </Col>
 
             </Row>
@@ -1070,196 +1154,217 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
     );
   };
 
-  const EditTruckDataRow = ({ filterTruckTableData }) => {
-    const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
-    const initialOwnerId = {"value":filterTruckTableData.ownerId[0]._id,"ownerName":filterTruckTableData.ownerId[0].name}
-    // `${filterTruckTableData.ownerId[0]._id}`;
-
-    const [formData, setFormData] = useState({
-      registrationNumber: filterTruckTableData.registrationNumber,
-      commission: filterTruckTableData.commission,
-      ownerId: initialOwnerId.value,
-      ownerName:initialOwnerId.ownerName,
-      accountId: null,
-      vehicleType: filterTruckTableData.truckType,
-      rcBookProof: null,
-      isCommission: filterTruckTableData.isCommission,
-      marketRate: filterTruckTableData.marketRate,
-      isMarketRate: filterTruckTableData.isMarketRate,
-    });
-
-    const handleResetClick = () => {
-      console.log('reset clicked')
-      setFormData({
+    const EditTruckDataRow = ({ filterTruckTableData }) => {
+      const initialOwnerData = `${filterTruckTableData.ownerId[0].name} - ${filterTruckTableData.ownerId[0].phoneNumber}`;
+      const initialOwnerId = { "value": filterTruckTableData.ownerId[0]._id, "ownerName": filterTruckTableData.ownerId[0].name };
+      const [bankData, setBankdata] = useState([]);
+      const [formData, setFormData] = useState({
         registrationNumber: filterTruckTableData.registrationNumber,
         commission: filterTruckTableData.commission,
-        // ownerId: '',
         ownerId: initialOwnerId.value,
-        ownerName:initialOwnerId.ownerName,
+        ownerName: initialOwnerId.ownerName,
         accountId: null,
         vehicleType: filterTruckTableData.truckType,
-        rcBookProof: null,
+        rcBookProof: filterTruckTableData.rcBookProof || null,
         isCommission: filterTruckTableData.isCommission,
         marketRate: filterTruckTableData.marketRate,
         isMarketRate: filterTruckTableData.isMarketRate,
       });
-    }
-    const [bankData, setBankdata] = useState([])
-    const axiosFileUploadRequest = async (file) => {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const config = {
+    
+      const handleResetClick = () => {
+        console.log('reset clicked');
+        setFormData({
+          registrationNumber: filterTruckTableData.registrationNumber,
+          commission: filterTruckTableData.commission,
+          ownerId: initialOwnerId.value,
+          ownerName: initialOwnerId.ownerName,
+          accountId: bankData.length > 0 ? bankData[0]._id : null,
+          vehicleType: filterTruckTableData.truckType,
+          rcBookProof: null,
+          isCommission: filterTruckTableData.isCommission,
+          marketRate: filterTruckTableData.marketRate,
+          isMarketRate: filterTruckTableData.isMarketRate,
+        });
+      };
+    
+      const initialBankData = () => {
+        const headersOb = {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
             "Authorization": `Bearer ${authToken}`
           }
         };
-
-        const response = await API.post(
-          `rc-upload`,
-          formData,
-          config
-        );
-        const { rcBookProof } = response.data;
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          rcBookProof: rcBookProof,
-        }));
-        alert("File uploaded successfully");
-      } catch (err) {
-        console.log(err);
-        alert("Failed to upload, retry again!");
-      }
-    };
-    const handleFileChange = (file) => {
-      console.log(file)
-      axiosFileUploadRequest(file.file);
-
-    };
-    const handleChange = (name, value) => {
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-      if (name === 'isCommission' && value === true) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: true,
-          isMarketRate: false,
-          marketRate: "",
-        }));
-      }
-      else if (name === 'isCommission' && value === false) {
-        setFormData(prevFormData => ({
-          ...prevFormData,
-          isCommission: false,
-          isMarketRate: true,
-          commission: 0,
-
-        }));
-      }
-      else if (name === "ownerId") {
-        console.log(value)
-        const request = API.get(`get-owner-bank-details/${value.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+        API.get(`get-owner-bank-details/${initialOwnerId.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
           .then((res) => {
-            setBankdata(res.data.ownerDetails[0]['accountIds'])
+            console.log(res);
+            console.log(res.data.ownerDetails[0]['accountIds']);
+            const accounts = res.data.ownerDetails[0]['accountIds'];
+            setBankdata(accounts);
+            if (accounts && accounts.length > 0) {
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                accountId: accounts[0]._id
+              }));
+            }
           })
           .catch((err) => {
-            console.log(err)
-          })
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-          accountId: null,
-        }));
-      }
-
-      else if (name === "registrationNumber") {
-        const updatedValue = value.toUpperCase(); // Convert to uppercase 
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: updatedValue,
-        }));
-      }
-      else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
-        }));
-      }
-    };
-
+            console.log(err);
+          });
+      };
+    
+      useEffect(() => {
+        initialBankData();
+      }, []);
+    
+      const axiosFileUploadRequest = async (file) => {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const config = {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Authorization": `Bearer ${authToken}`
+            }
+          };
+    
+          const response = await API.post(`rc-upload`, formData, config);
+          const { rcBookProof } = response.data;
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            rcBookProof: rcBookProof,
+          }));
+          alert("File uploaded successfully");
+        } catch (err) {
+          console.log(err);
+          alert("Failed to upload, retry again!");
+        }
+      };
+    
+      const handleFileChange = (file) => {
+        console.log(file);
+        axiosFileUploadRequest(file.file);
+      };
+    
+      const handleChange = (name, value) => {
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        };
+    
+        if (name === 'isCommission' && value === true) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            isCommission: true,
+            isMarketRate: false,
+            marketRate: "",
+          }));
+        } else if (name === 'isCommission' && value === false) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            isCommission: false,
+            isMarketRate: true,
+            commission: 0,
+          }));
+        } else if (name === "ownerId") {
+          console.log(value);
+          API.get(`get-owner-bank-details/${value.value}?page=1&limit=10&hubId=${selectedHubId}`, headersOb)
+            .then((res) => {
+              const ownerDetails = res.data.ownerDetails;
+              const abc = (ownerDetails && ownerDetails[0] && ownerDetails[0].accountIds) ? ownerDetails[0].accountIds : null;
+              setBankdata(abc);
+              setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: value,
+                accountId: (abc && abc.length > 0) ? abc[0]._id : null,
+              }));
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else if (name === "registrationNumber") {
+          const updatedValue = value.toUpperCase(); // Convert to uppercase 
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: updatedValue,
+          }));
+        } else {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+          }));
+        }
+      };
+    
     const payload = {
       hubId: selectedHubId,
       accountId: formData.accountId,
       commission: formData.commission,
-      ownerId: formData.ownerId.value,
-      ownerName: formData.ownerId.ownerName,
+      ownerId: typeof formData.ownerId === 'object' ? formData.ownerId.value : formData.ownerId, // Handle object or value
+      ownerName: formData.ownerName,
       rcBookProof: formData.rcBookProof,
       registrationNumber: formData.registrationNumber,
       truckType: formData.vehicleType,
       marketRate: formData.marketRate,
       isMarketRate: formData.isMarketRate,
+  };
 
-    };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const vehicleId = filterTruckTableData._id;
-      const oldOwnerId = filterTruckTableData.ownerId[0]._id;
-      const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
-      const headersOb = {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
-        }
-      }
-
-      localStorage.setItem("pay", JSON.stringify(payload))
-
-      const res = await API.put(url, payload, headersOb)
-        .then((response) => {
-          console.log(response)
-          if (response.status == 201) {
-            alert("Truck data updated successfully");
-            window.location.reload();
-          } else if (response.status == 400) {
-            alert("Truck data updated successfully");
-            window.location.reload();
-          } else {
-            alert('error occured')
-          }
-        }).catch(error => {
-          console.error('Error updating truck data:', error);
-          if(error.response.data.message == "Unable to Find Challan Information"){
-            alert("Truck data updated successfully");
-            window.location.reload(); 
-          }else{
-            alert("An error occurred while updating truck data");
-          }
-          
-        })
-
-    };
-
-    const goBack = () => {
-      setShowTruckTable(true)
-      onData('flex')
-      setShowTabs(true); // Set showTabs to false when adding owner
-    }
-
-    const handleOwnerChange = (value) => {
-      const selectedOwner = filteredOwnerData.find(owner => owner._id === value);
-      const ownerName = selectedOwner ? selectedOwner.name : '';
-      console.log(ownerName)
-      let ob={value,ownerName}
-      // Update your state  with both ownerId and ownerName
-      handleChange('ownerId', ob);
-      // handleChange('ownerName', ownerName);
-    };
     
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        const vehicleId = filterTruckTableData._id;
+        const oldOwnerId = filterTruckTableData.ownerId[0]._id;
+        const url = `update-vehicle-details/${vehicleId}/${oldOwnerId}`;
+        const headersOb = {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          }
+        };
+    
+        localStorage.setItem("update-vehicle-details-payload", JSON.stringify(payload));
+    
+        const res = await API.put(url, payload, headersOb)
+          .then((response) => {
+            console.log(response);
+            if (response.status === 201) {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else if (response.status === 400) {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else {
+              alert('Error occurred');
+            }
+          }).catch((error) => {
+            console.error('Error updating truck data:', error);
+            if (error.response.data.message === "Unable to Find Challan Information") {
+              alert("Truck data updated successfully");
+              goBack();
+              getTableData("", 1, 100000, selectedHubId);
+            } else {
+              alert("An error occurred while updating truck data");
+            }
+          });
+      };
+    
+      const goBack = () => {
+        setShowTruckTable(true);
+        onData('flex');
+        setShowTabs(true); // Set showTabs to false when adding owner
+      };
+    
+      const handleOwnerChange = (value) => {
+        const selectedOwner = filteredOwnerData.find(owner => owner._id === value);
+        const ownerName = selectedOwner ? selectedOwner.name : '';
+        console.log(ownerName);
+        let ob = { value, ownerName };
+        handleChange('ownerId', ob);
+      };
+
     return (
       <>
         <div className="flex flex-col gap-2">
@@ -1288,6 +1393,7 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
               <div className="text-md font-semibold">Vehicle Information</div>
               <div className="text-md font-normal">Enter Truck Details</div>
             </div>
+            
             <div className="flex flex-col gap-1">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row mt-6" span={8}>
@@ -1336,46 +1442,77 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
 
                 </Col>
                 <Col className="gutter-row mt-6" span={8}>
+                  {bankData && bankData.length > 0 ? (
+                    <Select
+                      size="large"
+                      placeholder="Select bank account"
+                      style={{ width: '100%' }}
+                      name="accountId"
+                      onChange={handleChange}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      value={bankData[0]._id} // Set initial value to the first account's _id
+                    >
+                      {bankData.map((bank) => (
+                        <Option key={bank._id} value={bank._id}>
+                          {`${bank.bankName} - ${bank.accountNumber}`}
+                        </Option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <div>No bank data available</div>
+                  )}
+                </Col>
+                {/* <Col className="gutter-row mt-6" span={8}>
                   <Select
                     size='large'
                     placeholder="Select bank account"
                     style={{ width: '100%' }}
                     name="accountId"
                     onChange={(value) => handleChange('accountId', value)}
-                  >
-                    {bankData.map((v, index) => (
-                      <Option key={v._id} value={v._id}>
-                        {`${v.bankName} - ${v.accountNumber}`}
+                    optionFilterProp="children"
+                    filterOption={filterOption}
+                   >
+                    {bankData.map((bank) => (
+                      <Option key={bank._id} value={bank._id}>
+                        {`${bank.bankName} - ${bank.accountNumber}`}
                       </Option>
                     ))}
                   </Select>
 
-                </Col>
+                </Col> */}
                 <Col className="gutter-row mt-6" span={8}>
                   <div className='flex items-center gap-4'>
-                    RC Book* : {' '}
+                    RC Book : {' '}
                     <Upload
                       name="rcBook"
                       onChange={handleFileChange}
                       showUploadList={false}
                       beforeUpload={() => false}
+                      accept="image/jpeg,image/png,image/jpg"
                     >
-                      <Button size="large" style={{ width: "110px" }} icon={<UploadOutlined />}></Button>
+                      <Button size="large" ><span className='flex gap-2'><UploadOutlined /> Upload</span></Button>
                     </Upload>
+                    {formData.rcBookProof !== null ?
+                      <Image src={formData.rcBookProof} alt="img" width={40} height={40} style={{ objectFit: "cover", border: "1px solid #eee", margin: "0 auto" }} />
+                      : null}
                   </div>
                 </Col>
 
                 <Col className="gutter-row mt-6 flex gap-2" span={8}>
                   <div>
-                    {formData.isCommission ? <>Commission %*</> : <>Market Rate (Rs)*</>}
+                    {formData.isCommission ? <>Commission %</> : <>Commission %</>}
                     <Switch
-                      defaultChecked={formData.isCommission}
+                      // defaultChecked={formData.isCommission}
+                      defaultChecked={formData.commission}
                       name="isCommission"
                       onChange={(checked) => handleChange('isCommission', checked)}
                     />
                   </div>
 
-                  {formData.isCommission ? (
+                  {formData.isCommission || formData.commission>0 ? (
                     <>
                       <Input
                         placeholder="Enter Commission %*"
@@ -1389,21 +1526,13 @@ const TruckMaster = ({ onData, showTabs, setShowTabs }) => {
                     </>
                   ) : (
                     <>
-                      {/* <Input
-                        placeholder="Enter Market Rate"
-                        size="large"
-                        type='number'
-                        name="marketRate"
-                        value={formData.marketRate}
-                        onChange={(e) => handleChange('marketRate', e.target.value)}
-                      /> */}
+
                     </>
                   )}
                 </Col>
               </Row>
             </div>
           </div>
-
 
           <div className="flex gap-4 items-center justify-center reset-button-container">
 

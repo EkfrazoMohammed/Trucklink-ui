@@ -1,16 +1,28 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Error from "./pages/Error/Error";
 import "./App.css";
+import Reset from "./pages/Login/Reset";
 
 function App() {
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
   return (
     <BrowserRouter>
       <div className="App">
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/reset-password" element={<Reset />} />
           <Route path="/dashboard" element={<ProtectedDashboard />} />
           <Route path="*" element={<Error />} />
         </Routes>
@@ -23,16 +35,12 @@ function App() {
 const ProtectedDashboard = () => {
   const navigate = useNavigate();
   useEffect(() => {
-    // Check if token exists in localStorage
     const isAuthenticated = localStorage.getItem("token") !== null;
-
-    // If not authenticated, navigate to "/"
     if (!isAuthenticated) {
       navigate("/");
     }
   }, [navigate]);
 
-  // Render Dashboard if authenticated, otherwise null
   return localStorage.getItem("token") ? <Dashboard /> : null;
 };
 

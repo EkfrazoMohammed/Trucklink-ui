@@ -5,6 +5,7 @@
   margin: 0;
   box-sizing: border-box;
   font-family: "Inter", sans-serif;
+  /* border: 1px solid red; */
 }
 
 .custom-shadow {
@@ -41,12 +42,21 @@
   background: #001529;
   transition: all 0.2s;
 } */
-:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
+/* :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
   height: 100%;
   height: 100vh;
   margin-top: -0.1px;
   padding-top: 0.1px;
-  padding: 0 .5rem;
+  padding: 0 10px;
+} */
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
+  position: sticky !important;
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
 }
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-trigger {
@@ -192,7 +202,8 @@
 
 :where(.css-dev-only-do-not-override-11xg00t).ant-btn {
   font-size: 14px;
-  line-height: 1.5714285714285714;
+  /* line-height: 1.5714285714285714; */
+  line-height: 16px !important;
   height: 36px;
   padding: 6px 16px !important;
   border-radius: 6px;
@@ -239,8 +250,8 @@
 
 
 .mytab-content {
-  overflow-y: scroll !important;
-  height: 60vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 60vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -266,8 +277,8 @@
 }
 
 .myowneradvancetab-content {
-  overflow-y: scroll !important;
-  height: 50vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 46vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -294,8 +305,8 @@
 
 
 .mymastertab-content {
-  overflow-y: scroll !important;
-  height: 70vh !important;
+  /* overflow-y: scroll !important; */
+  /* height: 70vh !important; */
   overflow-x: hidden !important;
 }
 
@@ -445,19 +456,232 @@
   box-sizing: border-box;
 }
 
-.ant-table-expanded-row>td.ant-table-cell{
+.ant-table-expanded-row>td.ant-table-cell {
   padding: 0 !important;
   background-color: #BBE2FF !important;
 }
+
 .master-data-maindiv {
   border: solid 1px #cecece;
   height: 260px;
   padding: 10px;
 }
+
 .delivery-number-drag-area {
   min-width: 100% !important;
 }
 
-:where(.css-11xg00t).ant-menu-dark .ant-menu-item-selected, :where(.css-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
+:where(.css-11xg00t).ant-menu-dark .ant-menu-item-selected,
+:where(.css-11xg00t).ant-menu-dark>.ant-menu .ant-menu-item-selected {
   background-color: #424242 !important;
+}
+
+
+.dashboard-table-pagination-container {
+
+  text-align: right !important;
+  /* margin: 10px; */
+  width: fit-content !important;
+  padding: 10px !important;
+  background-color: #8080800a !important;
+  border-radius: 5px !important;
+}
+
+.dashboard-table-pagination-container Button {
+  border-radius: 6px !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+
+}
+
+.dashboard-table-pagination-container Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn {
+  font-size: 16px !important;
+  line-height: 16px !important;
+
+  padding: 1px 14px !important;
+  border-radius: 6px !important;
+}
+
+
+.myuserreporttab-content {
+  overflow-y: scroll !important;
+  /* height: 85vh !important; */
+  overflow-x: hidden !important;
+}
+
+
+
+.myuserreporttab-content::-webkit-scrollbar {
+  width: 6px;
+  /* Width of the scrollbar */
+  border-radius: 6px;
+}
+
+.myuserreporttab-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.myuserreporttab-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.myuserreporttab-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 6px;
+}
+
+.reports-bank {
+  background: linear-gradient(0deg, #E8F1FF 0%, #E8F5FF 100%) !important;
+  border-radius: 10px;
+  box-shadow: 3px 3px 2px #E8F5FF;
+  width: 50%;
+  border: 1px solid #C6C6C6,
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-table-wrapper .ant-table-summary tr td {
+  border: 1px solid #f0f0f0 !important;
+  font-weight: 600 !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-layout .ant-layout-sider-children {
+  position: sticky !important;
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}
+
+:where(.css-11xg00t).ant-layout .ant-layout-sider-children,
+.ant-layout .ant-layout-sider-children {
+  height: 100% !important;
+  margin-top: -0.1px !important;
+  padding-top: 0.1px !important;
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  max-height: 100vh !important;
+}
+
+.settings-card-container {
+
+  padding: 16px;
+  height: auto;
+  background: #fff;
+  margin: 0 auto;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 2px;
+}
+
+.dashboard-top-container {
+  padding: 16px;
+  height: auto;
+  /* background: #F5FCFF; */
+  background-image: url("/src/assets/wallpaper_widget.png") !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  /* margin: 1rem auto; */
+  border-radius: 8px;
+  /* box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px; */
+}
+
+.dashboard-top-container .cards-container {
+  background: #fff;
+  padding: 8px 0px;
+  height: 100%;
+  font-size: 2rem;
+}
+
+.dashboard-earning-container {
+
+  padding: 16px;
+  height: auto;
+  background: #F7FFF6;
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.dashboard-expense-container {
+
+  padding: 16px;
+  height: auto;
+  background: #FFF3F3;
+
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.dashboard-material-container {
+
+  padding: 16px;
+  height: auto;
+  background: #FFF;
+
+  margin: 1rem auto;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 4px;
+}
+
+.my-paginations Button {
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0px 0px 4px 0px #00000040;
+  font-size: 14px;
+  /* line-height: 1.5714285714285714; */
+  line-height: 12px !important;
+  height: 28px;
+  padding: 4px 10px !important;
+  border-radius: 6px;
+
+}
+
+.my-paginations Button:where(.css-dev-only-do-not-override-11xg00t).ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+  color: #4096ff;
+  border-color: #4096ff;
+  background-color: grey !important;
+}
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary),
+:where(.css-dev-only-do-not-override-11xg00t).ant-input-search>.ant-input-group>.ant-input-group-addon:last-child .ant-input-search-button:not(.ant-btn-primary):hover {
+  /* color: #03b9e7 !important; */
+  /* background-color: transparent !important; */
+  color: #000000 !important;
+  border-left: 0 !important;
+  padding: 0 !important;
+}
+
+.header-notifications-dropdown {
+  font-weight: 600;
+}
+
+
+:where(.css-dev-only-do-not-override-11xg00t).ant-dropdown {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 14px;
+  line-height: 1.5714285714285714;
+  list-style: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  z-index: 1050;
+  display: block;
+
+  --arrow-x: 259.6000061035156px;
+  --arrow-y: -2px;
+  inset: 62px 134.062px auto auto;
+  box-sizing: border-box;
+  min-width: 400px;
+
 }

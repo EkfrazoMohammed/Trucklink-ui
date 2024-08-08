@@ -3,6 +3,9 @@ import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, mes
 import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API } from "../../API/apirequest";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const dateFormat = "DD/MM/YYYY";
 
@@ -14,7 +17,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
   const [form] = Form.useForm();
   const [newRow, setNewRow] = useState(null);
   const [editingRowKey, setEditingRowKey] = useState(null); // State for editable row
-  
+
   const currentMonth = dayjs().month() + 1;
   const currentYear = dayjs().year();
   const [selectedDate, setSelectedDate] = useState({ month: currentMonth, year: currentYear });
@@ -135,7 +138,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log(err);
     }
   };
-  const [selectedMonth,setSelectedMonth]=useState(null)
+  const [selectedMonth, setSelectedMonth] = useState(null)
   const handleMonthChange = (date, dateString) => {
     if (date) {
       const month = date.month() + 1;
@@ -145,7 +148,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       console.log(formattedDate)
       setSelectedMonth(formattedDate)
       getTableData(month, year);
-      
+
     }
   };
 
@@ -295,42 +298,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
         return text;
       }
     },
-    // {
-    //   title: 'Action',
-    //   key: 'operation',
-    //   width: '190',
-    //   render: (_, record) => {
-    //     if (newRow && newRow.key === record.key) {
-    //       return (
-    //         <Space size="middle">
-    //           <Button onClick={saveNewRow} type="link">Save</Button>
-    //           <Button onClick={() => setNewRow(null)} type="link">Cancel</Button>
-    //         </Space>
-    //       );
-    //     }
-    //     if (editingRowKey && editingRowKey === record.key) {
-    //       return (
-    //         <Space size="middle">
-    //           <Button onClick={() => saveEditRow(record.key)} type="link">Save</Button>
-    //           <Button onClick={() => setEditingRowKey(null)} type="link">Cancel</Button>
-    //         </Space>
-    //       );
-    //     }
-    //     return (
-    //       <Space size="middle">
-    //         <Tooltip placement="top" title="Edit">
-    //           <a onClick={() => setEditingRowKey(record.key)}><FormOutlined /></a>
-    //         </Tooltip>
-    //         {/* <Popconfirm title="Sure to delete?" onConfirm={() => handleDeleteOwnerData(record.key)}>
-    //           <Tooltip placement="top" title="Delete">
-    //             <a><DeleteOutlined /></a>
-    //           </Tooltip>
-    //         </Popconfirm> */}
-    //       </Space>
-    //     );
-    //   }
-    // }
-     {
+    {
       title: 'Actions',
       key: 'actions',
       width: 180,
@@ -400,6 +368,108 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
     setCurrentPage(1); // Reset to the first page
     setActivePageSize(newPageSize); // Update the active page size
   };
+  console.log(dataSource)
+
+  const handleDownload = () => {
+    const challans = dataSource;
+    const voucherDetails = challans.map((challan) => ({
+
+      "key": challan.key,
+      "date": challan.date,
+      "debit": challan.debit,
+      "credit": challan.credit,
+      "narration": challan.narration,
+    }));
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+    // Add the owner details sheet to the workbook
+    const ownerWS = XLSX.utils.json_to_sheet(voucherDetails);
+    XLSX.utils.book_append_sheet(wb, ownerWS, 'Daily Cashbook');
+    // Export the workbook to an Excel file
+    XLSX.writeFile(wb, 'Daily Cashbook.xlsx');
+  };
+
+  const handlePrint = () => {
+    const totalPagesExp = "{total_pages_count_string}";
+    try {
+      const doc = new jsPDF("l", "mm", "a4");
+
+      // Ensure dataSource is an array and has items
+      if (!Array.isArray(dataSource) || dataSource.length === 0) {
+        message.error("No data available to download");
+        return;
+      }
+
+      // Transform dataSource to the format required by autoTable
+      const items = dataSource.map((challan, index) => [
+        index + 1,
+        challan.key,
+        challan.date,
+        challan.debit,
+        challan.credit,
+        challan.narration,
+
+      ]);
+
+      doc.setFontSize(10);
+      const d = new Date();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const year = d.getFullYear();
+
+      // Generate table
+      doc.autoTable({
+        head: [
+          ["Sl No",
+            "key",
+            "date",
+            "debit",
+            "credit",
+            "narration",
+          ],
+        ],
+        body: items,
+        startY: 20, // Adjust starting Y position if needed
+        headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+        bodyStyles: { fontSize: 8, textAlign: "center" },
+        columnStyles: {
+          0: { cellWidth: 30 },  // Adjust column widths if needed
+          1: { cellWidth: 60 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 40 },
+          5: { cellWidth: 40 },
+         
+        },
+        didDrawPage: (data) => {
+          // Header
+          doc.setFontSize(10);
+          doc.text("Daily Cashbook", data.settings.margin.left + 10, 10);
+          doc.text(`Date: ${day}/${m}/${year}`, data.settings.margin.left + 170, 10);
+
+          // Footer
+          const str = `Page ${doc.internal.getNumberOfPages()}` +
+            (typeof doc.putTotalPages === "function" ? ` of ${totalPagesExp}` : '');
+          doc.setFontSize(10);
+          const pageSize = doc.internal.pageSize;
+          const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+          doc.text(str, data.settings.margin.left, pageHeight - 10);
+        },
+        margin: { top: 20 },
+      });
+
+      // Add total pages if necessary
+      if (typeof doc.putTotalPages === "function") {
+        doc.putTotalPages(totalPagesExp);
+      }
+
+      doc.save("Daily Cashbook.pdf");
+
+    } catch (err) {
+      message.error("Unable to Print");
+      console.error(err); // Log the error for debugging
+    }
+  };
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -410,7 +480,7 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
             picker="month"
             onChange={handleMonthChange}
             value={dayjs().month(selectedDate.month - 1).year(selectedDate.year)}
-        
+
           />
         </div>
         <Button
@@ -423,7 +493,8 @@ const DailyCashBook = ({ onData, showTabs, setShowTabs }) => {
       </div>
       <div className='flex gap-2 mb-2 items-center justify-end'>
         {/* <Button icon={<DownloadOutlined />}></Button> */}
-
+        <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+        <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
         <div className='flex   my-paginations '>
           <span className='bg-[#F8F9FD] p-1'>
             <Button

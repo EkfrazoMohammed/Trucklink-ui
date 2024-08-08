@@ -300,97 +300,120 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
     // setDataFromChild("flex")
   }
   useEffect(() => {
-        localStorage.setItem('selectedMenuItem', '4');
-   }, [selectedMenuItem]);
+    localStorage.setItem('selectedMenuItem', '4');
+  }, [selectedMenuItem]);
 
-  // const getTableData = async () => {
-  //   const headersOb = {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       "Authorization": `Bearer ${authToken}`
-  //     }
-  //   }
+  const getTableData = async () => {
+    const headersOb = {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken}`
+      }
+    }
 
-  //   try {
-  //     const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
+    try {
+      const response = await API.get(`get-acknowledgement-register?page=1&limit=100000&hubId=${selectedHubId}`, headersOb);
 
-  //     let allAcknowledgement;
-  //     if (response.data.dispatchData.length === 0) {
-  //       allAcknowledgement = response.data.disptachData;
-  //       console.log(allAcknowledgement);
-  //       setAcknowledgement(allAcknowledgement);
-  //     } else {
-  //       allAcknowledgement = response.data.dispatchData[0].data || "";
+      let allAcknowledgement;
+      if (response.data.dispatchData.length === 0) {
+        allAcknowledgement = response.data.disptachData;
+        console.log(allAcknowledgement);
+        setAcknowledgement(allAcknowledgement);
+      } else {
+        allAcknowledgement = response.data.dispatchData[0].data || "";
 
-  //       if (allAcknowledgement && allAcknowledgement.length > 0) {
-  //         const arrRes = allAcknowledgement.sort((a, b) => {
-  //           a = a.vehicleNumber.toLowerCase();
-  //           b = b.vehicleNumber.toLowerCase();
-  //           return a < b ? -1 : a > b ? 1 : 0;
-  //         });
+        if (allAcknowledgement && allAcknowledgement.length > 0) {
+          const arrRes = allAcknowledgement.sort((a, b) => {
+            a = a.vehicleNumber.toLowerCase();
+            b = b.vehicleNumber.toLowerCase();
+            return a < b ? -1 : a > b ? 1 : 0;
+          });
 
-  //         // Create ageing objects for records aged more than 20 days
-  //         const ageingData = arrRes.map(record => {
-  //           const givenDate = new Date(record.grISODate);
-  //           const today = new Date();
-  //           const differenceInMs = today.getTime() - givenDate.getTime();
-  //           const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-  //           return {
-  //             title: "Pending Acknowledgement",
-  //             description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
-  //             differenceInDays
-  //           };
-  //         }).filter(record => record.differenceInDays > 20);
+          // Create ageing objects for records aged more than 20 days
+          const ageingData = arrRes.map(record => {
+            const givenDate = new Date(record.grISODate);
+            const today = new Date();
+            const differenceInMs = today.getTime() - givenDate.getTime();
+            const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+            return {
+              title: "Pending Acknowledgement",
+              description: `Truck No ${record.vehicleNumber} has aged ${differenceInDays} days and still pending for acknowledgement`,
+              differenceInDays
+            };
+          }).filter(record => record.differenceInDays > 20);
 
-  //         // Split the data into two parts
-  //         const firstFourRecords = ageingData.slice(0, 4);
-  //         const remainingRecords = ageingData.slice(4);
+          // Split the data into two parts
+          const firstFourRecords = ageingData.slice(0, 4);
+          const remainingRecords = ageingData.slice(4);
 
-  //         setAcknowledgement(firstFourRecords);
+          setAcknowledgement(firstFourRecords);
 
-  //         // // If there are remaining records, add the link
-  //         // if (remainingRecords.length > 0) {
-  //         //   setAcknowledgement(prev => [
-  //         //     ...prev,
-  //         //     {
-  //         //       title: "Show All",
-  //         //       // description: `There are ${remainingRecords.length} more records. Click here to view all.`,
-  //         //       description: `Show All`,
-  //         //       link: "/path-to-full-data"
-  //         //     }
-  //         //   ]);
-  //         // }
-  //         // If there are remaining records, add the "Show All" item with an onClick handler
-  //         if (remainingRecords.length > 0) {
-  //           setAcknowledgement(prev => [
-  //             ...prev,
-  //             {
-  //               title: "Show All",
-  //               description: `Show All`,
-  //               onClick: () => { 
-  //                 setSelectedMenuItem('4')
-  //                 localStorage.setItem("selectedMenuItemTitle", "Receive");
-  //                 localStorage.setItem("activeTabKey", "1");
-  //                 window.location.reload();
-  //               }
-  //             }
-  //           ]);
-  //         }
-  //         return ageingData;
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
+          // // If there are remaining records, add the link
+          // if (remainingRecords.length > 0) {
+          //   setAcknowledgement(prev => [
+          //     ...prev,
+          //     {
+          //       title: "Show All",
+          //       // description: `There are ${remainingRecords.length} more records. Click here to view all.`,
+          //       description: `Show All`,
+          //       link: "/path-to-full-data"
+          //     }
+          //   ]);
+          // }
+          // If there are remaining records, add the "Show All" item with an onClick handler
+          if (remainingRecords.length > 0) {
+            setAcknowledgement(prev => [
+              ...prev,
+              {
+                title: "Show All",
+                description: `Show All`,
+                onClick: () => { 
+                  setSelectedMenuItem('4')
+                  localStorage.setItem("selectedMenuItemTitle", "Receive");
+                  localStorage.setItem("activeTabKey", "1");
+                  window.location.reload();
+                }
+              }
+            ]);
+          }
+          return ageingData;
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+ 
+  // Update the useEffect hook to include currentPage and currentPageSize as dependencies
+  useEffect(() => {
+    getTableData();
+  }, []);
+  useEffect(() => {
+    getTableData();
+  }, [selectedHubId]);
+  const [visible, setVisible] = useState(false);
+  const dropdownRef = useRef(null);
 
-  // // Update the useEffect hook to include currentPage and currentPageSize as dependencies
-  // useEffect(() => {
-  //   getTableData();
-  // }, []);
-  // useEffect(() => {
-  //   getTableData();
-  // }, [selectedHubId]);
+  // Toggle dropdown visibility
+  const handleToggle = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    setVisible(!visible);
+  };
+
+  // Handle click outside to close the dropdown
+  const handleClickOutside = (e) => {
+    setVisible(false);
+    // if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    // }
+  };
+
+  // Use effect to add and remove the event listener
+  React.useEffect(() => {
+    // document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -468,62 +491,38 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
           <Modal title="Hub Updated successfully" visible={confirmEditModalVisible} onOk={handleEditCloseAll} onCancel={handleEditCloseAll} />
 
           {/* Hiding on PRODUCTION */}
-          {localStorage.getItem("selectedHubName") ? <>
-            {/*
-            <Badge size="small" count={acknowledgement.length}>
-              <Dropdown overlay={
-                <List min-width="100%" className="header-notifications-dropdown " itemLayout="horizontal"
-                  // dataSource={notificationData}
-                  dataSource={acknowledgement}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <List.Item.Meta description={item.description} />
-                    </List.Item>
-                  )} />
-              } trigger={["click"]}>
-                <a href="#pablo" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
-                    <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
-                  </svg>
-                </a>
-              </Dropdown>
-            </Badge>
-            */}
 
-            {/* <Badge size="small" count={acknowledgement.length}>
-              <Dropdown
-                overlay={
-                  <List
-                    min-width="100%"
-                    className="header-notifications-dropdown"
-                    itemLayout="horizontal"
-                    dataSource={acknowledgement}
-                    renderItem={(item) => (
-                      <List.Item>
-                        {item.onClick ? (
-
-                          <List.Item.Meta description={item.description} onClick={item.onClick} />
-
-                        ) : (
-                          <List.Item.Meta description={item.description} />
-                        )}
-                      </List.Item>
-                    )}
-                  />
-                }
-                trigger={["click"]}
-              >
-                <a href="#pablo" className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
-                    <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
-                  </svg>
-                </a>
-              </Dropdown>
-            </Badge> */}
-
-          </> : <></>}
+          {localStorage.getItem("selectedHubName") ? (
+       <div ref={dropdownRef}>
+       <Badge size="small" count={acknowledgement.length}>
+         <Dropdown
+           overlay={
+             <List
+               minWidth="100%"
+               className="header-notifications-dropdown"
+               itemLayout="horizontal"
+               dataSource={acknowledgement}
+               renderItem={(item) => (
+                 <List.Item>
+                   <List.Item.Meta description={item.description} />
+                 </List.Item>
+               )}
+             />
+           }
+           trigger={[]}
+           visible={visible}
+           onClick={handleToggle}
+         >
+           <a href="#pablo" className="ant-dropdown-link" onClick={handleToggle}>
+             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <path d="M10 2C6.68632 2 4.00003 4.68629 4.00003 8V11.5858L3.29292 12.2929C3.00692 12.5789 2.92137 13.009 3.07615 13.3827C3.23093 13.7564 3.59557 14 4.00003 14H16C16.4045 14 16.7691 13.7564 16.9239 13.3827C17.0787 13.009 16.9931 12.5789 16.7071 12.2929L16 11.5858V8C16 4.68629 13.3137 2 10 2Z" fill="#111827"></path>
+               <path d="M10 18C8.34315 18 7 16.6569 7 15H13C13 16.6569 11.6569 18 10 18Z" fill="#111827"></path>
+             </svg>
+           </a>
+         </Dropdown>
+       </Badge>
+     </div>
+      ) : <></>}
           <div className="flex gap-2 items-center">
             <Avatar size={32} src={Profile_image} />
 

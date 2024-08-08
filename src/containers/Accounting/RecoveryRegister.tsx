@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select, Row, Col, Breadcrumb, Transfer, Spin, List } from 'antd';
 import type { TransferProps } from 'antd';
-import {  UploadOutlined, DownloadOutlined, PrinterOutlined,FormOutlined, DeleteOutlined, ExclamationCircleOutlined, RedoOutlined } from '@ant-design/icons';
-
+import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, ExclamationCircleOutlined, RedoOutlined } from '@ant-design/icons';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import dayjs, { locale } from 'dayjs';
 import { API } from "../../API/apirequest"
 import backbutton_logo from "../../assets/backbutton.png"
@@ -136,18 +138,18 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
       console.log("Validate Failed:", errInfo);
     }
   };
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [currentPageSize, setCurrentPageSize] = useState(10);
   const [activePageSize, setActivePageSize] = useState(10);
-      const columns = [
-        {
-          title: 'Sl No',
-          dataIndex: 'serialNumber',
-          key: 'serialNumber',
-          render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
-          width: 80,
-        },
+  const columns = [
+    {
+      title: 'Sl No',
+      dataIndex: 'serialNumber',
+      key: 'serialNumber',
+      render: (text, record, index) => (currentPage - 1) * currentPageSize + index + 1,
+      width: 80,
+    },
     {
       title: 'Code',
       dataIndex: 'recoveryCode',
@@ -257,11 +259,11 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
           await API.put(`update-recovered-value/${record.key}/${key}`, payload, headersOb)
             .then(() => {
               message.success("Successfully Updated Ledger Entry, re-open the row");
-              setTimeout(()=>{
+              setTimeout(() => {
 
                 getTableData("", "1", "100000", selectedHubId);
                 goBack()
-              },1000)
+              }, 1000)
             })
             .catch((error) => {
               const { response } = error;
@@ -1076,6 +1078,109 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
     setCurrentPage(1); // Reset to the first page
     setActivePageSize(newPageSize); // Update the active page size
   };
+  console.log(dataSource)
+
+  const handleDownload = () => {
+    const challans = dataSource;
+    const voucherDetails = challans.map((challan) => ({
+
+      "key": challan.key,
+      "Recovery Code": challan.recoveryCode,
+      "value": challan.value,
+      "recovered": challan.recovered,
+      "outstanding": challan.outstanding,
+
+    }));
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+    // Add the owner details sheet to the workbook
+    const ownerWS = XLSX.utils.json_to_sheet(voucherDetails);
+    XLSX.utils.book_append_sheet(wb, ownerWS, 'Recovery');
+    // Export the workbook to an Excel file
+    XLSX.writeFile(wb, 'Recovery.xlsx');
+  };
+
+  const handlePrint = () => {
+    const totalPagesExp = "{total_pages_count_string}";
+    try {
+      const doc = new jsPDF("l", "mm", "a4");
+
+      // Ensure dataSource is an array and has items
+      if (!Array.isArray(dataSource) || dataSource.length === 0) {
+        message.error("No data available to download");
+        return;
+      }
+
+      // Transform dataSource to the format required by autoTable
+      const items = dataSource.map((challan, index) => [
+        index + 1,
+        challan.key,
+        challan.recoveryCode,
+        challan.value,
+        challan.recovered,
+        challan.outstanding,
+
+      ]);
+
+      doc.setFontSize(10);
+      const d = new Date();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const year = d.getFullYear();
+
+      // Generate table
+      doc.autoTable({
+        head: [
+          ["Sl No",
+            "key",
+            "recoveryCode",
+            "value",
+            "recovered",
+            "outstanding",
+          ],
+        ],
+        body: items,
+        startY: 20, // Adjust starting Y position if needed
+        headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+        bodyStyles: { fontSize: 8, textAlign: "center" },
+        columnStyles: {
+          0: { cellWidth: 30 },  // Adjust column widths if needed
+          1: { cellWidth: 60 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 40 },
+          5: { cellWidth: 40 },
+
+        },
+        didDrawPage: (data) => {
+          // Header
+          doc.setFontSize(10);
+          doc.text("Recovery", data.settings.margin.left + 10, 10);
+          doc.text(`Date: ${day}/${m}/${year}`, data.settings.margin.left + 170, 10);
+
+          // Footer
+          const str = `Page ${doc.internal.getNumberOfPages()}` +
+            (typeof doc.putTotalPages === "function" ? ` of ${totalPagesExp}` : '');
+          doc.setFontSize(10);
+          const pageSize = doc.internal.pageSize;
+          const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+          doc.text(str, data.settings.margin.left, pageHeight - 10);
+        },
+        margin: { top: 20 },
+      });
+
+      // Add total pages if necessary
+      if (typeof doc.putTotalPages === "function") {
+        doc.putTotalPages(totalPagesExp);
+      }
+
+      doc.save("Recovery.pdf");
+
+    } catch (err) {
+      message.error("Unable to Print");
+      console.error(err); // Log the error for debugging
+    }
+  };
   return (
     <>
       {showAddRecoveryForm ?
@@ -1125,64 +1230,64 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
               </Button>
             </div>
 
-        
-    
-      <div className='flex gap-2 mb-2 items-center justify-end'>
-          {/* <Button icon={<DownloadOutlined />}></Button>
-          <Button icon={<PrinterOutlined />}></Button> */}
 
-          <div className='flex   my-paginations '>
-            <span className='bg-[#F8F9FD] p-1'>
-              <Button
-                onClick={() => handlePageSizeChange(10)}
-                style={{
-                  backgroundColor: activePageSize === 10 ? 'grey' : 'white',
-                  color: activePageSize === 10 ? 'white' : 'black',
-                  borderRadius: activePageSize === 10 ? '6px' : '0',
-                  boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                10
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(25)}
-                style={{
-                  backgroundColor: activePageSize === 25 ? 'grey' : 'white',
-                  color: activePageSize === 25 ? 'white' : 'black',
-                  borderRadius: activePageSize === 25 ? '6px' : '0',
-                  boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                25
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(50)}
-                style={{
-                  backgroundColor: activePageSize === 50 ? 'grey' : 'white',
-                  color: activePageSize === 50 ? 'white' : 'black',
-                  borderRadius: activePageSize === 50 ? '6px' : '0',
-                  boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                50
-              </Button>
-              <Button
-                onClick={() => handlePageSizeChange(100)}
-                style={{
-                  backgroundColor: activePageSize === 100 ? 'grey' : 'white',
-                  color: activePageSize === 100 ? 'white' : 'black',
-                  borderRadius: activePageSize === 100 ? '6px' : '0',
-                  boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
-                }}
-              >
-                100
-              </Button>
-            </span>
-          </div>
-        </div>
+
+            <div className='flex gap-2 mb-2 items-center justify-end'>
+              <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+              <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
+
+              <div className='flex   my-paginations '>
+                <span className='bg-[#F8F9FD] p-1'>
+                  <Button
+                    onClick={() => handlePageSizeChange(10)}
+                    style={{
+                      backgroundColor: activePageSize === 10 ? 'grey' : 'white',
+                      color: activePageSize === 10 ? 'white' : 'black',
+                      borderRadius: activePageSize === 10 ? '6px' : '0',
+                      boxShadow: activePageSize === 10 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    10
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(25)}
+                    style={{
+                      backgroundColor: activePageSize === 25 ? 'grey' : 'white',
+                      color: activePageSize === 25 ? 'white' : 'black',
+                      borderRadius: activePageSize === 25 ? '6px' : '0',
+                      boxShadow: activePageSize === 25 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    25
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(50)}
+                    style={{
+                      backgroundColor: activePageSize === 50 ? 'grey' : 'white',
+                      color: activePageSize === 50 ? 'white' : 'black',
+                      borderRadius: activePageSize === 50 ? '6px' : '0',
+                      boxShadow: activePageSize === 50 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    50
+                  </Button>
+                  <Button
+                    onClick={() => handlePageSizeChange(100)}
+                    style={{
+                      backgroundColor: activePageSize === 100 ? 'grey' : 'white',
+                      color: activePageSize === 100 ? 'white' : 'black',
+                      borderRadius: activePageSize === 100 ? '6px' : '0',
+                      boxShadow: activePageSize === 100 ? '0px 0px 4px 0px #00000040' : 'none',
+                    }}
+                  >
+                    100
+                  </Button>
+                </span>
+              </div>
+            </div>
             <Form form={form} component={false}>
               <Table
-                scroll={{ x: "auto"}}
+                scroll={{ x: "auto" }}
                 rowKey={(record) => record.key}
                 bordered
                 dataSource={newRow ? [newRow, ...dataSource] : dataSource}
@@ -1191,7 +1296,7 @@ const RecoveryRegister = ({ onData, showTabs, setShowTabs }) => {
                   expandedRowRender: (record) => expandedRowRender(record),
                   onExpand: handleTableRowExpand,
                 }}
-               
+
                 pagination={{
                   showSizeChanger: false,
                   position: ['bottomCenter'],

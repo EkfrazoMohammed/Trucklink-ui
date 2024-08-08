@@ -15,6 +15,7 @@ import { useLocalStorage } from "../../localStorageContext"
 import NoData from "./NoData"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 const filterOption = (input, option) =>

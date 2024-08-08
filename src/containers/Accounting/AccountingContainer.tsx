@@ -8,8 +8,11 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 import { Tabs, Button, Table, Space, Form, Tooltip, Popconfirm, Input, DatePicker, message, InputNumber, Select } from 'antd';
 
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, EyeOutlined, FormOutlined, RedoOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { UploadOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
 import { API } from "../../API/apirequest"
 const dateFormat = "DD/MM/YYYY";
 import VoucherBook from './VoucherBook';
@@ -157,22 +160,21 @@ const AccountingContainer = ({ onData }) => {
         } else {
           response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
         }
-    
+
         if (response.data) {
           if (Array.isArray(response.data.disptachData) && response.data.disptachData.length === 0) {
             setTotalOutstanding("0.00");
           }
-    
+
           if (searchData && response.data.disptachData.length > 0) {
             const dataSource = response.data.disptachData.map(dispatchItem => {
               const data = dispatchItem.data;
               const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
-              console.log(data);
-    
+             
               const intDate = dayjs(initialDate, "DD-MM-YYYY");
               // Calculate the total outstanding amount from the credit
               const totalCredit = ledgerEntries.flat().reduce((sum, entry) => sum + entry.credit, 0);
-              
+
               return {
                 key: data._id,
                 ownerName: ownerName[0], // Assuming ownerName is always an array with at least one item
@@ -183,12 +185,12 @@ const AccountingContainer = ({ onData }) => {
                 totalCredit
               };
             });
-    
+
             const totalOutstanding = dataSource.reduce((sum, item) => sum + item.totalCredit, 0);
             setTotalOutstanding(totalOutstanding.toFixed(2));
             setDataSource(dataSource);
             setCount(dataSource.length);
-    
+
           } else {
             const dataSource = response.data.ownersAdavance.map((data) => {
               const { ownerDetails, outStandingAmount } = data;
@@ -203,7 +205,7 @@ const AccountingContainer = ({ onData }) => {
                 entries: [] // Initialize empty, will fetch on expand
               };
             });
-    
+
             setDataSource(dataSource);
             setCount(dataSource.length);
           }
@@ -217,74 +219,6 @@ const AccountingContainer = ({ onData }) => {
         // message.error("Error fetching data. Please try again later", 2);
       }
     };
-    
-    // const getTableData = async () => {
-    //   try {
-    //     setLoading(true);
-    //     const searchData = filterRequest ? filterRequest : null;
-    //     let response;
-    //     if (searchData) {
-    //       response = await API.post(`get-filter-owner-advance-data?page=1&limit=100000&hubId=${selectedHubId}`, searchData, headersOb);
-    //     } else {
-    //       response = await API.get(`get-advance-data/${selectedHubId}`, headersOb);
-    //     }
-
-    //     if (response.data) {
-
-    //       if (Array.isArray(response.data.disptachData) && response.data.disptachData.length === 0) {
-    //         setTotalOutstanding("0.00");
-    //       }
-    //       // Handle the structure for get-filterOwnerAdvanceData response
-    //       if (searchData && response.data.disptachData.length > 0) {
-    //         const dataSource = response.data.disptachData.map(dispatchItem => {
-    //           const data = dispatchItem.data;
-
-    //           const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
-    //           console.log(data);
-
-    //           const intDate = dayjs(initialDate, "DD-MM-YYYY");
-    //           return {
-    //             key: data._id,
-    //             ownerName: ownerName[0], // Assuming ownerName is always an array with at least one item
-    //             initialDate,
-    //             intDate,
-    //             IntAmount: initialAmount,
-    //             entries: ledgerEntries[0] // Initialize with the actual ledgerEntries
-    //           };
-    //         });
-    //         setDataSource(dataSource);
-    //         setCount(dataSource.length);
-    //       } else {
-    //         const dataSource = response.data.ownersAdavance.map((data) => {
-    //           const { ownerDetails, outStandingAmount } = data;
-    //           const { initialDate, ownerName } = ownerDetails[0];
-    //           const intDate = dayjs(initialDate, "DD-MM-YYYY");
-    //           return {
-    //             key: data._id,
-    //             ownerName, // Assuming ownerName is not an array here
-    //             initialDate,
-    //             intDate,
-    //             IntAmount: outStandingAmount,
-    //             entries: [] // Initialize empty, will fetch on expand
-    //           };
-    //         });
-    //         setDataSource(dataSource);
-    //         setCount(dataSource.length);
-    //       }
-
-
-
-    //     } else {
-    //       setDataSource([]);
-    //     }
-    //     setLoading(false);
-    //   } catch (err) {
-    //     setLoading(false);
-    //     setDataSource([]);
-    //     // message.error("Error fetching data. Please try again later", 2);
-    //   }
-    // };
-
 
     const updateFilterAndFetchData = async (filters) => {
       setFilterRequest(filters);
@@ -453,7 +387,7 @@ const AccountingContainer = ({ onData }) => {
                 style={{ margin: 0 }}
               >
                 <Select
-                showSearch
+                  showSearch
                   onChange={(value) => {
                     const selectedOwner = owners.find(owner => owner.name === value);
 
@@ -572,8 +506,7 @@ const AccountingContainer = ({ onData }) => {
       const isEditing = (record) => record.key === editingKeyIn;
 
       const edit = (record) => {
-        console.log(record.entryDate);
-
+      
         form.setFieldsValue({
           entDate: record.entryDate,
           credit: record.credit,
@@ -596,7 +529,6 @@ const AccountingContainer = ({ onData }) => {
       };
 
       const save = async (key) => {
-        console.log(key)
         try {
           const row = await form.validateFields();
           const newData = [...entries];
@@ -631,8 +563,7 @@ const AccountingContainer = ({ onData }) => {
                 const { response } = error;
                 const { data } = response;
                 const { message: msg } = data;
-                console.log(msg)
-                if (msg == "Invalid ledger entry") {
+               if (msg == "Invalid ledger entry") {
                   message.error("Enter only Debit or Credit");
                 } else {
                   message.error(msg);
@@ -760,7 +691,6 @@ const AccountingContainer = ({ onData }) => {
           dataIndex: 'entryDate',
           key: 'entryDate',
           render: (text, record) => {
-            console.log(record)
             const editable = isEditing(record);
             return editable ? (
               <Form.Item
@@ -872,7 +802,6 @@ const AccountingContainer = ({ onData }) => {
           title: 'Action',
           key: 'operation',
           render: (_, record, index) => {
-            console.log(record.key)
             const editable = isEditing(record);
             const lastRow = record.key == "new" ? hideLedgerAction + 1 : hideLedgerAction;
             return editable || index !== lastRow ? (
@@ -968,6 +897,94 @@ const AccountingContainer = ({ onData }) => {
       setCurrentPage(1); // Reset to the first page
       setActivePageSize(newPageSize); // Update the active page size
     };
+    const handleDownload = () => {
+      const challans = dataSource;
+      const ownerAdvanceDetails = challans.map((challan) => ({
+        "key": challan.key,
+        "ownerName": challan.ownerName[0],
+        "initialDate": challan.initialDate,
+        "OutstandingAmount": challan.IntAmount,
+      }));
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(ownerAdvanceDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Owner Advance');
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'Owner Advance.xlsx');
+    };
+
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+
+        // Ensure dataSource is an array and has items
+        if (!Array.isArray(dataSource) || dataSource.length === 0) {
+          message.error("No data available to download");
+          return;
+        }
+
+        // Transform dataSource to the format required by autoTable
+        const items = dataSource.map((challan, index) => [
+          index + 1,
+          challan.key,
+          challan.ownerName[0],
+          challan.initialDate,
+          challan.IntAmount,
+        ]);
+
+        doc.setFontSize(10);
+        const d = new Date();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        const year = d.getFullYear();
+
+        // Generate table
+        doc.autoTable({
+          head: [
+            ["Sl No", "key", "ownerName", "initialDate", "OutstandingAmount"],
+          ],
+          body: items,
+          startY: 20, // Adjust starting Y position if needed
+          headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+          bodyStyles: { fontSize: 8, textAlign: "center" },
+          columnStyles: {
+            0: { cellWidth: 30 },  // Adjust column widths if needed
+            1: { cellWidth: 60 },
+            2: { cellWidth: 60 },
+            3: { cellWidth: 60 },
+            4: { cellWidth: 60 },
+          },
+          didDrawPage: (data) => {
+            // Header
+            doc.setFontSize(10);
+            doc.text("Owner Advance", data.settings.margin.left + 10, 10);
+            doc.text(`Date: ${day}/${m}/${year}`, data.settings.margin.left + 170, 10);
+
+            // Footer
+            const str = `Page ${doc.internal.getNumberOfPages()}` +
+              (typeof doc.putTotalPages === "function" ? ` of ${totalPagesExp}` : '');
+            doc.setFontSize(10);
+            const pageSize = doc.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            doc.text(str, data.settings.margin.left, pageHeight - 10);
+          },
+          margin: { top: 20 },
+        });
+
+        // Add total pages if necessary
+        if (typeof doc.putTotalPages === "function") {
+          doc.putTotalPages(totalPagesExp);
+        }
+
+        doc.save("owner-advance.pdf");
+
+      } catch (err) {
+        message.error("Unable to Print");
+        console.error(err); // Log the error for debugging
+      }
+    };
     return (
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -1004,7 +1021,6 @@ const AccountingContainer = ({ onData }) => {
                 value={endDate}
                 onChange={handleEndDateChange}
                 format='DD/MM/YYYY' // Display format for the DatePicker
-
               />
               <Button type="primary" style={{ marginLeft: ".5rem" }} onClick={handleFilter}>
                 APPLY
@@ -1022,7 +1038,8 @@ const AccountingContainer = ({ onData }) => {
         </div>
         <div className='flex gap-2 mb-2 items-center justify-end'>
           {/* <Button icon={<DownloadOutlined />}></Button> */}
-
+          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
           <div className='flex   my-paginations '>
             <span className='bg-[#F8F9FD] p-1'>
               <Button

@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { DatePicker, Table, Input, Select, Space, Button, Tooltip, Row, Col } from 'antd';
-import { UploadOutlined, DownloadOutlined, PrinterOutlined, FormOutlined, DeleteOutlined, RedoOutlined } from '@ant-design/icons';
+import { FormOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import backbutton_logo from "../../assets/backbutton.png";
 import { API } from "../../API/apirequest";
 import moment from "moment"
 const { Search } = Input;
 const { Option } = Select;
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const filterOption = (input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 
@@ -165,7 +168,117 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
       const year = selectedDate.year;
       getTableData(searchQuery6, month, year);
     };
+    const handleDownload = () => {
+      const challans = filteredVoucherData;
+      const voucherDetails = challans.map((challan) => ({
 
+        "voucherNumber": challan.voucherNumber,
+        "voucherDate": challan.voucherDate,
+        "vehicleNumber": challan.vehicleNumber,
+        "ownerName": challan.ownerName,
+        "ownerPhone": challan.ownerPhone,
+        "amount": challan.amount,
+        "narration": challan.narration,
+        "modeOfPayment": challan.modeOfPayment,
+      }));
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+      // Add the owner details sheet to the workbook
+      const ownerWS = XLSX.utils.json_to_sheet(voucherDetails);
+      XLSX.utils.book_append_sheet(wb, ownerWS, 'Voucher book');
+      // Export the workbook to an Excel file
+      XLSX.writeFile(wb, 'Voucher Book.xlsx');
+    };
+
+    const handlePrint = () => {
+      const totalPagesExp = "{total_pages_count_string}";
+      try {
+        const doc = new jsPDF("l", "mm", "a4");
+
+        // Ensure dataSource is an array and has items
+        if (!Array.isArray(filteredVoucherData) || filteredVoucherData.length === 0) {
+          message.error("No data available to download");
+          return;
+        }
+
+        // Transform dataSource to the format required by autoTable
+        const items = filteredVoucherData.map((challan, index) => [
+          index + 1,
+          challan.voucherNumber,
+          challan.voucherDate,
+          challan.vehicleNumber,
+          challan.ownerName,
+          challan.ownerPhone,
+          challan.amount,
+          challan.narration,
+           challan.modeOfPayment,
+        ]);
+
+        doc.setFontSize(10);
+        const d = new Date();
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        const year = d.getFullYear();
+
+        // Generate table
+        doc.autoTable({
+          head: [
+            ["Sl No",
+              "voucherNumber",
+              "voucherDate",
+              "vehicleNumber",
+              "ownerName",
+              "ownerPhone",
+              "amount",
+              "narration",
+              "modeOfPayment"
+            ],
+          ],
+          body: items,
+          startY: 20, // Adjust starting Y position if needed
+          headStyles: { fontSize: 8, fontStyle: "normal", fillColor: "#44495b" },
+          bodyStyles: { fontSize: 8, textAlign: "center" },
+          columnStyles: {
+            0: { cellWidth: 30 },  // Adjust column widths if needed
+            1: { cellWidth: 30 },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 30 },
+
+            5: { cellWidth: 30 },
+            6: { cellWidth: 30 },
+            7: { cellWidth: 30 },
+            8: { cellWidth: 30 },
+          },
+          didDrawPage: (data) => {
+            // Header
+            doc.setFontSize(10);
+            doc.text("Voucher Book", data.settings.margin.left + 10, 10);
+            doc.text(`Date: ${day}/${m}/${year}`, data.settings.margin.left + 170, 10);
+
+            // Footer
+            const str = `Page ${doc.internal.getNumberOfPages()}` +
+              (typeof doc.putTotalPages === "function" ? ` of ${totalPagesExp}` : '');
+            doc.setFontSize(10);
+            const pageSize = doc.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            doc.text(str, data.settings.margin.left, pageHeight - 10);
+          },
+          margin: { top: 20 },
+        });
+
+        // Add total pages if necessary
+        if (typeof doc.putTotalPages === "function") {
+          doc.putTotalPages(totalPagesExp);
+        }
+
+        doc.save("voucher-book.pdf");
+
+      } catch (err) {
+        message.error("Unable to Print");
+        console.error(err); // Log the error for debugging
+      }
+    };
     return (
       <div className="flex gap-2 justify-between py-3">
         <div className="flex items-center gap-2">
@@ -194,6 +307,8 @@ const VoucherBook = ({ onData, showTabs, setShowTabs }) => {
           )}
         </div>
         <div className="flex gap-2">
+          <Button icon={<DownloadOutlined />} onClick={handleDownload}></Button>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}></Button>
           <Button onClick={onAddVoucherClick} className="bg-[#1572B6] text-white">CREATE VOUCHER</Button>
         </div>
       </div>

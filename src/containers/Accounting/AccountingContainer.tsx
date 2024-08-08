@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import type { TabsProps } from 'antd';
-import { UploadOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
+import { UploadOutlined,FormOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
 import { API } from "../../API/apirequest"
 const dateFormat = "DD/MM/YYYY";
 import VoucherBook from './VoucherBook';

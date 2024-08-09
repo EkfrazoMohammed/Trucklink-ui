@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import type { TabsProps } from 'antd';
-import { UploadOutlined,FormOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
+import { UploadOutlined, FormOutlined, DownloadOutlined, DeleteOutlined, PrinterOutlined, SwapOutlined, RedoOutlined, } from '@ant-design/icons';
 import { API } from "../../API/apirequest"
 const dateFormat = "DD/MM/YYYY";
 import VoucherBook from './VoucherBook';
@@ -170,10 +170,9 @@ const AccountingContainer = ({ onData }) => {
             const dataSource = response.data.disptachData.map(dispatchItem => {
               const data = dispatchItem.data;
               const { initialDate, ownerId, ownerName, initialAmount, ledgerEntries } = data;
-             
               const intDate = dayjs(initialDate, "DD-MM-YYYY");
-              // Calculate the total outstanding amount from the credit
               const totalCredit = ledgerEntries.flat().reduce((sum, entry) => sum + entry.credit, 0);
+              const totalDebit = ledgerEntries.flat().reduce((sum, entry) => sum + entry.debit, 0);
 
               return {
                 key: data._id,
@@ -182,12 +181,14 @@ const AccountingContainer = ({ onData }) => {
                 intDate,
                 IntAmount: initialAmount,
                 entries: ledgerEntries[0], // Initialize with the actual ledgerEntries
-                totalCredit
+                totalCredit,
+                totalDebit
               };
             });
-
-            const totalOutstanding = dataSource.reduce((sum, item) => sum + item.totalCredit, 0);
-            setTotalOutstanding(totalOutstanding.toFixed(2));
+            const totalOutstandingCredit = dataSource.reduce((sum, item) => sum + item.totalCredit, 0);
+            const totalOutstandingDebit = dataSource.reduce((sum, item) => sum + item.totalDebit, 0);
+            const totalOutstanding=totalOutstandingCredit -totalOutstandingDebit
+            setTotalOutstanding(totalOutstanding);
             setDataSource(dataSource);
             setCount(dataSource.length);
 
@@ -506,7 +507,7 @@ const AccountingContainer = ({ onData }) => {
       const isEditing = (record) => record.key === editingKeyIn;
 
       const edit = (record) => {
-      
+
         form.setFieldsValue({
           entDate: record.entryDate,
           credit: record.credit,
@@ -563,7 +564,7 @@ const AccountingContainer = ({ onData }) => {
                 const { response } = error;
                 const { data } = response;
                 const { message: msg } = data;
-               if (msg == "Invalid ledger entry") {
+                if (msg == "Invalid ledger entry") {
                   message.error("Enter only Debit or Credit");
                 } else {
                   message.error(msg);

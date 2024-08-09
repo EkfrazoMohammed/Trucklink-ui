@@ -316,7 +316,7 @@ const HeaderContainer: React.FC<{ title: string, dataFromChild: string }> = ({ t
 
       let allAcknowledgement;
       if (response.data.dispatchData.length === 0) {
-        allAcknowledgement = response.data.disptachData;
+        allAcknowledgement = response.data.disptachData || response.data.dispatchData;
         console.log(allAcknowledgement);
         setAcknowledgement(allAcknowledgement);
       } else {
